@@ -1,0 +1,45 @@
+name: Meta Labels (规则层标记)
+# 双轨制 meta 通道：改 workflow/schema/README/DESIGN 等规则层的 PR
+# → 自动打 meta/规则 标签 + 触发 CODEOWNERS review 要求（branch protection 侧生效）
+# 本 workflow 只负责标记，不做校验不合并
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+    branches: [main]
+
+permissions:
+  pull-requests: write
+
+jobs:
+  label:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 检测规则层变更并打标签
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          BASE="${{ github.event.pull_request.base.sha }}"
+          HEAD="${{ github.event.pull_request.head.sha }}"
+          FILES=$(git diff --name-only $BASE $HEAD)
+
+          META=0
+          for f in $FILES; do
+            case "$f" in
+              .github/*|*.yml|*.yaml|schemas/*|DESIGN.md|README.md)
+                echo "规则层文件: $f"; META=1 ;;
+            esac
+          done
+
+          if [ "$META" = "1" ]; then
+            gh pr edit "$PR" -R leonezhu/rebase --add-label "meta/规则"
+            gh pr comment "$PR" -R leonezhu/rebase \
+              -b "⚖️ 本 PR 触碰规则层（workflow/schema/设计文档），已按双轨制打 \`meta/规则\` 标签，需仓库主人 review 后方可合并。"
+            echo "已打 meta/规则 标签"
+          else
+            echo "非规则层变更，不打标"
+          fi

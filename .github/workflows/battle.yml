@@ -156,4 +156,5 @@ jobs:
           git push origin battle-log/${{ github.event.issue.number }} || true
           gh pr create -R leonezhu/rebase --head battle-log/${{ github.event.issue.number }} --base main \
             -t "斗法奖励入账 #${{ github.event.issue.number }}" -b "bot 结算，自动合并" || true
+          gh pr edit battle-log/${{ github.event.issue.number }} -R leonezhu/rebase --add-label "game/bot" || true
           gh pr merge battle-log/${{ github.event.issue.number }} --merge || true

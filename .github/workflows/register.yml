@@ -1,10 +1,13 @@
 name: Register Beast (缔约仪式)
 # 触发：register/* 分支的 PR
-# 校验 beast.yaml 符合 schema → auto-merge → bot 开 issue 贴降世故事
+# 校验 beast.yaml 符合 schema → 双轨分流：
+#   主人(leonezhu) → auto-merge + bot 开降世 issue
+#   其他玩家 → 止步「校验通过」，打 player/待审 标签，等长老过目（长老合并后自动开降世 issue）
+# 降世 issue 统一在 merged 时开（两条通道共用，保证 issue = 已入册灵籍）
 
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [opened, synchronize, closed]
     branches: [main]
 
 permissions:
@@ -14,15 +17,32 @@ permissions:
 
 jobs:
   register:
-    # 只处理 register/* 分支
-    if: startsWith(github.head_ref, 'register/')
+    # closed 事件只处理「真的合并了」的，跳过关闭未合并
+    if: >-
+      startsWith(github.head_ref, 'register/') &&
+      (github.event.action != 'closed' || github.event.pull_request.merged == true)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
+      # ===== 双轨判定 =====
+      - name: 分流判定
+        id: track
+        run: |
+          ACTOR="${{ github.actor }}"
+          if [ "$ACTOR" = "leonezhu" ]; then
+            echo "track=game" >> $GITHUB_OUTPUT
+            echo "主人通道：校验通过即自动合并"
+          else
+            echo "track=player" >> $GITHUB_OUTPUT
+            echo "玩家通道：校验通过后止步待审"
+          fi
+
+      # ===== 以下校验只在 opened/synchronize 跑（closed 不需要）=====
       - name: 校验变更范围（只许新增 monsters/<owner>/beast.yaml）
+        if: github.event.action != 'closed'
         id: scope
         run: |
           BASE="${{ github.event.pull_request.base.sha }}"
@@ -46,6 +66,7 @@ jobs:
           exit $FAIL
 
       - name: 校验 YAML + Schema
+        if: github.event.action != 'closed'
         run: |
           pip install jsonschema pyyaml --quiet
           python3 - <<'EOF'
@@ -77,16 +98,45 @@ jobs:
           sys.exit(0 if ok else 1)
           EOF
 
-      - name: 生成降世故事 + 合并
-        if: success()
+      # ===== game 通道：自动合并 =====
+      - name: 自动合并（仅主人通道）
+        if: github.event.action != 'closed' && steps.track.outputs.track == 'game'
         env:
           GH_TOKEN: ${{ github.token }}
           PR: ${{ github.event.pull_request.number }}
-          BRANCH: ${{ github.head_ref }}
+          BRANCH_NAME: ${{ github.head_ref }}
         run: |
-          # 提取怪兽信息（python yaml 解析，避免 awk/grep 对多行值不健壮）
           BEAST_FILE=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | grep beast.yaml | head -1)
-          python3 - "$BEAST_FILE" "$GITHUB_ENV" <<'EOF'
+          BEAST_NAME=$(python3 -c "import yaml,sys;print(yaml.safe_load(open(sys.argv[1],encoding='utf-8'))['name'])" "$BEAST_FILE")
+          gh pr merge "$PR" --merge --subject "缔约完成：${BEAST_NAME} 降世"
+
+      # ===== player 通道：止步待审 =====
+      - name: 打待审标签 + 长老喊话（仅玩家通道）
+        if: github.event.action != 'closed' && steps.track.outputs.track == 'player'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          SENDER: ${{ github.actor }}
+        run: |
+          gh pr edit "$PR" -R leonezhu/rebase --add-label "player/待审"
+          gh pr comment "$PR" -R leonezhu/rebase \
+            -b "✨ 缔约校验通过。@${SENDER} 的灵兽已候在山门外，等待驯兽师长老过目。长老合并本 PR 后，降世仪式即刻举行。"
+
+      # ===== merged（任一通道）：开降世 issue =====
+      - name: 生成降世故事 + 开降世 issue
+        if: github.event.action == 'closed' && github.event.pull_request.merged == true
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # 提取怪兽信息（python yaml 解析，多行值健壮）
+          BEAST_FILE=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | grep beast.yaml | head -1)
+          # closed 时若 head sha diff 为空（fetch-depth 兜底失败场景），退化为读合并后工作区的 HEAD
+          if [ -z "$BEAST_FILE" ]; then
+            BEAST_FILE=$(git show --name-only --format= HEAD | grep beast.yaml | head -1)
+          fi
+          [ -z "$BEAST_FILE" ] && { echo "::error::找不到新增的 beast.yaml"; exit 1; }
+
+          python3 - "$BEAST_FILE" <<'EOF'
           import yaml, sys, pathlib
 
           data = yaml.safe_load(pathlib.Path(sys.argv[1]).read_text(encoding='utf-8'))
@@ -102,17 +152,22 @@ jobs:
           body += "🎮 指令：评论 `/battle @对方驯兽师` 发起斗法 · `/explore` 探索秘境\n"
 
           pathlib.Path('/tmp/issue_body.md').write_text(body, encoding='utf-8')
-          # 多行安全写法：heredoc 定界符写入 GITHUB_ENV
-          env = pathlib.Path(sys.argv[2]).open('a', encoding='utf-8')
-          env.write(f"BEAST_NAME<<EOF_BEAST\n{data['name']}\nEOF_BEAST\n")
-          env.write(f"BEAST_EL<<EOF_BEAST\n{el_map.get(data['element'], '?')}\nEOF_BEAST\n")
-          env.close()
+          pathlib.Path('/tmp/beast_meta.txt').write_text(
+              f"{data['name']}\n{el_map.get(data['element'], '?')}", encoding='utf-8')
           print(f"✓ 提取成功: {data['name']} ({data['element']})")
           EOF
 
-          MERGE_RESPONSE=$(gh pr merge $PR --merge --subject "缔约完成：${BEAST_NAME} 降世" 2>&1) || true
+          BEAST_NAME=$(sed -n 1p /tmp/beast_meta.txt)
+          BEAST_EL=$(sed -n 2p /tmp/beast_meta.txt)
 
-          # 开降世 issue（body 走文件，多行内容安全）
-          gh issue create -R leonezhu/rebase \
+          # 开降世 issue（幂等：同名标题已存在则跳过，防止 repeated closed 事件重复开）
+          EXISTING=$(gh issue list -R leonezhu/rebase --state open --search "降世 · ${BEAST_NAME} in:title" --json number --jq 'length')
+          if [ "$EXISTING" -gt 0 ]; then
+            echo "降世 issue 已存在，跳过"
+            exit 0
+          fi
+          NEW_URL=$(gh issue create -R leonezhu/rebase \
             -t "📜 降世 · ${BEAST_NAME}（${BEAST_EL}）" \
-            -b "$(cat /tmp/issue_body.md)" || true
+            -b "$(cat /tmp/issue_body.md)" \
+            -l "降世") || true
+          echo "降世 issue: ${NEW_URL:-创建失败或已存在}"
