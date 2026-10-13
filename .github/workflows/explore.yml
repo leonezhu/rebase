@@ -1,0 +1,145 @@
+name: Explore (秘境探索)
+# 触发：任意 issue 评论 /explore
+# hash 确定性遭遇 → bot 贴事件故事 → 灵石/功力入账 bot commit
+# 规则：只结算评论者自己的灵兽；每兽每日至多 3 次探索
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  explore:
+    if: startsWith(github.event.comment.body, '/explore')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 找到探索者的灵籍
+        id: beast
+        env:
+          GH_TOKEN: ${{ github.token }}
+          EXPLORER: ${{ github.event.comment.user.login }}
+          ISSUE: ${{ github.event.issue.number }}
+        run: |
+          F="monsters/$EXPLORER/beast.yaml"
+          if [ ! -f "$F" ]; then
+            gh issue comment $ISSUE -R leonezhu/rebase \
+              -b "@${EXPLORER} 你尚未缔约（monsters/$EXPLORER/beast.yaml 不存在），秘境之门不识你的气息。先去 README 缔约领养一只灵兽吧。"
+            exit 1
+          fi
+          # 每日限额：查当日已入账的探索次数（bot commit 信息含"秘境探索"）
+          TODAY=$(TZ=Asia/Shanghai git log --since="today 00:00" --format=%s -- "$F" | grep -c "秘境探索" || true)
+          if [ "${TODAY:-0}" -ge 3 ]; then
+            gh issue comment $ISSUE -R leonezhu/rebase \
+              -b "@${EXPLORER} 今日秘境已探索 ${TODAY} 次，灵兽灵力耗竭，明日再来（每日限 3 次）。"
+            exit 1
+          fi
+          echo "explorer=$EXPLORER" >> $GITHUB_OUTPUT
+          echo "today=$TODAY" >> $GITHUB_OUTPUT
+
+      - name: hash 定遭遇 + 结算
+        id: enc
+        run: |
+          pip install pyyaml --quiet
+          python3 - <<'EOF'
+          import yaml, hashlib, json
+          from pathlib import Path
+
+          OWNER = "${{ steps.beast.outputs.explorer }}"
+          # 种子：评论者 + 评论 id + 当日已探索次数 → 同一评论重跑结果不变，玩家不可控
+          seed = f"explore|{OWNER}|${{ github.event.comment.id }}|${{ steps.beast.outputs.today }}"
+          rng = hashlib.sha256(seed.encode()).hexdigest()
+
+          p = Path(f'monsters/{OWNER}/beast.yaml')
+          d = yaml.safe_load(p.read_text(encoding='utf-8'))
+
+          # 遭遇表：权重不同的 8 种秘境事件（零术语，玄幻文本）
+          el_map = {'metal': '金', 'wood': '木', 'earth': '土', 'water': '水', 'fire': '火'}
+          el_cn = el_map.get(d['element'], '?')
+          ENCOUNTERS = [
+              # (code, 权重, 灵石, 功力, 故事模板)
+              ("herb",    20,  15,  10, "灵草丛生：{name} 拨开齐腰的银穗草，草根处一窝灵髓凝成的露珠滚落掌心。它以{el}行气息温养片刻，露珠化作灵石收入囊中。"),
+              ("array",   15,  30,   5, "残破法阵：半座上古法阵嵌在崖壁上，阵眼还在微微搏动。{name} 用{el}行灵力引动残留阵纹——法阵自行崩解，积蓄千年的灵石如雨落下。"),
+              ("beast",   20,  25,  15, "秘境兽·遭遇：一头无主野兽从雾里扑出！{name} 沉腰蓄势，{el}行灵光缠上爪尖，三合之内将其逼退。野兽丢下衔来的宝物，遁入雾中。"),
+              ("beast_lose", 10, -10,  0, "秘境兽·恶战：雾中那头野兽比看上去更强。{name} 苦战不支，身上几颗灵石在翻滚中散落，被野兽叼走。它舔着伤口退出来——败不亡身，来日再战。"),
+              ("well",     8,   0,  50, "无底古井：井口刻满无人识得的符文。{name} 俯身探望，井底忽然映出的不是倒影，而是一段陌生的修行画面。它怔怔看了半晌，功力大涨，却说不出所以然。"),
+              ("lost",    12,   0,   5, "雾中迷路：白雾把方向嚼碎了。{name} 走了许久，只在树干上发现前人刻下的一行小字：'迷路亦是路。'虽无收获，心境倒是圆融了几分。"),
+              ("cave",    10,   0,  40, "前辈洞府：山腹中一座洞府，蒲团上只余一枚早已圆寂的舍利。{name} 恭敬叩首，殿中残存的道韵涌入它的{el}行根骨——前辈传功，不问来者。"),
+              ("spring",   5,  20,  20, "灵泉洗髓：一汪灵泉藏于石缝之后，泉水分七色流转。{name} 沉入泉底，鳞羽尽洗，出泉时通身{el}光湛然，灵石碎屑沉在泉底也被它顺手捞了上来。"),
+          ]
+          total = sum(e[1] for e in ENCOUNTERS)
+          roll = int(rng[:8], 16) % total
+          acc, picked = 0, ENCOUNTERS[0]
+          for e in ENCOUNTERS:
+              acc += e[1]
+              if roll < acc:
+                  picked = e
+                  break
+          code, _, stones, exp, tpl = picked
+
+          story = tpl.format(name=d['name'], el=el_cn)
+          # 灵石不可为负
+          old_stones = d.get('spirit_stones', 100)
+          d['spirit_stones'] = max(0, old_stones + stones)
+          d['exp'] = d.get('exp', 0) + exp
+          if stones < 0:
+              stones = old_stones - d['spirit_stones']  # 实际损失（保底后）
+
+          p.write_text(yaml.safe_dump(d, allow_unicode=True, sort_keys=False), encoding='utf-8')
+          result = {
+              "owner": OWNER, "code": code,
+              "stones": stones, "exp": exp,
+              "balance": d['spirit_stones'], "story": story,
+              "seed": seed,
+          }
+          Path('explore_result.json').write_text(json.dumps(result, ensure_ascii=False), encoding='utf-8')
+          print(json.dumps(result, ensure_ascii=False))
+          EOF
+
+      - name: bot 贴事件故事
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE: ${{ github.event.issue.number }}
+        run: |
+          STORY=$(python3 -c "import json;print(json.load(open('explore_result.json'))['story'])")
+          STONES=$(python3 -c "import json;d=json.load(open('explore_result.json'));print(('+' if d['stones']>=0 else '')+str(d['stones']))")
+          EXP=$(python3 -c "import json;d=json.load(open('explore_result.json'));print('+'+str(d['exp']) if d['exp'] else '0')")
+          BAL=$(python3 -c "import json;print(json.load(open('explore_result.json'))['balance'])")
+          NAME=$(python3 -c "import yaml;print(yaml.safe_load(open('monsters/${{ steps.beast.outputs.explorer }}/beast.yaml', encoding='utf-8'))['name'])")
+
+          gh issue comment $ISSUE -R leonezhu/rebase -b "## 🌫️ 秘境探索 · ${NAME}
+
+          ${STORY}
+
+          ---
+
+          **入账**：灵石 ${STONES} · 功力 ${EXP} · 余额 ${BAL} 灵石
+
+          今日还可探索 $((3 - ${{ steps.beast.outputs.today }} - 1)) 次 · 评论 \`/explore\` 再入秘境"
+
+      - name: 灵石入账（bot commit + 自动合并）
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          OWNER="${{ steps.beast.outputs.explorer }}"
+          STONES=$(python3 -c "import json;print(json.load(open('explore_result.json'))['stones'])")
+          EXP=$(python3 -c "import json;print(json.load(open('explore_result.json'))['exp'])")
+          CODE=$(python3 -c "import json;print(json.load(open('explore_result.json'))['code'])")
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          BRANCH="explore-log/${OWNER}-${{ github.event.comment.id }}"
+          git checkout -b "$BRANCH"
+          git add "monsters/$OWNER/beast.yaml"
+          git commit -m "秘境探索($CODE): $OWNER ${STONES:+灵石$STONES}${EXP:+功力$EXP}"
+          git push origin "$BRANCH" || true
+          gh pr create -R leonezhu/rebase --head "$BRANCH" --base main \
+            -t "秘境探索入账 · $OWNER (#${{ github.event.issue.number }})" -b "bot 结算，自动合并" || true
+          gh pr merge "$BRANCH" --merge || true
