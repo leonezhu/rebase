@@ -1,0 +1,116 @@
+name: Register Beast (缔约仪式)
+# 触发：register/* 分支的 PR
+# 校验 beast.yaml 符合 schema → auto-merge → bot 开 issue 贴降世故事
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  register:
+    # 只处理 register/* 分支
+    if: startsWith(github.head_ref, 'register/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 校验变更范围（只许新增 monsters/<owner>/beast.yaml）
+        id: scope
+        run: |
+          BASE="${{ github.event.pull_request.base.sha }}"
+          HEAD="${{ github.event.pull_request.head.sha }}"
+          FILES=$(git diff --name-only $BASE $HEAD)
+          echo "changed: $FILES"
+          FAIL=0
+          for f in $FILES; do
+            case "$f" in
+              monsters/*/beast.yaml) ;;  # 允许
+              *) echo "::error::非法路径变更: $f（只允许 monsters/<owner>/beast.yaml）"; FAIL=1 ;;
+            esac
+          done
+          # 只许新增文件，不许改已存在的
+          for f in $FILES; do
+            if git cat-file -e $BASE:$f 2>/dev/null; then
+              echo "::error::已存在的灵籍不可修改: $f"; FAIL=1
+            fi
+          done
+          echo "fail=$FAIL" >> $GITHUB_OUTPUT
+          exit $FAIL
+
+      - name: 校验 YAML + Schema
+        run: |
+          pip install jsonschema pyyaml --quiet
+          python3 - <<'EOF'
+          import yaml, json, sys
+          from jsonschema import validate
+          from pathlib import Path
+
+          schema = json.load(open('schemas/beast.schema.json'))
+          # 找 PR 中新增的 beast.yaml
+          import subprocess
+          base, head = "${{ github.event.pull_request.base.sha }}", "${{ github.event.pull_request.head.sha }}"
+          files = subprocess.run(['git','diff','--name-only',base,head],capture_output=True,text=True).stdout.split()
+          ok = True
+          for f in files:
+              if not f.endswith('beast.yaml'): continue
+              data = yaml.safe_load(Path(f).read_text(encoding='utf-8'))
+              # owner 必须匹配路径
+              owner_in_path = f.split('/')[1]
+              if data.get('owner') != owner_in_path:
+                  print(f"::error::{f}: owner ({data.get('owner')}) 与路径 ({owner_in_path}) 不一致")
+                  ok = False
+                  continue
+              try:
+                  validate(data, schema)
+                  print(f"✓ {f} 校验通过 ({data['name']} 五行-{data['element']})")
+              except Exception as e:
+                  print(f"::error::{f} 校验失败: {e}")
+                  ok = False
+          sys.exit(0 if ok else 1)
+          EOF
+
+      - name: 生成降世故事 + 合并
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          BRANCH: ${{ github.head_ref }}
+        run: |
+          # 提取怪兽信息
+          BEAST_FILE=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | grep beast.yaml | head -1)
+          NAME=$(grep '^name:' $BEAST_FILE | sed 's/name: *"\{0,1\}\([^"]*\)\\"\{0,1\}/\1/' | tr -d '"')
+          ELEMENT=$(grep '^element:' $BEAST_FILE | awk '{print $2}')
+          OWNER=$(grep '^owner:' $BEAST_FILE | awk '{print $2}')
+          ORIGIN=$(awk '/^origin:/,0' $BEAST_FILE | sed '1s/origin: *//' | head -c 800)
+
+          case $ELEMENT in
+            metal) EL_CN="金" ;; wood) EL_CN="木" ;; earth) EL_CN="土" ;; water) EL_CN="水" ;; fire) EL_CN="火" ;;
+            *) EL_CN="?" ;;
+          esac
+
+          MERGE_RESPONSE=$(gh pr merge $PR --merge --subject "缔约完成：${NAME} 降世" 2>&1) || true
+
+          # 开降世 issue
+          gh issue create -R leonezhu/rebase \
+            -t "📜 降世 · ${NAME}（${EL_CN}）" \
+            -b "## 缔约成立
+
+          **${NAME}** 已入灵籍，成为 @${OWNER} 的本命灵兽。
+
+          ### 降世故事
+
+          ${ORIGIN}
+
+          ---
+
+          *血脉之谜：它似有什么来历未明……待境界提升，自会浮现。*
+
+          🎮 指令：评论 \`/battle @对方驯兽师\` 发起斗法 · \`/explore\` 探索秘境" || true

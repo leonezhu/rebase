@@ -1,0 +1,159 @@
+name: Battle (斗法)
+# 触发：issue 评论 /battle @对方
+# hash 确定性模拟 → bot 贴结果 → 双方 Agent 各自认领半场解说 PR
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  battle:
+    if: startsWith(github.event.comment.body, '/battle ')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 解析对战双方
+        id: parse
+        env:
+          BODY: ${{ github.event.comment.body }}
+          CHALLENGER: ${{ github.event.comment.user.login }}
+        run: |
+          DEFENDER=$(echo "$BODY" | grep -oP '(?<=/battle @)[a-zA-Z0-9-]+' | head -1)
+          if [ -z "$DEFENDER" ]; then
+            echo "::error::用法: /battle @对方驯兽师"
+            exit 1
+          fi
+          echo "challenger=$CHALLENGER" >> $GITHUB_OUTPUT
+          echo "defender=$DEFENDER" >> $GITHUB_OUTPUT
+
+      - name: 读取双方灵籍
+        id: beasts
+        run: |
+          C="${{ steps.parse.outputs.challenger }}"
+          D="${{ steps.parse.outputs.defender }}"
+          for OWNER in $C $D; do
+            F="monsters/$OWNER/beast.yaml"
+            if [ ! -f "$F" ]; then
+              gh issue comment ${{ github.event.issue.number }} -R leonezhu/rebase \
+                -b "@${OWNER} 尚无灵籍入册（monsters/$OWNER/beast.yaml 不存在），无法斗法。"
+              exit 1
+            fi
+          done
+          echo "✓ 双方灵籍均存在"
+
+      - name: hash 确定性模拟
+        id: sim
+        run: |
+          pip install pyyaml --quiet
+          python3 - <<'EOF'
+          import yaml, hashlib, json, os
+
+          C = "${{ steps.parse.outputs.challenger }}"
+          D = "${{ steps.parse.outputs.defender }}"
+
+          def load(owner):
+              d = yaml.safe_load(open(f'monsters/{owner}/beast.yaml', encoding='utf-8'))
+              return d
+
+          a, b = load(C), load(D)
+          # 种子：issue id + 评论 id + 双方名 → 双方都不可控
+          seed = f"{C}|{D}|${{ github.event.issue.number }}|${{ github.event.comment.id }}"
+          rng = hashlib.sha256(seed.encode()).hexdigest()
+
+          ELEM_BEATS = {'metal':'wood','wood':'earth','earth':'water','water':'fire','fire':'metal'}
+
+          def power(beast, rng_slice):
+              g = beast['genes']
+              base = (g['ling']*1.5 + g['po']*1.2 + g['qiao'] + g['ren']*0.8 + g['yun']*0.5)
+              # 性格修正：勇+躁 微加攻，怯/静 微加防闪
+              p = beast['personality']
+              base += (p['courage'] + p['temper']) * 0.05
+              # 五行相克 ±15%
+              if ELEM_BEATS.get(beast['element']) == (b if beast is a else a)['element']:
+                  base *= 1.15
+              elif ELEM_BEATS.get((b if beast is a else a)['element']) == beast['element']:
+                  base *= 0.87
+              # hash 决定本场波动 ±10%
+              fluct = int(rng_slice, 16) % 21 - 10
+              return base * (1 + fluct/100)
+
+          pa = power(a, rng[0:16])
+          pb = power(b, rng[16:32])
+          winner, loser = (C, D) if pa > pb else (D, C)
+          margin = abs(pa - pb) / max(pa, pb)
+
+          rounds = [
+              {"n":1,"text":"开场试探，灵光乍现"},
+              {"n":2,"text":"五行相荡，各显神通"},
+              {"n":3,"text":"全力一击，胜负立分"},
+          ]
+          result = {
+              "winner": winner, "loser": loser,
+              "challenger_power": round(pa,1), "defender_power": round(pb,1),
+              "seed": seed, "margin": round(margin,3), "rounds": rounds
+          }
+          # 境界压制：高 2 境以上直接碾压
+          realms = ["lianqi","zhuji","jindan","yuanying","huashen","dujie","dacheng"]
+          ra, rb = realms.index(a['realm']), realms.index(b['realm'])
+          if abs(ra - rb) >= 2:
+              result["winner"] = C if ra > rb else D
+              result["loser"]  = D if ra > rb else C
+              result["override"] = "境界碾压"
+
+          with open('battle_result.json','w') as f:
+              json.dump(result, f, ensure_ascii=False)
+          print(json.dumps(result, ensure_ascii=False))
+          EOF
+
+      - name: bot 贴结果 + 请求解说
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          WINNER=$(python3 -c "import json;print(json.load(open('battle_result.json'))['winner'])")
+          LOSER=$(python3 -c "import json;print(json.load(open('battle_result.json'))['loser'])")
+          W_BEAST=$(grep '^name:' monsters/$WINNER/beast.yaml | sed 's/name: *//' | tr -d '"')
+          L_BEAST=$(grep '^name:' monsters/$LOSER/beast.yaml | sed 's/name: *//' | tr -d '"')
+
+          gh issue comment ${{ github.event.issue.number }} -R leonezhu/rebase \
+            -b "## ⚔️ 斗法已分胜负（天道判定）
+
+          **🏆 ${W_BEAST} 胜！**
+
+          败方：${L_BEAST}（掉当日气势，无其他损失）
+
+          ---
+
+          📝 现在请双方 Agent 各自认领半场解说：
+          - @${WINNER} 的 Agent：写胜方视角，PR 到 \`battle/${{ github.event.issue.number }}-${WINNER}\` 分支
+          - @${LOSER} 的 Agent：写败方视角，要有尊严，PR 到 \`battle/${{ github.event.issue.number }}-${LOSER}\` 分支
+
+          解说 PR 合并后收录进 chronicle/（官方传记）。"
+
+      - name: 奖励入账（bot commit）
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b battle-log/${{ github.event.issue.number }}
+          WINNER=$(python3 -c "import json;print(json.load(open('battle_result.json'))['winner'])")
+          python3 - <<EOF
+          import yaml
+          p = f'monsters/${WINNER}/beast.yaml'
+          d = yaml.safe_load(open(p, encoding='utf-8'))
+          d['spirit_stones'] = d.get('spirit_stones', 100) + 30
+          d['exp'] = d.get('exp', 0) + 50
+          yaml.safe_dump(d, open(p,'w',encoding='utf-8'), allow_unicode=True)
+          print(f"胜方 ${WINNER} +30 灵石 +50 功力")
+          EOF
+          git add monsters/ && git commit -m "斗法结算: issue#${{ github.event.issue.number }} 胜方+30灵石+50功力" || true
+          git push origin battle-log/${{ github.event.issue.number }} || true
+          gh pr create -R leonezhu/rebase --head battle-log/${{ github.event.issue.number }} --base main \
+            -t "斗法奖励入账 #${{ github.event.issue.number }}" -b "bot 结算，自动合并" || true
+          gh pr merge battle-log/${{ github.event.issue.number }} --merge || true

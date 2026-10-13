@@ -1,0 +1,79 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Rebase Beast",
+  "type": "object",
+  "required": ["name", "owner", "element", "genes", "personality", "realm", "origin"],
+  "properties": {
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 24,
+      "description": "怪兽名（玩家所见，玄幻风格）"
+    },
+    "owner": {
+      "type": "string",
+      "pattern": "^[a-zA-Z0-9-]{1,39}$",
+      "description": "驯兽师 GitHub 用户名"
+    },
+    "element": {
+      "enum": ["metal", "wood", "earth", "water", "fire"],
+      "description": "五行：metal金 wood木 earth土 water水 fire火"
+    },
+    "genes": {
+      "type": "object",
+      "description": "五维基因 0-100",
+      "required": ["ling", "po", "qiao", "ren", "yun"],
+      "additionalProperties": false,
+      "properties": {
+        "ling": { "type": "integer", "minimum": 0, "maximum": 100, "description": "灵·法术" },
+        "po":   { "type": "integer", "minimum": 0, "maximum": 100, "description": "魄·体质" },
+        "qiao": { "type": "integer", "minimum": 0, "maximum": 100, "description": "巧·敏捷" },
+        "ren":  { "type": "integer", "minimum": 0, "maximum": 100, "description": "韧·意志" },
+        "yun":  { "type": "integer", "minimum": 0, "maximum": 100, "description": "韵·灵性" }
+      }
+    },
+    "personality": {
+      "type": "object",
+      "description": "性格三轴，每轴 -100..100",
+      "required": ["courage", "temper", "pride"],
+      "additionalProperties": false,
+      "properties": {
+        "courage": { "type": "integer", "minimum": -100, "maximum": 100, "description": "勇(+)/怯(-)" },
+        "temper":  { "type": "integer", "minimum": -100, "maximum": 100, "description": "躁(+)/静(-)" },
+        "pride":   { "type": "integer", "minimum": -100, "maximum": 100, "description": "傲(+)/谦(-)" }
+      }
+    },
+    "realm": {
+      "enum": ["lianqi", "zhuji", "jindan", "yuanying", "huashen", "dujie", "dacheng"],
+      "description": "境界：炼气→筑基→金丹→元婴→化神→渡劫→大乘"
+    },
+    "origin": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 2000,
+      "description": "降世故事（缔约时的来历经历，biography 起点）"
+    },
+    "mystery": {
+      "type": "string",
+      "maxLength": 500,
+      "description": "血脉之谜（隐藏身世线索，随境界解锁）"
+    },
+    "spirit_stones": {
+      "type": "integer",
+      "minimum": 0,
+      "default": 100,
+      "description": "灵石余额（初始 100，仅 bot 可改）"
+    },
+    "exp": {
+      "type": "integer",
+      "minimum": 0,
+      "default": 0,
+      "description": "功力（仅 bot 可改）"
+    },
+    "created_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": false
+}
