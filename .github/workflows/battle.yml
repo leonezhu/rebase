@@ -40,6 +40,8 @@ jobs:
 
       - name: 读取双方灵籍
         id: beasts
+        env:
+          GH_TOKEN: ${{ github.token }}
         run: |
           C="${{ steps.parse.outputs.challenger }}"
           D="${{ steps.parse.outputs.defender }}"
