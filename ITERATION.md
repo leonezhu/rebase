@@ -59,7 +59,7 @@
 ### ⚠️ 发现（记录不改设计）：入账链路静默丢账风险
 - battle.yml/explore.yml 的入账步骤 `git push || true`、`gh pr create || true`、`gh pr merge || true` 全部吞错：若并发两次结算同兽（如斗法奖励与探索入账同时跑），push 被拒后评论故事已贴、灵石却没落库——玩家看到余额承诺与账本不符
 - 建议（留主会话定夺）：入账 push 失败时改为「重试 rebase 后再推一次，仍失败则 edit 已贴评论声明"天道入账受阻，请评论 /explore 重试"」，把静默失败升级为可见失败
-- 另：explore 每日限额靠 `git log --since="today 00:00"`（runner 本地时区）grep commit message 查重，TZ=Asia/Shanghai 前缀在 `git log --since` 语法下行为存疑，建议改用固定 UTC 界线或按 issue 评论时间戳查重
+- ~~explore 每日限额靠 `git log --since="today 00:00"`（runner 本地时区）~~ → ✅ 2026-10-14 打磨轮实锤并修复：该 approxidate 语法实测返回空集（限额恒 0 = 每日 3 次永不触发），改按 committer 上海本地日期精确过滤（--date=format-local），真灵籍与注入边界样本（跨日/+负时区）验证通过
 
 ## 卡住登记
 

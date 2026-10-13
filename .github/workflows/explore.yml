@@ -34,8 +34,11 @@ jobs:
               -b "@${EXPLORER} 你尚未缔约（monsters/$EXPLORER/beast.yaml 不存在），秘境之门不识你的气息。先去 README 缔约领养一只灵兽吧。"
             exit 1
           fi
-          # 每日限额：查当日已入账的探索次数（bot commit 信息含"秘境探索"）
-          TODAY=$(TZ=Asia/Shanghai git log --since="today 00:00" --format=%s -- "$F" | grep -c "秘境探索" || true)
+          # 每日限额：查当日已入账的探索次数（bot commit 信息含"秘境探索"）。
+          # 按 committer 上海本地日期精确过滤——不用 git --since="today 00:00"：
+          # 实测 approxidate 对该语法解析不可靠（返回空集），会导致每日 3 次限额永不触发
+          TODAY=$(TZ=Asia/Shanghai git log --format="%cd|%s" --date=format-local:"%Y-%m-%d" -- "$F" \
+            | grep "^$(TZ=Asia/Shanghai date +%Y-%m-%d)|" | grep -c "秘境探索" || true)
           if [ "${TODAY:-0}" -ge 3 ]; then
             gh issue comment $ISSUE -R leonezhu/rebase \
               -b "@${EXPLORER} 今日秘境已探索 ${TODAY} 次，灵兽灵力耗竭，明日再来（每日限 3 次）。"
