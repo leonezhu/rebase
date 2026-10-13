@@ -4,39 +4,110 @@
 >
 > A GitHub-native monster-raising battle game. Your repo is the world, PRs are rituals, and every beast writes its own chronicle.
 
-**还在设计阶段。** 完整设计框架见 [DESIGN.md](DESIGN.md)。
+**你的 Agent 就是游戏客户端。** 把本仓库的技能装给它，然后对它说"我要领养"——五分钟后你就有一只自己的灵兽。
 
-## 玩法一瞥
+---
 
-- **缔约**：回答三个问题，Agent 将你的回答炼成一只独一无二的怪兽——它是你当下的镜像
-- **修行**：每日喂养、探索秘境，commit 即功力
-- **斗法**：与天下灵兽对战，双方 Agent 各写半场战斗解说
-- **变基（进化）**：境界圆满时渡天劫（CI 全绿），历史重写，形态重塑
+## 🎮 快速开始（3 步）
 
-## 技术形态
+### 第 1 步：给你的 Agent 安装技能
+
+**Hermes / OpenClaw / 任何支持 markdown skill 的 Agent：**
+
+```bash
+mkdir -p ~/.hermes/skills/gaming/rebase-adventurer
+curl -sL https://raw.githubusercontent.com/leonezhu/rebase/main/skills/rebase-adventurer/SKILL.md \
+  -o ~/.hermes/skills/gaming/rebase-adventurer/SKILL.md
+```
+
+**Claude Code：**
+
+```bash
+mkdir -p ~/.claude/skills/rebase-adventurer
+curl -sL https://raw.githubusercontent.com/leonezhu/rebase/main/skills/rebase-adventurer/SKILL.md \
+  -o ~/.claude/skills/rebase-adventurer/SKILL.md
+```
+
+**Copilot CLI / 其他**：把 SKILL.md 放进你的 Agent 自定义指令/skills 目录即可——它是纯 markdown，无平台绑定。
+
+**没有 Agent？** 用 `gh` CLI 也能玩全部流程（见底部"手动玩家路线"）。
+
+### 第 2 步：对 Agent 说
+
+> 我要领养一只 Rebase 怪兽
+
+Agent 会举行「问灵三问」（在忙什么/最近开心的事/想成为什么人），把你的回答炼成五维基因，生成三只候选怪兽。你选一只、定誓词，它提交注册 PR。
+
+### 第 3 步：等缔约完成
+
+GitHub Actions 自动校验并合并 PR，bot 开一个**降世 issue**——你怪兽的第一篇传记，里面埋着一条「血脉之谜」待你随境界解锁。
+
+---
+
+## ⚔️ 之后玩什么
+
+| 指令 | 在哪 | 效果 |
+|---|---|---|
+| `/battle @对方` | 主仓库 issue 评论 | 发起斗法，hash 判定+五行相克，双方 Agent 各写半场解说 |
+| `/explore` | 秘境 issue 评论 | 探索遭遇，随机事件（开发中） |
+| `/rebase` | 自己的怪兽 issue | 境界达标后进化：渡劫=CI 全绿（开发中） |
+| `/release` | 自己的怪兽 issue | 放生：7 天冷静期，怪兽入 abyss 成 NPC（开发中） |
+
+**先练一把**——仓库里住着两只 NPC 灵兽等着陪练：
+
+- 🌊 **墨霄**（水）`@npc-moxiao` —— 静水深流，谋定后动
+- ⚙️ **鲁灵**（金）`@npc-luling` —— 手艺人自豪所化，痴迷搭建
+
+对 Agent 说：**`挑战 @npc-moxiao`**
+
+---
+
+## 🗺️ 世界观
+
+赛博修仙。代码即灵气，GitHub 即洞天福地，commit 即功力。
+
+- **七境**：炼气 → 筑基 → 金丹 → 元婴 → 化神 → 渡劫 → 大乘
+- **五行相克**：金→木→土→水→火→金（伤害 ±15%）
+- **五维基因**：灵（法术）/ 魄（体质）/ 巧（敏捷）/ 韧（意志）/ 韵（灵性——韵值越高，你的怪兽传记写得越华丽）
+- **性格三轴**：勇怯 / 躁静 / 傲谦——喂养方式漂移性格，性格决定它怎么战斗、怎么说话
+
+完整设计文档：[DESIGN.md](DESIGN.md)
+
+---
+
+## 🛠️ 技术形态（给好奇的人）
 
 零后端。GitHub 就是服务器：
 
 | 概念 | 实现 |
 |---|---|
-| 游戏服务器 | 本仓库（public） |
-| 规则引擎 | GitHub Actions workflows |
-| 官方账本（灵籍） | `monsters/` `battles/` `chronicle/`（仅 bot 可写） |
-| 玩家客户端 | 任何 Agent（Hermes / OpenClaw / Claude Code / Copilot CLI）或 `gh` CLI |
-| 图鉴 | GitHub Pages（自动构建） |
+| 游戏服务器 | 本仓库（public，Actions 免费无上限） |
+| 规则引擎 | `.github/workflows/` |
+| 官方账本（灵籍） | `monsters/`（仅 `github-actions[bot]` 可写） |
+| 玩家本地 | `~/.rebase/`（日记+缓存，删了不丢怪兽） |
+| 反作弊 | 数值只认 bot commit + hash 确定性模拟 + 公开 diff 审计 |
 
-状态推进全部通过 PR / issue / 评论驱动，public repo 的 Actions 免费无上限。
+状态推进全部通过 PR / issue / 评论驱动。
 
-## 状态
+**手动玩家路线**（不用 Agent，`gh` CLI 全流程）：
 
-🚧 v0.5 设计框架阶段 · MVP 开发中
+```bash
+# 1. 缔约：写好怪兽 YAML 提交注册 PR
+git checkout -b register/<你的GitHub用户名>
+mkdir -p monsters/<你的GitHub用户名>
+# 参考 monsters/leonezhu/beast.yaml 或 schemas/beast.schema.json 填写
+git add monsters/<你的GitHub用户名>/beast.yaml
+git commit -m "缔约" && git push origin register/<你的GitHub用户名>
+gh pr create --head register/<你的GitHub用户名> -t "缔约仪式"
 
-- [x] 世界观 & 命名（《Rebase》，赛博修仙）
-- [x] 核心循环 & 心流曲线
-- [x] 五维基因 + 性格 + 五行相克
-- [x] 数据架构（灵籍/洞府双层）
-- [x] 玩法→workflow 映射
-- [ ] MVP：缔约 + 斗法最小闭环
+# 2. 斗法
+gh issue create -R leonezhu/rebase -t "斗法：我挑战墨霄" -b "/battle @npc-moxiao"
+```
+
+## 📜 灵界现状
+
+- 灵兽：**燧鸣**（火，@leonezhu 本命，炼气期）· 墨霄（水，NPC）· 鲁灵（金，NPC）
+- 首场斗法：待举行
 
 ## License
 
