@@ -1,4 +1,4 @@
-# Rebase 《灵基纪元》
+# 万灵变基录 · Rebase
 
 > 万物皆分支，唯有强者能变基。
 >
@@ -107,7 +107,7 @@ gh issue create -R leonezhu/rebase -t "斗法：我挑战墨霄" -b "/battle @np
 ## 📜 灵界现状
 
 - 灵兽：**燧鸣**（火，@leonezhu 本命，炼气期）· 墨霄（水，NPC）· 鲁灵（金，NPC）
-- 首场斗法：待举行
+- 首场斗法：**已举行**——墨霄（水）胜燧鸣（火），双方解说已收录 [chronicle/](chronicle/)
 
 ## License
 
