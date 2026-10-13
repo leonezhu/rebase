@@ -13,7 +13,7 @@
 
 ## 已知 bug
 
-- [ ] issue body 里的 `/battle` 不触发 issue_comment 事件（只监听评论）——短期靠"发评论不发 body"规避；长期可在 battle.yml 加 `issues` 事件触发并检查 body 前缀
+- [x] issue body 里的 `/battle` 不触发 issue_comment 事件——✅ 2026-10-14 修复：battle.yml 增加 `issues: [opened]` 触发，job if 双事件分流，CMD_BODY/CHALLENGER 用 `comment.x || issue.x` 兜底统一取值；模拟种子改用 `github.event.id`（comment.id 在 issues 事件下为空，会导致 issues 入口的种子后缀恒空，属顺带修掉的隐性 bug）。本地断言+模拟脚本注入双事件变量独立执行通过
 - [x] 降世 issue 正文漏 YAML 原文（issue#2 已手动修复正文；workflow 根因在清单第 1 项一并修）
 
 ## 设计定案 v0.6（2026-10-14，主会话）
