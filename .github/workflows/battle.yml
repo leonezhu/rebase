@@ -7,6 +7,10 @@ on:
     types: [opened]
   issue_comment:
     types: [created]
+  # 解说 PR 合并后检查是否双方半场齐了 → 打「斗法/已收录」终态
+  pull_request:
+    types: [closed]
+    branches: [main]
 
 permissions:
   contents: write
@@ -132,7 +136,7 @@ jobs:
                 -b "此战已由天道判定完毕，胜负已分，不入重赛。想再战请另开新 issue。"
               exit 1 ;;
           esac
-          gh issue edit ${{ github.event.issue.number }} -R leonezhu/rebase --add-label "斗法" --add-label "斗法/已判" || true
+          gh issue edit ${{ github.event.issue.number }} -R leonezhu/rebase --add-label "斗法" --add-label "斗法/已判" --remove-label "斗法/待战" || true
 
           WINNER=$(python3 -c "import json;print(json.load(open('battle_result.json'))['winner'])")
           LOSER=$(python3 -c "import json;print(json.load(open('battle_result.json'))['loser'])")
@@ -177,3 +181,44 @@ jobs:
             -t "斗法奖励入账 #${{ github.event.issue.number }}" -b "bot 结算，自动合并" || true
           gh pr edit battle-log/${{ github.event.issue.number }} -R leonezhu/rebase --add-label "game/bot" || true
           gh pr merge battle-log/${{ github.event.issue.number }} --merge || true
+
+  # ===== 斗法收录终态：解说 PR 合并后，双方半场齐 → issue 打「斗法/已收录」 =====
+  chronicle-seal:
+    # 解说 PR 标题形如「📝 斗法解说: 燧鸣半场(胜方) issue#3」或「issue#3」（rebase-adventurer skill 约定），从分支名兜底 battle/<issue>-<owner>
+    if: >-
+      github.event.pull_request.merged == true &&
+      (startsWith(github.event.pull_request.title, '📝 斗法解说') || startsWith(github.head_ref, 'battle/'))
+    runs-on: ubuntu-latest
+    steps:
+      - name: 从分支名/标题提取 issue 号
+        id: num
+        run: |
+          N=$(echo "${{ github.head_ref }}" | grep -oP '(?<=battle/)\d+' | head -1)
+          [ -z "$N" ] && N=$(echo "${{ github.event.pull_request.title }}" | grep -oP '(?<=issue#)\d+' | head -1)
+          if [ -z "$N" ]; then
+            echo "非斗法解说 PR，跳过收录检查"; exit 0
+          fi
+          echo "issue=$N" >> $GITHUB_OUTPUT
+
+      - name: 双方半场齐 → 打「斗法/已收录」终态
+        if: steps.num.outputs.issue != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          N: ${{ steps.num.outputs.issue }}
+        run: |
+          # issue 上已有「已收录」则幂等跳过
+          CUR=$(gh issue view $N -R leonezhu/rebase --json labels --jq "[.labels[].name] | join(\",\")" 2>/dev/null || echo "")
+          case ",$CUR," in
+            *",斗法/已收录,"*) echo "已收录过，跳过"; exit 0 ;;
+          esac
+          # chronicle/ 下两个半场文件 → 已收录
+          git fetch origin main --depth 1 2>/dev/null || true
+          HALF=$(git ls-tree -r --name-only origin/main -- chronicle/ | grep -c "issue${N}-" || true)
+          if [ "${HALF:-0}" -ge 2 ]; then
+            gh issue edit $N -R leonezhu/rebase --add-label "斗法/已收录" --remove-label "斗法/已判" || true
+            gh issue comment $N -R leonezhu/rebase \
+              -b "📖 双方半场解说均已收录进 chronicle/（官方传记）。此战落幕，成败皆入史册。（$HALF 篇解说入册）"
+            echo "✓ issue#$N 已打终态「斗法/已收录」"
+          else
+            echo "chronicle/ 仅 ${HALF:-0} 篇，半场未齐，继续等待"
+          fi
