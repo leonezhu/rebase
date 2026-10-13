@@ -46,6 +46,21 @@
 - register.yml 开降世 issue 时打「降世」；battle.yml 贴战报时给 issue 打「斗法」+状态子标签
 - README 指令表更新 issue 导航说明
 
+## 打磨模式（2026-10-14 03:40+，清单全完成后全流程演练）
+
+### 演练结果（全部通过）
+- 5 个 workflow YAML 语法全过；3 册灵籍 schema + owner/路径一致性全过
+- explore.yml 结算脚本从 workflow 原样提取执行：遭遇抽取/保底不为负/只动 spirit_stones+exp ✓；万次抽样分布与权重偏差 <15% ✓
+- battle.yml hash 模拟原样提取执行：胜负/五行修正/境界碾压 override 逻辑 ✓；模拟本身不改灵籍 ✓
+- register.yml 降世故事生成原样提取执行：多行 origin 完整入正文（清单1回归）✓
+- catalog 3 册渲染字段齐备 ✓
+- 线上 failure 记录 run#38440895133 已查明：Pages 未启用时的一次性引导失败（同分钟启用后 dispatch 重跑成功），非活性 bug
+
+### ⚠️ 发现（记录不改设计）：入账链路静默丢账风险
+- battle.yml/explore.yml 的入账步骤 `git push || true`、`gh pr create || true`、`gh pr merge || true` 全部吞错：若并发两次结算同兽（如斗法奖励与探索入账同时跑），push 被拒后评论故事已贴、灵石却没落库——玩家看到余额承诺与账本不符
+- 建议（留主会话定夺）：入账 push 失败时改为「重试 rebase 后再推一次，仍失败则 edit 已贴评论声明"天道入账受阻，请评论 /explore 重试"」，把静默失败升级为可见失败
+- 另：explore 每日限额靠 `git log --since="today 00:00"`（runner 本地时区）grep commit message 查重，TZ=Asia/Shanghai 前缀在 `git log --since` 语法下行为存疑，建议改用固定 UTC 界线或按 issue 评论时间戳查重
+
 ## 卡住登记
 
 （暂无）
