@@ -1,8 +1,10 @@
 name: Battle (斗法)
-# 触发：issue 评论 /battle @对方
+# 触发：issue 评论 /battle @对方，或新建 issue 正文以 /battle @对方 开头
 # hash 确定性模拟 → bot 贴结果 → 双方 Agent 各自认领半场解说 PR
 
 on:
+  issues:
+    types: [opened]
   issue_comment:
     types: [created]
 
@@ -13,18 +15,22 @@ permissions:
 
 jobs:
   battle:
-    if: startsWith(github.event.comment.body, '/battle ')
+    # 评论或 issue 正文均可触发（正文以 /battle 开头时也受理）
+    if: >-
+      (github.event_name == 'issue_comment' && startsWith(github.event.comment.body, '/battle ')) ||
+      (github.event_name == 'issues' && startsWith(github.event.issue.body, '/battle '))
+    env:
+      # 两种事件统一取指令正文与挑战者
+      CMD_BODY: ${{ github.event.comment.body || github.event.issue.body }}
+      CHALLENGER: ${{ github.event.comment.user.login || github.event.issue.user.login }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
       - name: 解析对战双方
         id: parse
-        env:
-          BODY: ${{ github.event.comment.body }}
-          CHALLENGER: ${{ github.event.comment.user.login }}
         run: |
-          DEFENDER=$(echo "$BODY" | grep -oP '(?<=/battle @)[a-zA-Z0-9-]+' | head -1)
+          DEFENDER=$(echo "$CMD_BODY" | grep -oP '(?<=/battle @)[a-zA-Z0-9-]+' | head -1)
           if [ -z "$DEFENDER" ]; then
             echo "::error::用法: /battle @对方驯兽师"
             exit 1
@@ -63,8 +69,8 @@ jobs:
               return d
 
           a, b = load(C), load(D)
-          # 种子：issue id + 评论 id + 双方名 → 双方都不可控
-          seed = f"{C}|{D}|${{ github.event.issue.number }}|${{ github.event.comment.id }}"
+          # 种子：issue id + 触发事件 id + 双方名 → 双方都不可控（comment.id 在 issues 事件下为空，故用 event.id）
+          seed = f"{C}|{D}|${{ github.event.issue.number }}|${{ github.event.id }}"
           rng = hashlib.sha256(seed.encode()).hexdigest()
 
           ELEM_BEATS = {'metal':'wood','wood':'earth','earth':'water','water':'fire','fire':'metal'}
