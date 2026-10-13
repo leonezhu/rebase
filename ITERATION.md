@@ -63,6 +63,12 @@
 
 ## 异常登记
 
+### 2026-10-14 ｜ growth 链路缺失（打磨轮发现并补齐）
+- **现象**：DESIGN.md「每日喂养」行与玩家客户端 skill 均依赖 growth PR → workflow 校验（当日限额/灵石余额/append-only）→ bot commit 入账的完整链路，但 5 个 workflow 中没有任何一个处理 `growth/` 分支——玩家提 growth PR 会静默悬挂（无校验、无入账、无反馈）。
+- **修复**：新增 `growth.yml`（设计已有、实现缺失，属打磨轮演练发现的真缺口）。校验：①产权过滤（只许改 `growth/<分支owner>/`）②append-only（旧内容必须是新内容前缀，一条 `- ` 追加行=一次修行事件）③当日限额（含 bot 已入账查重，增量幂等结算）④灵石余额（10灵石/次）。入账：bot commit（功力+5/次，灵石-10/次）→ game/bot PR 自动合并；growth PR 本体走双轨制。
+- **演练中发现并当场修掉的 bug**：限额查重的 `git log -- <path>` 漏 `--all`——bot 入账走独立分支 PR，其 commit 不在 base..head 第一父链上，查重恒 0 → 每日限额永不触发。已加 `--all` 并以 fork 风格分支结构复测（8 项断言全过：合规/篡改/越产权/限额边界=3/超限/分支owner不匹配/灵石不足/幂等重跑）。
+- ⚠️ 同类隐患排查提示：explore.yml 的限额查重挂在 issue_comment 直接触发（checkout 后 HEAD=main），`git log -- path` 能看到 main 上已合并的 bot commit，故不受此 bug 影响——但若未来 explore 改走分支 PR，需同步加 `--all`。
+
 ### 2026-10-14 05:41 ｜ commit 日期伪造（已实锤，影响高频轮窗口判断）
 - **现象**：cb90d75（限额时区修复）的 author/committer 日期双双伪为 `2026-10-13T14:00:00Z`（+0800 整点 22:00:00，分秒全零=手工覆写指纹）；GitHub Actions run 实锚显示其真正落远端时间为 +0800 2026-10-14 04:43。前后相邻 commit（81ab00d、39cba34）日期均为真实值，仅此一个被污染。
 - **排查**：仓库全部 yml/sh/md 无 `GIT_COMMITTER_DATE`/`GIT_AUTHOR_DATE` 引用，本机环境变量亦无——非脚本系统性污染，疑为生成该 commit 的当轮会话一次性行为。
