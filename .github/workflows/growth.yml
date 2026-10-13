@@ -1,0 +1,193 @@
+name: Growth (修行入账)
+# 触发：growth/<owner>/* 分支的 PR（玩家 Agent 把本地 journal 的修行记录汇总提上来）
+# 校验（DESIGN.md「每日喂养」行：当日限额/灵石余额/append-only）：
+#   ① 产权过滤：只许改 growth/<分支owner>/ 下的文件
+#   ② append-only：已存在的 journal 只许追加行，不许删改（base 内容必须是 head 内容的前缀）
+#   ③ 事件计量：一条以 "- " 开头的追加行 = 一次修行事件
+#   ④ 当日限额：每兽每日至多 3 次修行（含今日已入账的 bot commit 记录查重）
+#   ⑤ 灵石余额：每次修行耗 10 灵石，余额不足整单拒绝
+# 校验通过 → bot 幂等结算（增量 = 今日事件总数 - 今日已入账次数，重跑不重复入账）：
+#   bot commit 更新 monsters/<owner>/beast.yaml（功力 +5/次，灵石 -10/次）→ bot PR(game/bot) 自动合并
+# 双轨制：growth PR 本体——主人通道自动合并；玩家通道止步 player/待审（结算不受影响）
+
+on:
+  pull_request:
+    types: [opened, synchronize, closed]
+    branches: [main]
+
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
+env:
+  COST_PER_EVENT: 10   # 每次修行耗灵石
+  EXP_PER_EVENT: 5     # 每次修行得功力
+  DAILY_LIMIT: 3       # 每兽每日修行上限
+
+jobs:
+  growth:
+    if: >-
+      startsWith(github.head_ref, 'growth/') &&
+      (github.event.action != 'closed' || github.event.pull_request.merged == true)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # ===== 分流判定 =====
+      - name: 分流判定
+        id: track
+        run: |
+          if [ "${{ github.actor }}" = "leonezhu" ]; then
+            echo "track=game" >> $GITHUB_OUTPUT
+            echo "主人通道：修行记录 PR 校验通过即自动合并"
+          else
+            echo "track=player" >> $GITHUB_OUTPUT
+            echo "玩家通道：修行记录 PR 止步待审"
+          fi
+
+      # ===== 以下校验只在 opened/synchronize 跑 =====
+      - name: 校验产权 + append-only + 限额 + 余额
+        if: github.event.action != 'closed'
+        id: settle
+        env:
+          PR: ${{ github.event.pull_request.number }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          OWNER="${GITHUB_HEAD_REF#growth/}"
+          BASE="${{ github.event.pull_request.base.sha }}"
+          HEAD="${{ github.event.pull_request.head.sha }}"
+          echo "owner=$OWNER" >> $GITHUB_OUTPUT
+
+          python3 - "$OWNER" "$BASE" "$HEAD" <<'EOF'
+          import subprocess, sys, os, yaml
+          from pathlib import Path
+
+          owner, base, head = sys.argv[1], sys.argv[2], sys.argv[3]
+          COST, EXP, LIMIT = (int(os.environ[k]) for k in ("COST_PER_EVENT", "EXP_PER_EVENT", "DAILY_LIMIT"))
+          gh_env = {**os.environ, "GH_TOKEN": os.environ["GH_TOKEN"]}
+
+          def sh(*args):
+              return subprocess.run(args, capture_output=True, text=True).stdout
+
+          def refuse(msg):
+              print(f"::error::{msg}")
+              subprocess.run(["gh", "pr", "comment", os.environ["PR"], "-R", "leonezhu/rebase", "-b", msg], env=gh_env)
+              sys.exit(1)
+
+          files = sh("git", "diff", "--name-only", base, head).split()
+
+          # ① 产权：只许改 growth/<owner>/ 下的文件
+          bad = [f for f in files if not f.startswith(f"growth/{owner}/")]
+          if bad:
+              refuse(f"🏝️ 产权结界生效：本 PR 触碰了 {owner} 领地之外的文件（{', '.join(bad)}）。growth 分支只许改 growth/{owner}/ 下的记录。")
+
+          # ② append-only：已存在文件的内容必须是新内容的前缀（只许追加行）
+          for f in files:
+              if Path(f).suffix != ".md":
+                  refuse(f"📜 只许提交 markdown 修行记录（{f} 不是 .md 文件）。")
+              old = sh("git", "show", f"{base}:{f}")
+              if old:
+                  new = Path(f).read_text(encoding="utf-8")
+                  if not new.startswith(old):
+                      refuse(f"🚫 修行记录不可篡改：{f} 存在删改（append-only）。往事已刻入石壁，只能续写新篇。")
+
+          # ③ 事件计量：一条以 "- " 开头的追加行 = 一次修行事件
+          added_events = 0
+          for f in files:
+              diff = sh("git", "diff", base, head, "--", f)
+              added_events += sum(1 for l in diff.splitlines() if l.startswith("+") and l[1:].lstrip().startswith("- ") and not l.startswith("+++"))
+
+          # 今日已入账次数（bot commit 信息含"修行"，按 committer 上海本地日期过滤）。
+          # 时区用环境变量 TZ 注入（git -c TZ= 无效）——与 explore.yml 同法。
+          # --all 必须：bot 入账走独立分支 PR，commit 不在 base..head 的第一父链上
+          def shanghai(*args):
+              return subprocess.run(args, capture_output=True, text=True,
+                                    env={**os.environ, "TZ": "Asia/Shanghai"}).stdout
+          today = shanghai("git", "log", "--all", "--format=%cd|%s",
+                           "--date=format-local:%Y-%m-%d", "--", f"monsters/{owner}/beast.yaml")
+          today_str = shanghai("date", "+%Y-%m-%d").strip()
+          settled = sum(1 for l in today.splitlines() if l.startswith(today_str + "|") and "修行" in l)
+
+          total = settled + added_events
+          if total > LIMIT:
+              refuse(f"🌅 今日修行已满：灵兽今日共修行 {total} 次，超出每日 {LIMIT} 次上限。灵力需按时辰温养，明日再来。")
+          if added_events == 0:
+              print("本次无可入账的新修行事件（可能已结算过），跳过。")
+              open(os.environ["GITHUB_OUTPUT"], "a").write("delta=0\n")
+              sys.exit(0)
+
+          # ⑤ 灵石余额
+          bf = Path(f"monsters/{owner}/beast.yaml")
+          if not bf.exists():
+              refuse(f"🏝️ 找不到灵籍 monsters/{owner}/beast.yaml——先缔约，再修行。")
+          d = yaml.safe_load(bf.read_text(encoding="utf-8"))
+          balance = d.get("spirit_stones", 100)
+          cost = added_events * COST
+          if balance < cost:
+              refuse(f"💰 灵石不足：{added_events} 次修行需 {cost} 灵石，灵兽囊中仅余 {balance}。先去秘境探索（评论 /explore）攒些灵石吧。")
+
+          print(f"delta={added_events}")
+          print(f"结算增量：{added_events} 次修行，耗灵石 {cost}，得功力 {added_events * EXP}")
+          open(os.environ["GITHUB_OUTPUT"], "a").write(f"delta={added_events}\n")
+          EOF
+
+      # ===== game 通道：修行记录 PR 自动合并 =====
+      - name: 自动合并修行记录 PR（仅主人通道）
+        if: github.event.action != 'closed' && steps.track.outputs.track == 'game'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          gh pr merge "$PR" --merge --subject "修行记录收录"
+
+      # ===== player 通道：止步待审 =====
+      - name: 打待审标签 + 长老喊话（仅玩家通道）
+        if: github.event.action != 'closed' && steps.track.outputs.track == 'player'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          SENDER: ${{ github.actor }}
+        run: |
+          gh pr edit "$PR" -R leonezhu/rebase --add-label "player/待审"
+          gh pr comment "$PR" -R leonezhu/rebase \
+            -b "✨ 修行记录校验通过（append-only ✓ 限额 ✓ 灵石余额 ✓）。@${SENDER} 的修行已记录在案，等待驯兽师长老过目归档。"
+
+      # ===== bot 幂等结算：功力+灵石入账 =====
+      - name: bot 结算入账（增量幂等）
+        if: github.event.action != 'closed' && steps.settle.outputs.delta > 0
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          OWNER="${{ steps.settle.outputs.owner }}"
+          DELTA="${{ steps.settle.outputs.delta }}"
+          COST=$((DELTA * ${{ env.COST_PER_EVENT }}))
+          EXP=$((DELTA * ${{ env.EXP_PER_EVENT }}))
+
+          pip install pyyaml --quiet
+          python3 - "$OWNER" "$DELTA" "$COST" "$EXP" <<'EOF'
+          import sys, yaml
+          from pathlib import Path
+          owner, delta, cost, exp = sys.argv[1], int(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4])
+          p = Path(f"monsters/{owner}/beast.yaml")
+          d = yaml.safe_load(p.read_text(encoding="utf-8"))
+          d["spirit_stones"] = max(0, d.get("spirit_stones", 100) - cost)
+          d["exp"] = d.get("exp", 0) + exp
+          p.write_text(yaml.safe_dump(d, allow_unicode=True, sort_keys=False), encoding="utf-8")
+          print(f"{d['name']}：功力 +{exp}，灵石 -{cost}，余额 {d['spirit_stones']}")
+          EOF
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          BRANCH="growth-log/${OWNER}-${{ github.run_id }}"
+          git checkout -b "$BRANCH"
+          git add "monsters/$OWNER/beast.yaml"
+          git commit -m "修行: $OWNER 共${DELTA}次 灵石-${COST} 功力+${EXP}"
+          git push origin "$BRANCH" || true
+          gh pr create -R leonezhu/rebase --head "$BRANCH" --base main \
+            -t "修行入账 · $OWNER (#$PR)" -b "bot 结算，自动合并" || true
+          gh pr edit "$BRANCH" -R leonezhu/rebase --add-label "game/bot" || true
+          gh pr merge "$BRANCH" --merge || true
