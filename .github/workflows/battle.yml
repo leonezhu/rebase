@@ -46,6 +46,7 @@ jobs:
             fi
           done
           echo "✓ 双方灵籍均存在"
+          gh issue edit ${{ github.event.issue.number }} -R leonezhu/rebase --add-label "斗法" --add-label "斗法/待战" || true
 
       - name: hash 确定性模拟
         id: sim
@@ -115,6 +116,16 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
+          # label + replay-guard
+          CUR=$(gh issue view ${{ github.event.issue.number }} -R leonezhu/rebase --json labels --jq "[.labels[].name] | join(",")")
+          case ",$CUR," in
+            *",斗法/已判,"*|*",斗法/已收录,"*)
+              gh issue comment ${{ github.event.issue.number }} -R leonezhu/rebase \
+                -b "此战已由天道判定完毕，胜负已分，不入重赛。想再战请另开新 issue。"
+              exit 1 ;;
+          esac
+          gh issue edit ${{ github.event.issue.number }} -R leonezhu/rebase --add-label "斗法" --add-label "斗法/已判" || true
+
           WINNER=$(python3 -c "import json;print(json.load(open('battle_result.json'))['winner'])")
           LOSER=$(python3 -c "import json;print(json.load(open('battle_result.json'))['loser'])")
           W_BEAST=$(grep '^name:' monsters/$WINNER/beast.yaml | sed 's/name: *//' | tr -d '"')
