@@ -1,0 +1,19 @@
+name: 鲁灵
+owner: npc-luling
+element: metal
+genes:
+  ling: 65
+  po: 70
+  qiao: 90
+  ren: 55
+  yun: 60
+personality:
+  courage: 30
+  temper: 10
+  pride: 45
+origin: 从 200+ 个编辑器里攒出的集体手艺人自豪所化，机关为骨、灵光为皮。尾巴九节可拆解重组——它对'怎么搭'的兴趣永远大于'搭什么'。灵界 NPC，专治各种手痒。
+mystery: 【血脉之谜】它的第九节尾骨上刻着一行小字，风格不属于任何已知驯兽师。
+realm: lianqi
+spirit_stones: 100
+exp: 0
+created_at: '2026-10-14T01:00:00+08:00'
