@@ -1,0 +1,154 @@
+name: Catalog (灵籍图鉴)
+# 触发：main push → 扫描 monsters/*/beast.yaml → 生成玄幻暗色静态 HTML → 部署 GitHub Pages
+# 图鉴 = 玩家可见的全服灵籍总览（主页 index.html）
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'monsters/**'
+      - '.github/workflows/catalog.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  catalog:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 扫描灵籍生成图鉴 HTML
+        run: |
+          pip install pyyaml --quiet
+          python3 - <<'EOF'
+          import yaml, json, pathlib, html, datetime
+
+          REALM_CN = {
+              "lianqi": "炼气", "zhuji": "筑基", "jindan": "金丹",
+              "yuanying": "元婴", "huashen": "化神", "dujie": "渡劫", "dacheng": "大乘",
+          }
+          ELEMENT_CN = {"metal": "金", "wood": "木", "earth": "土", "water": "水", "fire": "火"}
+          ELEMENT_COLOR = {"metal": "#d4af37", "wood": "#6abf69", "earth": "#c98a4b",
+                           "water": "#5aa7d4", "fire": "#e05a4e"}
+          ELEMENT_GLYPH = {"metal": "☱", "wood": "☴", "earth": "☷", "water": "☵", "fire": "☲"}
+
+          def power_of(d):
+              g = d.get('genes', {})
+              return round(g.get('ling', 0) * 1.5 + g.get('po', 0) * 1.2 + g.get('qiao', 0)
+                           + g.get('ren', 0) * 0.8 + g.get('yun', 0) * 0.5)
+
+          def trait(v, pos, neg):
+              return pos if v >= 0 else neg
+
+          cards = []
+          beasts = sorted(pathlib.Path('monsters').glob('*/beast.yaml'))
+          for f in beasts:
+              d = yaml.safe_load(f.read_text(encoding='utf-8'))
+              if not d:
+                  continue
+              el = d.get('element', 'fire')
+              color = ELEMENT_COLOR.get(el, '#aaa')
+              p = d.get('personality', {})
+              traits = ' · '.join([
+                  trait(p.get('courage', 0), '勇', '怯'),
+                  trait(p.get('temper', 0), '躁', '静'),
+                  trait(p.get('pride', 0), '傲', '谦'),
+              ])
+              g = d.get('genes', {})
+              gene_bars = ''.join(
+                  f"<div class='gene'><span>{label}</span>"
+                  f"<div class='bar'><i style='width:{g.get(key,0)}%'></i></div>"
+                  f"<b>{g.get(key,0)}</b></div>"
+                  for key, label in [('ling','灵'),('po','魄'),('qiao','巧'),('ren','韧'),('yun','韵')]
+              )
+              origin = html.escape((d.get('origin') or '').strip())
+              mystery = html.escape((d.get('mystery') or '').strip())
+              card = f"""
+          <article class='card el-{el}'>
+            <div class='card-head'>
+              <span class='glyph'>{ELEMENT_GLYPH.get(el,'?')}</span>
+              <div>
+                <h2>{html.escape(d.get('name','?'))}</h2>
+                <p class='sub'>@{html.escape(d.get('owner','?'))} · {REALM_CN.get(d.get('realm'),'?')}期 ·
+                  <span style='color:{color}'>{ELEMENT_CN.get(el,'?')}行</span></p>
+              </div>
+            </div>
+            <div class='stats'>战力 <b>{power_of(d)}</b> · 灵石 {d.get('spirit_stones',100)} · 功力 {d.get('exp',0)} · 性格 {traits}</div>
+            <div class='genes'>{gene_bars}</div>
+            <details><summary>降世故事</summary><p>{origin}</p></details>
+            {'<details class="mystery"><summary>血脉之谜（未解）</summary><p>' + mystery + '</p></details>' if mystery else ''}
+          </article>"""
+              cards.append(card)
+
+          now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8)))
+          page = f"""<!DOCTYPE html>
+          <html lang="zh-CN">
+          <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1">
+          <title>万灵变基录 · 灵籍图鉴</title>
+          <style>
+            :root {{ --bg:#0b0e14; --panel:#131826; --line:#232b3f; --text:#c9d1e0; --dim:#7a86a0; }}
+            * {{ margin:0; padding:0; box-sizing:border-box; }}
+            body {{ background:var(--bg); color:var(--text);
+                   font-family:"Noto Serif SC",serif; line-height:1.7; padding:3rem 1rem; }}
+            header {{ text-align:center; margin-bottom:2.5rem; }}
+            header h1 {{ font-size:2rem; letter-spacing:.35em; color:#e8d5a3; }}
+            header p {{ color:var(--dim); margin-top:.5rem; font-size:.9rem; }}
+            main {{ max-width:64rem; margin:0 auto; display:grid;
+                    grid-template-columns:repeat(auto-fill,minmax(19rem,1fr)); gap:1.25rem; }}
+            .card {{ background:var(--panel); border:1px solid var(--line); border-radius:.75rem;
+                     padding:1.25rem; transition:transform .2s, box-shadow .2s; }}
+            .card:hover {{ transform:translateY(-3px); box-shadow:0 8px 24px rgba(0,0,0,.5); }}
+            .el-fire {{ border-top:3px solid {ELEMENT_COLOR['fire']}; }}
+            .el-water {{ border-top:3px solid {ELEMENT_COLOR['water']}; }}
+            .el-metal {{ border-top:3px solid {ELEMENT_COLOR['metal']}; }}
+            .el-wood {{ border-top:3px solid {ELEMENT_COLOR['wood']}; }}
+            .el-earth {{ border-top:3px solid {ELEMENT_COLOR['earth']}; }}
+            .card-head {{ display:flex; gap:.75rem; align-items:center; }}
+            .glyph {{ font-size:2rem; opacity:.85; }}
+            h2 {{ font-size:1.3rem; color:#f0e6d0; }}
+            .sub {{ color:var(--dim); font-size:.85rem; }}
+            .stats {{ margin:.9rem 0; font-size:.88rem; color:var(--dim); }}
+            .stats b {{ color:#e8d5a3; }}
+            .gene {{ display:grid; grid-template-columns:1.5rem 1fr 2rem; gap:.4rem;
+                     align-items:center; font-size:.8rem; margin:.15rem 0; }}
+            .bar {{ background:#0b0e14; border:1px solid var(--line); border-radius:99px; height:.5rem; }}
+            .bar i {{ display:block; height:100%; border-radius:99px;
+                      background:linear-gradient(90deg,#5aa7d4,#e8d5a3); }}
+            details {{ margin-top:.7rem; font-size:.85rem; border-top:1px dashed var(--line); padding-top:.6rem; }}
+            summary {{ cursor:pointer; color:var(--dim); }}
+            details p {{ margin-top:.5rem; color:var(--text); white-space:pre-wrap; }}
+            .mystery summary {{ color:#8a6fb0; }}
+            footer {{ text-align:center; color:var(--dim); font-size:.8rem; margin-top:3rem; }}
+          </style>
+          </head>
+          <body>
+          <header>
+            <h1>万 灵 变 基 录</h1>
+            <p>万物皆分支，唯有强者能变基 —— 全服灵籍 {len(beasts)} 册</p>
+          </header>
+          <main>{''.join(cards)}</main>
+          <footer>图鉴随 main 分支自动重铸 · 最近更新 {now:%Y-%m-%d %H:%M}（北京时间）</footer>
+          </body>
+          </html>"""
+          out = pathlib.Path('_pages'); out.mkdir(exist_ok=True)
+          (out / 'index.html').write_text(page, encoding='utf-8')
+          print(f"✓ 图鉴生成：{len(beasts)} 册灵籍")
+          EOF
+
+      - name: 上传 Pages 产物
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: _pages
+
+      - name: 部署 GitHub Pages
+        uses: actions/deploy-pages@v4

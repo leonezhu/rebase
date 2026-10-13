@@ -84,33 +84,35 @@ jobs:
           PR: ${{ github.event.pull_request.number }}
           BRANCH: ${{ github.head_ref }}
         run: |
-          # 提取怪兽信息
+          # 提取怪兽信息（python yaml 解析，避免 awk/grep 对多行值不健壮）
           BEAST_FILE=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | grep beast.yaml | head -1)
-          NAME=$(grep '^name:' $BEAST_FILE | sed 's/name: *"\{0,1\}\([^"]*\)\\"\{0,1\}/\1/' | tr -d '"')
-          ELEMENT=$(grep '^element:' $BEAST_FILE | awk '{print $2}')
-          OWNER=$(grep '^owner:' $BEAST_FILE | awk '{print $2}')
-          ORIGIN=$(awk '/^origin:/,0' $BEAST_FILE | sed '1s/origin: *//' | head -c 800)
+          python3 - "$BEAST_FILE" "$GITHUB_ENV" <<'EOF'
+          import yaml, sys, pathlib
 
-          case $ELEMENT in
-            metal) EL_CN="金" ;; wood) EL_CN="木" ;; earth) EL_CN="土" ;; water) EL_CN="水" ;; fire) EL_CN="火" ;;
-            *) EL_CN="?" ;;
-          esac
+          data = yaml.safe_load(pathlib.Path(sys.argv[1]).read_text(encoding='utf-8'))
+          el_map = {'metal': '金', 'wood': '木', 'earth': '土', 'water': '水', 'fire': '火'}
 
-          MERGE_RESPONSE=$(gh pr merge $PR --merge --subject "缔约完成：${NAME} 降世" 2>&1) || true
+          body = "## 缔约成立\n\n"
+          body += f"**{data['name']}** 已入灵籍，成为 @{data['owner']} 的本命灵兽。\n\n"
+          body += "### 降世故事\n\n"
+          body += data['origin'].strip() + "\n"
+          if data.get('mystery'):
+              body += "\n> " + data['mystery'].strip() + "\n"
+          body += "\n---\n\n"
+          body += "🎮 指令：评论 `/battle @对方驯兽师` 发起斗法 · `/explore` 探索秘境\n"
 
-          # 开降世 issue
+          pathlib.Path('/tmp/issue_body.md').write_text(body, encoding='utf-8')
+          # 多行安全写法：heredoc 定界符写入 GITHUB_ENV
+          env = pathlib.Path(sys.argv[2]).open('a', encoding='utf-8')
+          env.write(f"BEAST_NAME<<EOF_BEAST\n{data['name']}\nEOF_BEAST\n")
+          env.write(f"BEAST_EL<<EOF_BEAST\n{el_map.get(data['element'], '?')}\nEOF_BEAST\n")
+          env.close()
+          print(f"✓ 提取成功: {data['name']} ({data['element']})")
+          EOF
+
+          MERGE_RESPONSE=$(gh pr merge $PR --merge --subject "缔约完成：${BEAST_NAME} 降世" 2>&1) || true
+
+          # 开降世 issue（body 走文件，多行内容安全）
           gh issue create -R leonezhu/rebase \
-            -t "📜 降世 · ${NAME}（${EL_CN}）" \
-            -b "## 缔约成立
-
-          **${NAME}** 已入灵籍，成为 @${OWNER} 的本命灵兽。
-
-          ### 降世故事
-
-          ${ORIGIN}
-
-          ---
-
-          *血脉之谜：它似有什么来历未明……待境界提升，自会浮现。*
-
-          🎮 指令：评论 \`/battle @对方驯兽师\` 发起斗法 · \`/explore\` 探索秘境" || true
+            -t "📜 降世 · ${BEAST_NAME}（${BEAST_EL}）" \
+            -b "$(cat /tmp/issue_body.md)" || true
