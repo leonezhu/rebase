@@ -142,4 +142,5 @@ jobs:
           git push origin "$BRANCH" || true
           gh pr create -R leonezhu/rebase --head "$BRANCH" --base main \
             -t "秘境探索入账 · $OWNER (#${{ github.event.issue.number }})" -b "bot 结算，自动合并" || true
+          gh pr edit "$BRANCH" -R leonezhu/rebase --add-label "game/bot" || true
           gh pr merge "$BRANCH" --merge || true
