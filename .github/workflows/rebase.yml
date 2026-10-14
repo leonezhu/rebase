@@ -145,7 +145,7 @@ jobs:
                   frags = mf.get('fragments', ['【封印】']*5)
                   for i in range(old_mf, new_unlocked):
                       if i < len(frags) and frags[i] == '【封印】':
-                          frags[i] = f'【待补·第{i+1}段——渡劫天雷中闪回的碎片，由驯兽师 Agent 编排后入册】'
+                          frags[i] = f'【待补·第{i+1}段——渡劫天雷中闪回的碎片，由缔约者 Agent 编排后入册】'
                   mf['fragments'] = frags
                   d['memory_fragments'] = mf
               yaml.safe_dump(d, open(F, 'w', encoding='utf-8'), allow_unicode=True, sort_keys=False)

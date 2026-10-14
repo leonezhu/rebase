@@ -21,7 +21,7 @@
     "owner": {
       "type": "string",
       "pattern": "^[a-zA-Z0-9-]{1,39}$",
-      "description": "驯兽师 GitHub 用户名"
+      "description": "缔约者 GitHub 用户名"
     },
     "element": {
       "enum": [

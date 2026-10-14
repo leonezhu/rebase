@@ -36,7 +36,7 @@ jobs:
         run: |
           DEFENDER=$(echo "$CMD_BODY" | grep -oP '(?<=/battle @)[a-zA-Z0-9-]+' | head -1)
           if [ -z "$DEFENDER" ]; then
-            echo "::error::用法: /battle @对方驯兽师"
+            echo "::error::用法: /battle @对方缔约者"
             exit 1
           fi
           echo "challenger=$CHALLENGER" >> $GITHUB_OUTPUT

@@ -8,6 +8,7 @@ on:
       - 'chronicle/**'
       - 'chronicle-index.json'
       - 'battle-chronicle.html'
+      - 'index.html'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 permissions:

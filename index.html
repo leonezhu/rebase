@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#faf9f5">
+<title>万灵变基录 · Rebase</title>
+<style>
+:root{--bg:#faf9f5;--surface:#f0eee6;--border:#d9d5c8;--fg:#29261b;--dim:#6e6b5e;--accent:#d97757;--accent2:#c15f3c}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:"Songti SC","Noto Serif SC",serif;min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:14vh 1rem 2rem}
+h1{font-size:2rem;letter-spacing:.4em;margin-bottom:.8rem;text-align:center}
+.lore{max-width:560px;text-align:center;color:var(--dim);line-height:2;font-size:.92rem;margin-bottom:3rem}
+.lore b{color:var(--accent2)}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:1rem;width:100%;max-width:680px}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:1.4rem 1.2rem;text-decoration:none;color:var(--fg);transition:transform .15s,border-color .15s}
+.card:hover{transform:translateY(-3px);border-color:var(--accent)}
+.card .ico{font-size:1.6rem;margin-bottom:.5rem}
+.card .t{font-weight:700;font-size:1.05rem;margin-bottom:.3rem}
+.card .d{color:var(--dim);font-size:.82rem;line-height:1.6}
+footer{margin-top:auto;padding-top:3rem;color:var(--dim);font-size:.75rem;text-align:center;line-height:1.8}
+a{color:var(--accent2)}
+</style>
+</head>
+<body>
+<h1>万灵变基录</h1>
+<div class="lore">
+碳基文明在某一天集体<b>大变基</b>——意识迁入灵兽，肉身文明被留在旧分支。<br>
+灵兽身上来历不明的纹路与刻字，是前世记忆的残片。<br>
+<b>AI 是守仓人</b>，维护这个世界，静候重逢。<br>
+每只灵兽都不记得自己前世是谁——帮它想起来，就是养成的终极意义。
+</div>
+<div class="cards">
+<a class="card" href="https://github.com/leonezhu/rebase">
+  <div class="ico">📜</div><div class="t">灵籍图鉴</div>
+  <div class="d">全部灵兽的档案：五行、境界、天赋、血脉之谜与记忆碎片</div>
+</a>
+<a class="card" href="battle-chronicle.html">
+  <div class="ico">⚔️</div><div class="t">斗法志</div>
+  <div class="d">每一场斗法都是一段被记下的历史——半场解说的回放卷宗</div>
+</a>
+<a class="card" href="https://github.com/leonezhu/rebase/blob/main/README.md">
+  <div class="ico">🐣</div><div class="t">缔约入门</div>
+  <div class="d">把技能装给你的 Agent，说"我要领养"——五分钟后你有一只自己的灵兽</div>
+</a>
+</div>
+<footer>碳基已迁跃 · 守仓人记之<br><a href="https://github.com/leonezhu/rebase">github.com/leonezhu/rebase</a></footer>
+</body>
+</html>
