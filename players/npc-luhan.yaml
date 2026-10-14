@@ -42,7 +42,7 @@ open_loops:
 - hook: 万剑齐鸣——断剑在应和冢中某物，那东西还没找到
   planted: '2026-09-14'
   status: open
-origin: 大变基前是击剑运动员，醒来时在千剑冢的剑碑林里，手里已经握着一柄无名断剑
+origin: 醒来时在千剑冢的剑碑林里，手里已经握着一柄无名断剑
 owner: npc-luhan
 realm: jindan
 spirit: 85

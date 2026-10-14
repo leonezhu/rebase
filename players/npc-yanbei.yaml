@@ -1,6 +1,6 @@
 owner: npc-yanbei
 name: 严北岳
-origin: 大变基前是地质勘探员，醒来时在黑石荒原，第一件事是把随身罗盘的残影画在地上
+origin: 醒来时在黑石荒原，第一件事是把随身罗盘的残影画在地上——没人知道他跟了谁
 created_at: "2026-10-14T10:00:00+08:00"
 realm: jindan
 stage: cultivating
@@ -40,7 +40,7 @@ artifacts:
   - name: 罗盘残影
     grade: 下品法器
     power: 指向主人最想找的东西——不明原理，从未指错
-    origin: 大变基前随身之物，意识迁跃时唯一"跟过来"的虚影
+    origin: 与他一同醒来的虚影，从此再未离身
     obtained: "2026-09-15"
 chronicle:
   - "D1 · 醒于黑石荒原，身侧只有一枚罗盘虚影"
