@@ -53,9 +53,9 @@ jobs:
       - name: hash 定遭遇 + 结算
         id: enc
         run: |
-          pip install pyyaml --quiet
+          pip install pyyaml jsonschema --quiet
           python3 - <<'EOF'
-          import yaml, hashlib, json
+          import yaml, hashlib, json, sys
           from pathlib import Path
 
           OWNER = "${{ steps.beast.outputs.explorer }}"
@@ -80,17 +80,44 @@ jobs:
               ("cave",    10,   0,  40, "前辈洞府：山腹中一座洞府，蒲团上只余一枚早已圆寂的舍利。{name} 恭敬叩首，殿中残存的道韵涌入它的{el}行根骨——前辈传功，不问来者。"),
               ("spring",   5,  20,  20, "灵泉洗髓：一汪灵泉藏于石缝之后，泉水分七色流转。{name} 沉入泉底，鳞羽尽洗，出泉时通身{el}光湛然，灵石碎屑沉在泉底也被它顺手捞了上来。"),
           ]
-          # 共创遭遇动态并入: lore/encounters/*.yaml(story/stones/exp/weight)——投稿收录即全服生效(v0.7闭环)
+          # 共创遭遇动态并入: lore/encounters/*.yaml——运行时 schema 硬边界(DESIGN.md 行322):
+          # lore.yml 投稿闸已审一遍,此处运行时复检三道闸(schema/占位符白名单/零术语),
+          # 任一不过=显式红灯终止(run 不静默降级)——投稿闸被改/绕过时结算侧兜底
           import glob
+          from jsonschema import validate as _jsvalidate
+          _schema = json.load(open('schemas/lore.schema.json'))
+          _banned_terms = ['PR', 'workflow', 'commit', 'API', 'CI', 'hash', 'merge', 'issue']
+          def _bad_placeholders(story):
+              # 只许 {name}/{el};其余带参 {...} 拒(防 str.format 注入/坐标越界)
+              bad, i = [], 0
+              while i < len(story):
+                  if story[i] == '{':
+                      j = story.find('}', i)
+                      if j == -1:
+                          bad.append(story[i:i+20]); break
+                      if story[i+1:j] not in ('name', 'el'):
+                          bad.append('{%s}' % story[i+1:j])
+                      i = j + 1
+                  else:
+                      i += 1
+              return bad
           for f in sorted(glob.glob('lore/encounters/*.yaml')):
               try:
-                  ed = yaml.safe_load(open(f, encoding='utf-8'))
-                  if not ed or 'story' not in ed: continue
-                  ENCOUNTERS.append((Path(f).stem, int(ed.get('weight', 5)),
-                                     int(ed.get('stones', 10)), int(ed.get('exp', 10)),
-                                     str(ed['story']).replace('{name}', '{name}').replace('{el}', '{el}')))
+                  ed = yaml.safe_load(Path(f).read_text(encoding='utf-8'))
+                  if not isinstance(ed, dict):
+                      raise ValueError('顶层不是映射')
+                  _jsvalidate(ed, _schema)
+                  _bad = _bad_placeholders(str(ed['story']))
+                  if _bad:
+                      raise ValueError(f'story 非法占位符 {_bad}(只许 {{name}}/{{el}})')
+                  _hit = [b for b in _banned_terms if b.lower() in str(ed['story']).lower()]
+                  if _hit:
+                      raise ValueError(f'story 含技术术语 {_hit}')
+                  ENCOUNTERS.append((Path(f).stem, int(ed['weight']),
+                                     int(ed['stones']), int(ed['exp']), str(ed['story'])))
               except Exception as ex:
-                  print(f'遭遇投稿 {f} 加载失败(跳过不阻塞): {ex}')
+                  print(f'::error::遭遇投稿 {f} 运行时校验不过(显式红灯,不静默降级): {ex}')
+                  sys.exit(1)
           total = sum(e[1] for e in ENCOUNTERS)
           roll = int(rng[:8], 16) % total
           acc, picked = 0, ENCOUNTERS[0]

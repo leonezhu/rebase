@@ -63,6 +63,14 @@ jobs:
               banned = ['PR','workflow','commit','API','CI','hash','merge','issue']
               if any(b.lower() in d['story'].lower() for b in banned):
                   print(f"::error::{f}: 故事文本含技术术语（玩家可见文本零术语硬规则）"); ok = False; continue
+              # 占位符白名单: 只许 {name}/{el}——其余 {...} 在结算段 str.format 会注入异常或坐标越界
+              import re as _re
+              bad_ph = ['{%s}' % m for m in _re.findall(r'\{([^}]*)\}', d['story']) if m not in ('name','el')]
+              if bad_ph:
+                  print(f"::error::{f}: story 占位符只许 {{name}}/{{el}}，发现 {bad_ph}"); ok = False; continue
+              # 零收益遭遇拒绝: stones=0 且 exp=0 的投稿无游戏意义（白蹭著史奖励）
+              if d['stones'] == 0 and d['exp'] == 0:
+                  print(f"::error::{f}: stones 与 exp 不可同时为 0（零收益遭遇不收录）"); ok = False; continue
               print(f"✓ {f} «{d['name']}» 权重{d['weight']} 灵石{d['stones']:+d} 功力+{d['exp']} 投稿 @{author}")
           sys.exit(0 if ok else 1)
           EOF
