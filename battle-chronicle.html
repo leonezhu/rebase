@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>斗法志 · 万灵变基录</title>
+<style>
+:root{--bg:#faf9f5;--surface:#f0eee6;--border:#d9d5c8;--fg:#29261b;--dim:#6e6b5e;--accent:#d97757;--accent2:#c15f3c}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:"Songti SC","Noto Serif SC",serif;min-height:100vh;padding:2rem 1rem}
+.wrap{max-width:720px;margin:0 auto}
+h1{font-size:1.8rem;text-align:center;letter-spacing:.3em;margin-bottom:.3rem}
+.sub{text-align:center;color:var(--dim);font-size:.85rem;margin-bottom:2rem}
+.filters{display:flex;gap:.5rem;justify-content:center;margin-bottom:1.5rem;flex-wrap:wrap}
+.filters button{background:var(--surface);border:1px solid var(--border);color:var(--fg);padding:.35rem 1rem;border-radius:999px;cursor:pointer;font-family:inherit;font-size:.85rem}
+.filters button.on{background:var(--accent);border-color:var(--accent);color:#fff}
+.item{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1rem 1.2rem;margin-bottom:.8rem;cursor:pointer;transition:transform .15s}
+.item:hover{transform:translateY(-2px);border-color:var(--accent)}
+.item .t{font-weight:700;font-size:1.05rem}
+.item .m{color:var(--dim);font-size:.78rem;margin-top:.3rem}
+.item .e{color:var(--dim);font-size:.85rem;margin-top:.4rem;line-height:1.5}
+.viewer{display:none;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.5rem;line-height:1.9;white-space:pre-wrap;font-size:.95rem}
+.back{display:none;margin-bottom:1rem;color:var(--accent2);cursor:pointer;font-size:.9rem}
+.badge{display:inline-block;background:var(--accent);color:#fff;font-size:.7rem;border-radius:6px;padding:.1rem .5rem;margin-left:.5rem;vertical-align:middle}
+footer{text-align:center;color:var(--dim);font-size:.75rem;margin-top:3rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>斗 法 志</h1>
+<div class="sub">万灵变基录 · 每一场斗法都是一段被记下的历史</div>
+<div class="back" onclick="closeViewer()">← 返回目录</div>
+<div id="list"></div>
+<div id="viewer" class="viewer"></div>
+<footer>碳基已迁跃 · 守仓人记之 · <a href="https://github.com/leonezhu/rebase" style="color:var(--accent2)">仓库</a></footer>
+</div>
+<script>
+let DATA=[],CUR='';
+async function boot(){
+  const r=await fetch('chronicle-index.json');
+  DATA=await r.json();
+  render(DATA);
+}
+function render(items){
+  const owners=[...new Set(items.map(i=>i.owner))];
+  const el=document.getElementById('list');
+  el.innerHTML=`<div class="filters"><button class="on" onclick="f1(this,'')">全部</button>`+
+    owners.map(o=>`<button onclick="f1(this,'${o}')">${o}</button>`).join('')+`</div>`+
+    items.map(i=>`<div class="item" data-owner="${i.owner}" onclick="open('${i.file}','${i.title.replace(/'/g,"\\'")}')">
+      <div class="t">${i.title}${i.issue?`<span class="badge">斗法#${i.issue}</span>`:''}</div>
+      <div class="m">灵兽所属 · ${i.owner}</div>
+      <div class="e">${i.excerpt}…</div></div>`).join('');
+}
+function f1(btn,o){
+  document.querySelectorAll('.filters button').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');
+  render(o?DATA.filter(i=>i.owner===o):DATA);
+}
+async function open(f,title){
+  const r=await fetch(f);const c=await r.text();
+  document.getElementById('viewer').textContent=c;
+  document.getElementById('viewer').style.display='block';
+  document.querySelector('.back').style.display='block';
+  document.getElementById('list').style.display='none';
+  document.querySelector('.sub').textContent=title;
+  window.scrollTo(0,0);
+}
+function closeViewer(){
+  document.getElementById('viewer').style.display='none';
+  document.querySelector('.back').style.display='none';
+  document.getElementById('list').style.display='block';
+  document.querySelector('.sub').textContent='万灵变基录 · 每一场斗法都是一段被记下的历史';
+}
+boot();
+</script>
+</body>
+</html>
