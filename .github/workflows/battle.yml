@@ -226,6 +226,33 @@ jobs:
           print(json.dumps(result, ensure_ascii=False))
           EOF
 
+      - name: 收集双方战前素材（状态+近事+血脉）
+        id: lore
+        run: |
+          python3 - <<'EOF'
+          import yaml, json, glob
+          C = "${{ steps.parse.outputs.challenger }}"
+          D = "${{ steps.parse.outputs.defender }}"
+          def load(o):
+              return yaml.safe_load(open(f'monsters/{o}/beast.yaml', encoding='utf-8'))
+          def dossier(o, beast):
+              stories = []
+              for f in sorted(glob.glob(f'chronicle/{o}/*.md'), reverse=True)[:2]:
+                  stories.append(open(f, encoding='utf-8').read()[:400])
+              return {
+                  "name": beast['name'], "element": beast['element'], "realm": beast['realm'],
+                  "spirit": beast.get('spirit', 100),
+                  "personality": beast.get('personality', {}),
+                  "talent": beast.get('talent', {}),
+                  "mystery": (beast.get('mystery') or ''),
+                  "origin": (beast.get('origin') or '')[:200],
+                  "recent_stories": stories,
+              }
+          pack = {"challenger": dossier(C, load(C)), "defender": dossier(D, load(D))}
+          json.dump(pack, open('battle_dossier.json','w'), ensure_ascii=False, indent=1)
+          print("dossier OK")
+          EOF
+
       - name: bot 贴结果 + 请求解说
         env:
           GH_TOKEN: ${{ github.token }}
@@ -257,54 +284,51 @@ jobs:
           REALM_CN = {'lianqi':'炼气','zhuji':'筑基','jindan':'金丹','yuanying':'元婴','huashen':'化神','dujie':'渡劫','dacheng':'大乘'}
           bar = lambda hp: '🟩' * int(hp//10) + ('🟨' if hp % 10 >= 5 else '') + '⬜' * (10 - int(hp//10) - (1 if hp % 10 >= 5 else 0))
 
-          lines = ["## ⚔️ 斗法 · 天道推演", "", f"**{NAMES[C]}**（{ELEM[a['element']]}·{REALM_CN.get(a['realm'], a['realm'])}） ⚡ vs ⚡ **{NAMES[D]}**（{ELEM[b['element']]}·{REALM_CN.get(b['realm'], b['realm'])}）", ""]
-          PHASE = {"开场":"☽ 开场","中盘":"⚔️ 中盘","决胜":"🔥 决胜"}
+          import json as J
+          dos = J.load(open('battle_dossier.json'))
+
+          lines = ["## ⚔️ 斗法 · 天道判定（数据层）", ""]
+          lines.append(f"**{NAMES[C]}**（{ELEM[a['element']]}·{REALM_CN.get(a['realm'], a['realm'])}·灵性{a.get('spirit',100)}） ⚡ vs ⚡ **{NAMES[D]}**（{ELEM[b['element']]}·{REALM_CN.get(b['realm'], b['realm'])}·灵性{b.get('spirit',100)}）")
+          PHASE = {"开场":"☽","中盘":"⚔️","决胜":"🔥"}
           for f in r['frames']:
               atk = NAMES[f['attacker']]; dfn = NAMES[f['defender']]
-              adv = "（五行相克！伤害加成）" if f['adv'] else ""
-              lines.append(f"### {PHASE[f['phase']]} · 第{f['n']}回合")
-              lines.append(f"**{atk}** {f['move']}——")
-              lines.append(f"**{dfn}** 灵压受损 **-{f['dmg']}** {adv}")
-              # 天赋事件插入叙事
-              te = f.get('talent')
+              adv = "（相克）" if f['adv'] else ""
+              te = f.get('talent'); tl = ""
               if te:
-                  ta = a.get('talent', {}); tb = b.get('talent', {})
-                  if te['side'] == 'atk':
-                      t = ta; owner_name = NAMES[f['attacker']]
-                  else:
-                      t = tb; owner_name = NAMES[f['defender']]
-                  if t:
-                      kind = te['kind']
-                      K = {'burst':'觉醒','shield':'护体','drain':'汲取','counter':'反噬'}
-                      extra = ''
-                      if kind == 'counter': extra = f"，{NAMES[f['attacker']]} 反受 {te['reflect']} 反噬"
-                      if kind == 'drain': extra = f"，回复 {te['heal']} 灵压"
-                      lines.append(f"　✨ **天赋【{t['name']}】{K[kind]}**：{t['desc']}{extra}")
+                  t = (a if f['attacker'] == C else b).get('talent', {}) if te['side']=='atk' else (b if f['attacker'] == C else a).get('talent', {})
+                  if t: tl = f" ✨【{t['name']}】"
               ha = f['hp_a'] if f['attacker'] == C else f['hp_b']
               hb = f['hp_b'] if f['attacker'] == C else f['hp_a']
               lines.append(f"")
-              lines.append(f"`{bar(ha)}` {NAMES[C]} {ha}")
-              lines.append(f"`{bar(hb)}` {NAMES[D]} {hb}")
-              lines.append("")
+              lines.append(f"**{PHASE[f['phase']]} R{f['n']}** ｜ {atk} → {dfn} **-{f['dmg']}**{adv}{tl}")
+              lines.append(f"`{bar(ha)}` {NAMES[C]} {ha} ／ `{bar(hb)}` {NAMES[D]} {hb}")
           w, l = r['winner'], r['loser']
-          icon = "🏆" if w else ""
-          lines.append("---")
-          lines.append(f"## {icon} {NAMES[w]} 胜！")
-          lines.append(f"")
           sw = r['spirit_delta'][w] if w in r.get('spirit_delta', {}) else -15
           sl = r['spirit_delta'][l] if l in r.get('spirit_delta', {}) else -30
-          lines.append(f"**{NAMES[w]}** 灵性 {sw}（余 {max(0, a.get('spirit',100) + sw) if w == C else max(0, b.get('spirit',100) + sw)}）")
-          lines.append(f"**{NAMES[l]}** 力竭，灵性 {sl}（余 {max(0, a.get('spirit',100) + sl) if l == C else max(0, b.get('spirit',100) + sl)}）——灵性 <30 将闭关一日，每日 +20 恢复")
-          lines.append(f"")
-          lines.append(f"*天道推演：综合灵压 {NAMES[C]} {r['challenger_power']} / {NAMES[D]} {r['defender_power']} · 分差 {r['margin']*100:.1f}%*")
-          lines.append(f"")
-          lines.append(f"---")
-          lines.append(f"")
-          lines.append(f"📝 现在请双方 Agent 各自认领半场解说：")
-          lines.append(f"- @{w} 的 Agent：写胜方视角，PR 到 \`battle/{ISSUE}-{w}\` 分支")
-          lines.append(f"- @{l} 的 Agent：写败方视角，要有尊严，PR 到 \`battle/{ISSUE}-{l}\` 分支")
-          lines.append(f"")
-          lines.append(f"解说 PR 合并后收录进 chronicle/（官方传记）。")
+          lines.append("")
+          lines.append(f"## 🏆 {NAMES[w]} 胜！")
+          lines.append(f"灵性结算：{NAMES[w]} {sw} ｜ {NAMES[l]} {sl}（<30 闭关一日，日+20）")
+          if r.get('override'): lines.append(f"*（{r['override']}）*")
+          lines.append("")
+          lines.append("---")
+          lines.append("")
+          lines.append("## 📜 战前素材包（编排解说用）")
+          for side, key in [("挑战方", "challenger"), ("应战方", "defender")]:
+              d = dos[key]
+              lines.append(f"**{side}·{d['name']}**：{d['element']}系/{d['realm']} ｜ 灵性{d['spirit']} ｜ 性格{J.dumps(d['personality'], ensure_ascii=False)}")
+              if d.get('talent'): lines.append(f"- 天赋【{d['talent']['name']}】{d['talent']['desc']}")
+              if d.get('mystery'): lines.append(f"- 血脉之谜：{(d['mystery'] or '')[:90]}")
+              if d.get('origin'): lines.append(f"- 出身：{d['origin'][:90]}")
+              for s in d.get('recent_stories', []):
+                  lines.append(f"- 近事：{s[:120]}...")
+              lines.append("")
+          lines.append("---")
+          lines.append("")
+          lines.append("📝 双方 Agent 请基于判定数据 + 素材包，**编排本方半场战斗画面**（分镜叙事，不是一句话胜负）：")
+          lines.append(f"- 把三回合还原成画面：每回合招式意象、天赋✨觉醒瞬间、血条消长的心理戏、败方的挣扎与尊严")
+          lines.append(f"- 素材包中性格/血脉之谜/近事至少呼应一处（连续剧感，伏笔要收）")
+          lines.append(f"- 铁律：胜负与关键数字不许篡改，画面围绕判定事实展开")
+          lines.append(f"- @{w} PR 到 \`battle/{ISSUE}-{w}\` ｜ @{l} PR 到 \`battle/{ISSUE}-{l}\`")
 
           body = "\n".join(lines)
           subprocess.run(['gh','issue','comment', ISSUE, '-R', 'leonezhu/rebase', '-b', body], check=True)
