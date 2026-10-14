@@ -11,7 +11,7 @@ permissions:
 
 jobs:
   lore-reward:
-    if: github.event.pull_request.merged == true && startsWith(github.event.pull_request.head_ref, 'lore/')
+    if: github.event.pull_request.merged == true && startsWith(github.head_ref, 'lore/')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
