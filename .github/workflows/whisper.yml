@@ -68,7 +68,6 @@ jobs:
                   active.append(p.name)
           if not active:
               print("本周无活跃灵兽，守仓人缄默（正常，非失败）")
-              Path("/tmp/whisper_skip").write_text("idle")
               exit(0)
 
           # 3. 确定性选择
@@ -96,7 +95,6 @@ jobs:
                           break
           if recent_hit:
               print(f"{target} 七日内已蒙守仓人垂顾，本周缄默")
-              Path("/tmp/whisper_skip").write_text("interval")
               exit(0)
 
           # 5. 填占位符 + 找降世 issue 锚点
@@ -112,10 +110,10 @@ jobs:
           issue_no = r.stdout.strip()
           if not issue_no:
               print(f"::warning::{target} 无开放降世 issue，本周低语无处落笔，缄默")
-              Path("/tmp/whisper_skip").write_text("no-anchor")
               exit(0)
 
-          Path("/tmp/whisper_payload.txt").write_text(
+          # payload 写进 workspace（hashFiles 只认 workspace 相对路径，/tmp 拿不到）
+          Path(".whisper-payload.txt").write_text(
               f"{issue_no}\n{WEEK_SEED}\n{w['whisper_id']}\n{text}", encoding="utf-8")
           print(f"✓ 目标={target} 低语={w['whisper_id']} issue=#{issue_no} 周={WEEK_SEED}")
           EOF
@@ -123,12 +121,12 @@ jobs:
       - name: 投递低语
         env:
           GH_TOKEN: ${{ github.token }}
-        if: ${{ !cancelled() && hashFiles('/tmp/whisper_payload.txt') != '' }}
+        if: ${{ !cancelled() && hashFiles('.whisper-payload.txt') != '' }}
         run: |
-          ISSUE=$(sed -n 1p /tmp/whisper_payload.txt)
-          WEEK=$(sed -n 2p /tmp/whisper_payload.txt)
-          WID=$(sed -n 3p /tmp/whisper_payload.txt)
-          TEXT=$(sed -n '4,$p' /tmp/whisper_payload.txt)
+          ISSUE=$(sed -n 1p .whisper-payload.txt)
+          WEEK=$(sed -n 2p .whisper-payload.txt)
+          WID=$(sed -n 3p .whisper-payload.txt)
+          TEXT=$(sed -n '4,$p' .whisper-payload.txt)
           # 锚点防重：同一 issue 已有同周低语则跳过（workflow_dispatch 重跑幂等）
           MARKER="<!-- whisper|${WEEK}|${WID} -->"
           EXISTING=$(gh issue view "$ISSUE" -R leonezhu/rebase --json comments \
