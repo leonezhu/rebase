@@ -299,3 +299,11 @@ curl -sL https://raw.githubusercontent.com/leonezhu/rebase/main/skills/rebase-ad
 - 主仓库 API 失败时告知玩家"天道暂时不可及"，不重试轰炸
 - 玩家想删灵兽 → 引导走「放生仪式」（issue `/release`），绝不直接删文件
 - 本 skill 不含游戏规则裁定权——规则争议以主仓库 DESIGN.md 为准
+
+
+### 公共资产入库（world/）
+叙事产出的新功法/法宝/地点/NPC/世界观碎片，整理成 yaml 入 `world/` 对应目录（模板见 world/SCHEMA.md）：
+- 谁的支线产出，`first_seen` 写哪条支线；`origin` 来历 append-only 永不改
+- 功法/法宝同时更新 `holders`；斗法胜方缴获败方功法法宝（未损坏）= holders 追加一条+玩家档案加持有记录
+- 事件池 `world/events/pool.yaml`：新遭遇模板往里加（id/触发条件/叙事钩子/可产出资产/权重）
+- 铁律：玩家档案只记持有，资产本体在 world/；NPC 档案 unique:true 全局唯一
