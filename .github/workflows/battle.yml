@@ -35,7 +35,12 @@ jobs:
       - name: 解析对战双方
         id: parse
         run: |
-          DEFENDER=$(echo "$CMD_BODY" | grep -oP '(?<=/battle @)[a-zA-Z0-9-]+' | head -1)
+          DEFENDER=$(echo "$CMD_BODY" | grep -oP '(?<=/battle @)[^\s@]+' | head -1)
+          # 中文名对手 → NPC档案名映射(npc-<拼音>)
+          case "$DEFENDER" in
+            陆惊鸿) DEFENDER="npc-luhan" ;;
+            严北岳) DEFENDER="npc-yanbei" ;;
+          esac
           WILD=""
           if [ -z "$DEFENDER" ] && echo "$CMD_BODY" | grep -q -- "--wild"; then
             # 野斗: 未点名对手 → 从野生游魂名册确定性抽一只(hash(issue号+挑战者), 复现可回放)
