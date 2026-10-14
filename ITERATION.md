@@ -93,3 +93,10 @@
 ## 卡住登记
 
 （暂无）
+
+## 2026-10-14 白天游玩轮（主会话）发现并修复
+
+- [x] battle.yml 两处 jq 表达式引号嵌套错误（外层双引号包转义逗号→jq 解析失败，label 步崩，issue#6 实锤）→ 改单引号包裹（6732a9b）
+- [x] chronicle-seal 缺 checkout 步骤——裸 runner 上 git ls-tree 报 fatal，HALF 恒 0，「已收录」终态永不打 → 补 checkout step（e3a960d），回归通过（issue#6 已打终态+贴封卷评论）
+- [x] **根因级：bot 无 create PR 权限**——GITHUB_TOKEN default_workflow_permissions=read，gh pr create 报 "GitHub Actions is not permitted to create or approve pull requests"，入账 commit 全部滞留侧分支、main 账本永不清账（`|| true` 静默吞错）。已改仓库 Actions 权限 write+approve_pr，并补录：issue#2 秘境×2 + issue#6 斗法胜 + issue#3 墨霄入账（PR#10 合并），燧鸣账户 175 灵石/115 功力对齐
+- **教训**：`|| true` 吞错是账务系统大忌——静默失败比崩溃更危险，账本类步骤失败必须显式报错
