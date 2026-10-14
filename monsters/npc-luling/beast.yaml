@@ -1,3 +1,8 @@
+battle_history:
+  lose_streak: 1
+bloodline:
+  unlocked: 0
+  wins: 0
 created_at: '2026-10-14T01:00:00+08:00'
 element: metal
 exp: 0
@@ -16,6 +21,9 @@ memory_fragments:
   - 【封印】
   total: 5
   unlocked: 0
+mood:
+  state: 低落
+  updated: '2026-10-14'
 mystery: 【血脉之谜】它的尾骨第九节总是微微发烫，谁也量不出原因。它自己从不提这件事——只是每次帮缔约者装好一件东西，都会下意识用第九节尾骨轻轻敲三下，像在跟谁报平安。
 name: 鲁灵
 origin: 灵界山中铁匠铺的祖传巧匠，三代铸锁，手艺刻进了骨血。尾巴九节可拆解重组——它对"怎么搭"的兴趣永远大于"搭什么"。灵界 NPC，专治各种手痒。
@@ -25,10 +33,11 @@ personality:
   pride: 45
   temper: 10
 realm: lianqi
-spirit: 40
+spirit: 10
 spirit_recovered_at: '2026-10-14'
-spirit_stones: 100
+spirit_stones: 85
 talent:
   desc: 九节尾骨暗藏金丝,缠住来敌吸其灵压
   kind: drain
+  mastery: 1
   name: 金蚕丝
