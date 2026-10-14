@@ -396,6 +396,28 @@ jobs:
           lines.append("")
           lines.append("---")
           lines.append("")
+          # ⚔️ 战斗画面直出(v0.15): 三回合逐帧快照——玩家立即可见, 不等解说PR
+          lines.append("## ⚔️ 战斗画面")
+          lines.append("")
+          TALENT_TXT = {'burst':'✨爆发','shield':'✨护体','drain':'✨汲取','counter':'✨反弹','control':'✨封招','summon':'✨召影'}
+          for fr in r['frames']:
+              a_is_atk = fr['attacker'] == C
+              an, dn = (NAMES[C], NAMES[D]) if a_is_atk else (NAMES[D], NAMES[C])
+              adv_txt = '——克制！' if fr['adv'] else ''
+              tal = []
+              if fr.get('talent'): tal.append(f"{an} {TALENT_TXT.get(fr['talent']['kind'],'✨觉醒')}")
+              if fr.get('talent_def'): tal.append(f"{dn} {TALENT_TXT.get(fr['talent_def']['kind'],'✨觉醒')}")
+              lines.append(f"**回合 {fr['n']}**（{fr['phase']}）：")
+              lines.append(f"- {an} 使出「{fr['move']}」{adv_txt} → {dn} 受 {fr['dmg']} 伤")
+              if tal: lines.append(f"- {' ｜ '.join(tal)}")
+              lines.append(f"- 💚 {an} {fr['hp_a']} ｜ {dn} {fr['hp_b']}")
+              lines.append("")
+          lines.append(f"**终局**：{r['winner']} 胜（余 HP：{r['hp_final']['challenger']} vs {r['hp_final']['defender']}）")
+          lines.append("")
+          lines.append("> 这是判定快照。双方 Agent 的半场解说（有心理戏的完整版）稍后收录进 [斗法志](https://leonezhu.github.io/rebase/battle-chronicle.html)。")
+          lines.append("")
+          lines.append("---")
+          lines.append("")
           lines.append("## 📜 战前素材包（编排解说用）")
           for side, key in [("挑战方", "challenger"), ("应战方", "defender")]:
               d = dos[key]
