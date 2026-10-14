@@ -32,9 +32,12 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           RESULT=$(python3 - <<'PYEOF'
-          import yaml, json
+          import yaml, json, hashlib
+          from datetime import datetime, timezone, timedelta
           F = f'monsters/${{ github.event.comment.user.login }}/beast.yaml'
           d = yaml.safe_load(open(F, encoding='utf-8'))
+          owner = d.get('owner', '${{ github.event.comment.user.login }}')
+          TODAY = datetime.now(timezone(timedelta(hours=8))).date().isoformat()
           exp = d.get('exp', 0)
           stones = d.get('spirit_stones', 0)
           realm = d.get('realm', 'lianqi')
@@ -57,7 +60,7 @@ jobs:
               print(json.dumps({'ok': False, 'msg': '已达当前天梯之顶（化神之上是渡劫大劫，另设）'})); raise SystemExit
 
           next_realm, need_exp, need_stones = LADDER[idx + 1]
-          # 心境门槛(v0.12): 心境低落=心魔缠身, 雷劫必劈——渡劫前先安顿它的心
+          # 心境影响渡劫成功率(v0.13): 低落=心魔缠身直接劝返; 昂扬85%/平静70%成功
           if d.get('mood', {}).get('state') == '低落':
               print(json.dumps({'ok': False, 'msg': f"心魔未平：{d['name']} 心境低落，此刻渡劫雷劫必劈心魔。先陪它同梦修行，等心境平复再来。"})); raise SystemExit
           if exp < need_exp:
@@ -67,6 +70,19 @@ jobs:
               lack = need_stones - stones
               print(json.dumps({'ok': False, 'msg': f'天劫需灵石 {need_stones} 护体，囊中仅 {stones}，还差 {lack}。去秘境多走走。'})); raise SystemExit
 
+          # 渡劫判定(v0.13 有增有减): 心境昂扬85%/平静70%成功; 失败=功力跌回30%+心境低落(灵石照扣,天劫不退)
+          mood = d.get('mood', {}).get('state', '平静')
+          rate = 0.85 if mood == '昂扬' else 0.70
+          tribulation_seed = int(hashlib.sha256(f"{TODAY}-{realm}-{owner}".encode()).hexdigest()[:8], 16) % 100
+          success = tribulation_seed < rate * 100
+          if not success:
+              d['exp'] = int(exp * 0.7)  # 功力跌回七成——伤筋动骨但不毁根基
+              d['spirit_stones'] = stones - need_stones
+              d['mood'] = {'state': '低落', 'updated': TODAY}
+              yaml.safe_dump(d, open(F, 'w', encoding='utf-8'), allow_unicode=True, sort_keys=False)
+              print(json.dumps({'ok': False, 'tribulation': 'failed', 'name': d['name'],
+                                'msg': f"天劫骤变：{d['name']} 渡劫失败（心境{mood}，成功率{int(rate*100)}%）。功力跌回 {d['exp']}，灵石 {need_stones} 已随天劫散去。它趴在焦土上，心境跌入低谷——先陪它同梦休养，元气自会回来。养伤之后，再来。"}))
+              raise SystemExit
           # 渡劫成功：境界+1，扣灵石
           d['realm'] = next_realm
           d['spirit_stones'] = stones - need_stones

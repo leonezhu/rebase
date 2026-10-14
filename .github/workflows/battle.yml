@@ -426,6 +426,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -b battle-log/${{ github.event.issue.number }}
           WINNER=$(python3 -c "import json;print(json.load(open('battle_result.json'))['winner'])")
+          LOSER=$(python3 -c "import json;r=json.load(open('battle_result.json'));print(r['loser'])")
           python3 - <<EOF
           import yaml, json
           # 灵性结算: 胜-15 败-30, 每日+20由 explore/battle 触发时按日期惰性恢复(spirit_recovered_at)
@@ -455,6 +456,14 @@ jobs:
           d['exp'] = d.get('exp', 0) + win_exp
           yaml.safe_dump(d, open(p,'w',encoding='utf-8'), allow_unicode=True)
           print(f"胜方 ${WINNER} +{win_stones} 灵石 +{win_exp} 功力(境界差动×{mult})")
+          # 败方代价(v0.13 有增有减): 疗伤/赔礼 -15灵石(保底0)——输一场真的变穷
+          lp = f"monsters/${LOSER}/beast.yaml"
+          ld = yaml.safe_load(open(lp, encoding='utf-8'))
+          lost = min(15, ld.get('spirit_stones', 0))
+          ld['spirit_stones'] = ld.get('spirit_stones', 0) - lost
+          ld['mood'] = {'state': '低落', 'updated': __import__('datetime').date.today().isoformat()}
+          yaml.safe_dump(ld, open(lp,'w',encoding='utf-8'), allow_unicode=True)
+          print(f"败方 ${LOSER} -{lost} 灵石(疗伤) 心境→低落")
           # 血脉之力(v0.8)：胜场累计 + 解锁公式重算（境界段数与 rebase.yml 天梯一致）
           REALM_SEG = {"lianqi":0,"zhuji":1,"jindan":2,"yuanying":3,"huashen":4,"dujie":5,"dacheng":5}
           blood_events = []
