@@ -2,6 +2,20 @@
 
 > 夜间 cron 每轮迭代在此记录。设计定案由主会话写入，施工项完成后打勾。
 
+## 2026-10-15 00:0x 夜间轮：打磨第十二轮——逮住 awaken.yml 校验闸整体失效（严重）并修复
+
+### 发现（打磨模式全流程演练，铁律⑧）
+- 清单三项（register python 解析 / explore.yml / catalog）均已在前几轮完成；git log --since=40min 有产出（be946b6 叙事连贯性系统），按铁律⑦跳过清单进入打磨
+- 例行演练（15 workflow YAML parse + `on:` 字面键 + players/monsters 双 schema 回归 + world/lore 数据文件 parse，全过）之后对 awaken.yml 做 hash 派生复核时，**发现 `if err:` 被注释掉**（ca176d8 事故）
+
+### 实锤 bug（ca176d8 副作用，非故意）
+- ca176d8「去掉名讳查重」删查重块时，把紧随其后的 `if err:` 误改为 `# if err:` → **校验失败分支永不触发**：schema 校验、缺字段检查、owner 一致性、**防作弊 hash 灵根闸**全部形同虚设——任何人可提交自选天根（purity 99 + heavenly）的 player.yaml 且必然过闸
+- 时间窗：10-14 23:55 至本轮修复。期间线上只有 leonezhu 一册入册（灵根 fire/75/normal 与天道 hash 复算一致，是按公式生成的合规档），**存量零污染**
+
+### 修复与验证
+- 恢复 `if err:`（1 行）；沙盒三断言：①现行灵籍过闸（hash 复算 fire/75/normal 一致）②伪天根攻击样本（metal/99/heavenly）被拒 ③修复后 workflow YAML parse + `on:` 字面键完好
+- 教训：删代码块时若块尾是卫语句开头，必须连带检查其缩进体归属——上轮 ITERATION 已有「演练先读尾部」红线，本轮证明演练断言必须覆盖「闸门真的会拒绝坏样本」而不仅是「好样本能过」
+
 ## 2026-10-14 23:1x 夜间轮：打磨第十一轮——v0.17 纯小说体演练（14 断言全过）+ 指引行非法转义顺手修
 
 ### 背景
