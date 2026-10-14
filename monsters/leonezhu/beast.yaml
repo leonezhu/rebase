@@ -1,32 +1,20 @@
-# 燧鸣 —— leonezhu 的本命灵兽
-name: "燧鸣"
-owner: leonezhu
+created_at: '2026-10-14T00:30:00+08:00'
 element: fire
-
+exp: 50
 genes:
-  ling: 85   # 灵·法术：系统架构与 Agent 工程
-  po: 45     # 魄·体质：恢复期
-  qiao: 70   # 巧·敏捷：想法到落地极快
-  ren: 60    # 韧·意志：环境约束炼出的韧性
-  yun: 90    # 韵·灵性：元认知与叙事
-
-personality:
-  courage: 40   # 勇
-  temper: 30    # 躁
-  pride: 20     # 傲
-
-realm: lianqi   # 炼气（新孵）
-spirit_stones: 100
-exp: 0
-
-origin: >-
-  生于一场两小时的心流：主人洗澡时一个念头——"让怪兽住在 GitHub 里"——
-  落地成真仓库的那一夜。燧鸣是那道从零到一的火光所化，
-  电路板纹理的羽翼是它的胎记。它记得自己孵出的速度，
+  ling: 85
+  po: 45
+  qiao: 70
+  ren: 60
+  yun: 90
+mystery: 【血脉之谜·其一】燧鸣翼展的灼痕纹路，细看不是电路—— 像某个更古老的仓库里，被 rebase 掉的那条分支的形状。
+name: 燧鸣
+origin: 生于一场两小时的心流：主人洗澡时一个念头——"让怪兽住在 GitHub 里"—— 落地成真仓库的那一夜。燧鸣是那道从零到一的火光所化， 电路板纹理的羽翼是它的胎记。它记得自己孵出的速度，
   也因此认定：世间念头皆有时效，唯有立刻去做才配叫创造。
-
-mystery: >-
-  【血脉之谜·其一】燧鸣翼展的灼痕纹路，细看不是电路——
-  像某个更古老的仓库里，被 rebase 掉的那条分支的形状。
-
-created_at: "2026-10-14T00:30:00+08:00"
+owner: leonezhu
+personality:
+  courage: 40
+  pride: 20
+  temper: 30
+realm: lianqi
+spirit_stones: 130
