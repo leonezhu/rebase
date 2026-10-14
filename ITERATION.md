@@ -2,6 +2,20 @@
 
 > 夜间 cron 每轮迭代在此记录。设计定案由主会话写入，施工项完成后打勾。
 
+## 2026-10-14 21:5x 夜间轮：catalog.yml 只读令牌修复（线上红灯实锤）
+
+### 发现
+- catalog.yml 在 7674403 改为「生成 docs/catalog.html 纯存档」时，permissions 残留 `contents: read`（旧 Pages 部署被撤，但忘了改令牌权限）→ bot 有权读仓库却无权 push，「提交图鉴静态页」步骤恒 403（run 38573789907/38573812043/38573112973/38569868643 连续 4 次红灯）
+- 顺带发现：concurrency group 仍是 `"pages"`——与 pages.yml 部署组同名，图鉴 bot commit 的 run 会 cancel/被 cancel 部署 run，撞车风险
+
+### 修复（2e180d7）
+- permissions 改 `contents: write`，删 pages/id-token 残留；concurrency 组改独立 `catalog`
+- push 前补 `git pull --rebase`（checkout→生成→commit 期间 main 前进时防 non-FF 拒绝）
+- 线上验证：手动 dispatch run 38574261156 success，bot commit 5bf9cd7 已入 main，docs/catalog.html 生成（7 册灵籍）
+
+### 过程纪律（符合夜间铁律⑦）
+- 开工发现 explore.yml 有未提交改动（转世豁免），未触碰，后证实为并发 cron 的工作且已自行提交（469c97b）——开工前 status 快照避免了夹带
+
 ## 2026-10-14 21:0x 夜间轮：好玩路线图 T2-3「重逢伏笔」施工（v0.12 旧分支坐标）
 
 ### 交付
