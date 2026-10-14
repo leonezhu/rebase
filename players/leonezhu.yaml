@@ -21,7 +21,19 @@ memory_fragments: 0
 chronicle:
 - D9 · 于青苔巨钟内壁醒来，报名「雄大」——引路灵说，灵潮今夜过境
 - D10 · 于浅湖镇藏经阁以灵石换得第一部功法
-open_loops: []
+open_loops:
+- hook: 烤鱼老头说纯根「不干净」——三年前有个火纯根的「第七人」，后来失踪了
+  planted: '2026-10-15'
+  status: open
+  resolve_hint: 雾渊/秘境深处可拾第七人遗物
+- hook: 千剑冢第七碑在雄大经过时齐齐停鸣一瞬
+  planted: '2026-10-15'
+  status: open
+  resolve_hint: 与陆惊鸿线交汇时回收
+- hook: 守灯人说「别想火有多大，想火有多久」——功法册里没有这句话
+  planted: '2026-10-15'
+  status: open
+  resolve_hint: 境界到筑基感灵变清晰时回收
 gongfa:
 - name: 赤阳吐纳法
   grade: 黄阶下品
