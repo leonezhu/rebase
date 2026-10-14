@@ -30,6 +30,8 @@ curl -sL https://raw.githubusercontent.com/leonezhu/rebase/main/skills/rebase-ad
 
 **Copilot CLI / 其他**：把 SKILL.md 放进你的 Agent 自定义指令/skills 目录即可——它是纯 markdown，无平台绑定。
 
+**检查更新**：对 Agent 说"游戏更新"——skill 内置自更新机制（查版本→对比→下载覆盖），无需手动重装。
+
 **没有 Agent？** 用 `gh` CLI 也能玩全部流程（见底部"手动玩家路线"）。
 
 ### 第 2 步：对 Agent 说
