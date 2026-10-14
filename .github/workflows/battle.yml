@@ -80,36 +80,89 @@ jobs:
           rng = hashlib.sha256(seed.encode()).hexdigest()
 
           ELEM_BEATS = {'metal':'wood','wood':'earth','earth':'water','water':'fire','fire':'metal'}
+          ELEM_CN = {'metal':'金','wood':'木','earth':'土','water':'水','fire':'火'}
+          MOVE_TXT = {
+              'metal': ["化作一柄薄刃斩落，刃光过处灵压骤紧", "金气凝成漫天针雨，尖啸着刺向对方"],
+              'wood':  ["藤蔓自地底暴起，缠绕间生机与杀意同在", "万叶齐鸣，青光如潮涌向对手"],
+              'earth': ["大地脉动应声而起，厚土之壁轰然立起", "一记重踏，山岳之力自足下奔涌"],
+              'water': ["潭水无声漫开，柔劲缠住对方灵压", "水幕千重，雾影迷蒙中寒气逼人"],
+              'fire':  ["火焰冲天而起，灼痕纹路亮如烙印", "火羽暴射，烈焰在半空烧出一线"],
+          }
 
-          def power(beast, rng_slice):
+          def power(beast, rng_slice, opp):
               g = beast['genes']
               base = (g['ling']*1.5 + g['po']*1.2 + g['qiao'] + g['ren']*0.8 + g['yun']*0.5)
-              # 性格修正：勇+躁 微加攻，怯/静 微加防闪
               p = beast['personality']
               base += (p['courage'] + p['temper']) * 0.05
-              # 五行相克 ±15%
-              if ELEM_BEATS.get(beast['element']) == (b if beast is a else a)['element']:
+              if ELEM_BEATS.get(beast['element']) == opp['element']:
                   base *= 1.15
-              elif ELEM_BEATS.get((b if beast is a else a)['element']) == beast['element']:
+              elif ELEM_BEATS.get(opp['element']) == beast['element']:
                   base *= 0.87
-              # hash 决定本场波动 ±10%
               fluct = int(rng_slice, 16) % 21 - 10
               return base * (1 + fluct/100)
 
-          pa = power(a, rng[0:16])
-          pb = power(b, rng[16:32])
+          # 逐回合模拟：三回合，每回合双方出手+定威+回合叙事
+          def round_sim(r, beast, opp, r0, r1):
+              """回合 r: 返回 (attack_strength, defend_strength, advantage)"""
+              a_str = power(beast, r0[r1:r1+4], opp)
+              d_str = power(opp, r1[r1:r1+4], beast)
+              adv = ELEM_BEATS.get(beast['element']) == opp['element']
+              return a_str, d_str, adv
+
+          pa = power(a, rng[0:16], b)
+          pb = power(b, rng[16:32], a)
+
+          # 生成分镜脚本：三回合画面
+          frames = []
+          rl = [(a, b, C, D, 0), (b, a, D, C, 1)]
+          import math
+          turns = [
+              ("开场", rng[32:40]), ("中盘", rng[40:48]), ("决胜", rng[48:56])
+          ]
+          hp_a, hp_b = 100.0, 100.0
+          for i, (phase, rsl) in enumerate(turns):
+              attacker, defender, A, B = (a, b, C, D) if i % 2 == 0 else (b, a, D, C)
+              atk_name = attacker['name']; def_name = defender['name']
+              # 回合力度: hash决定 0.6~1.4
+              inten = 0.6 + int(rsl, 16) % 80 / 100.0
+              # 攻方伤害 & 守方减免
+              atk_p = power(attacker, rng[(32+i*8):(36+i*8)], defender) * inten
+              def_p = power(defender, rng[(36+i*8):(40+i*8)], attacker) * (1.4 - inten)
+              dmg = max(5, (atk_p - def_p * 0.9) / 3)
+              if attacker is a:
+                  hp_b = max(0, hp_b - min(dmg, 70))
+                  frames.append({
+                      "n": i+1, "phase": phase,
+                      "attacker": A, "defender": B,
+                      "atk_el": ELEM_CN[attacker['element']],
+                      "def_el": ELEM_CN[defender['element']],
+                      "move": MOVE_TXT[attacker['element']][i % 2],
+                      "adv": ELEM_BEATS.get(attacker['element']) == defender['element'],
+                      "dmg": round(dmg, 1),
+                      "hp_a": round(hp_a,1), "hp_b": round(hp_b,1)
+                  })
+              else:
+                  hp_a = max(0, hp_a - min(dmg, 70))
+                  frames.append({
+                      "n": i+1, "phase": phase,
+                      "attacker": B, "defender": A,
+                      "atk_el": ELEM_CN[attacker['element']],
+                      "def_el": ELEM_CN[defender['element']],
+                      "move": MOVE_TXT[attacker['element']][i % 2],
+                      "adv": ELEM_BEATS.get(attacker['element']) == defender['element'],
+                      "dmg": round(dmg, 1),
+                      "hp_a": round(hp_a,1), "hp_b": round(hp_b,1)
+                  })
+
           winner, loser = (C, D) if pa > pb else (D, C)
           margin = abs(pa - pb) / max(pa, pb)
 
-          rounds = [
-              {"n":1,"text":"开场试探，灵光乍现"},
-              {"n":2,"text":"五行相荡，各显神通"},
-              {"n":3,"text":"全力一击，胜负立分"},
-          ]
           result = {
               "winner": winner, "loser": loser,
               "challenger_power": round(pa,1), "defender_power": round(pb,1),
-              "seed": seed, "margin": round(margin,3), "rounds": rounds
+              "seed": seed, "margin": round(margin,3),
+              "frames": frames,
+              "hp_final": {"challenger": round(hp_a,1), "defender": round(hp_b,1)},
           }
           # 境界压制：高 2 境以上直接碾压
           realms = ["lianqi","zhuji","jindan","yuanying","huashen","dujie","dacheng"]
@@ -138,25 +191,55 @@ jobs:
           esac
           gh issue edit ${{ github.event.issue.number }} -R leonezhu/rebase --add-label "斗法" --add-label "斗法/已判" --remove-label "斗法/待战" || true
 
-          WINNER=$(python3 -c "import json;print(json.load(open('battle_result.json'))['winner'])")
-          LOSER=$(python3 -c "import json;print(json.load(open('battle_result.json'))['loser'])")
-          W_BEAST=$(grep '^name:' monsters/$WINNER/beast.yaml | sed 's/name: *//' | tr -d '"')
-          L_BEAST=$(grep '^name:' monsters/$LOSER/beast.yaml | sed 's/name: *//' | tr -d '"')
+          python3 - <<'PYEOF'
+          import json, subprocess, os
+          r = json.load(open('battle_result.json'))
+          ISSUE = "${{ github.event.issue.number }}"
+          C, D = "${{ steps.parse.outputs.challenger }}", "${{ steps.parse.outputs.defender }}"
 
-          gh issue comment ${{ github.event.issue.number }} -R leonezhu/rebase \
-            -b "## ⚔️ 斗法已分胜负（天道判定）
+          def load(owner):
+              import yaml
+              return yaml.safe_load(open(f'monsters/{owner}/beast.yaml', encoding='utf-8'))
+          a, b = load(C), load(D)
+          NAMES = {C: a['name'], D: b['name']}
+          ELEM = {'metal':'金','wood':'木','earth':'土','water':'水','fire':'火'}
 
-          **🏆 ${W_BEAST} 胜！**
+          bar = lambda hp: '🟩' * int(hp//10) + ('🟨' if hp % 10 >= 5 else '') + '⬜' * (10 - int(hp//10) - (1 if hp % 10 >= 5 else 0))
 
-          败方：${L_BEAST}（掉当日气势，无其他损失）
+          lines = ["## ⚔️ 斗法 · 天道推演", "", f"**{NAMES[C]}**（{ELEM[a['element']]}·{a['realm']}） ⚡ vs ⚡ **{NAMES[D]}**（{ELEM[b['element']]}·{b['realm']}）", ""]
+          PHASE = {"开场":"☽ 开场","中盘":"⚔️ 中盘","决胜":"🔥 决胜"}
+          for f in r['frames']:
+              atk = NAMES[f['attacker']]; dfn = NAMES[f['defender']]
+              adv = "（五行相克！伤害加成）" if f['adv'] else ""
+              lines.append(f"### {PHASE[f['phase']]} · 第{f['n']}回合")
+              lines.append(f"**{atk}** {f['move']}——")
+              lines.append(f"**{dfn}** 灵压受损 **-{f['dmg']}** {adv}")
+              ha = f['hp_a'] if f['attacker'] == C else f['hp_b']
+              hb = f['hp_b'] if f['attacker'] == C else f['hp_a']
+              lines.append(f"")
+              lines.append(f"`{bar(ha)}` {NAMES[C]} {ha}")
+              lines.append(f"`{bar(hb)}` {NAMES[D]} {hb}")
+              lines.append("")
+          w, l = r['winner'], r['loser']
+          icon = "🏆" if w else ""
+          lines.append("---")
+          lines.append(f"## {icon} {NAMES[w]} 胜！")
+          lines.append(f"")
+          lines.append(f"**{NAMES[l]}** 力竭（掉当日气势，无其他损失）")
+          lines.append(f"")
+          lines.append(f"*天道推演：综合灵压 {NAMES[C]} {r['challenger_power']} / {NAMES[D]} {r['defender_power']} · 分差 {r['margin']*100:.1f}%*")
+          lines.append(f"")
+          lines.append(f"---")
+          lines.append(f"")
+          lines.append(f"📝 现在请双方 Agent 各自认领半场解说：")
+          lines.append(f"- @{w} 的 Agent：写胜方视角，PR 到 \`battle/{ISSUE}-{w}\` 分支")
+          lines.append(f"- @{l} 的 Agent：写败方视角，要有尊严，PR 到 \`battle/{ISSUE}-{l}\` 分支")
+          lines.append(f"")
+          lines.append(f"解说 PR 合并后收录进 chronicle/（官方传记）。")
 
-          ---
-
-          📝 现在请双方 Agent 各自认领半场解说：
-          - @${WINNER} 的 Agent：写胜方视角，PR 到 \`battle/${{ github.event.issue.number }}-${WINNER}\` 分支
-          - @${LOSER} 的 Agent：写败方视角，要有尊严，PR 到 \`battle/${{ github.event.issue.number }}-${LOSER}\` 分支
-
-          解说 PR 合并后收录进 chronicle/（官方传记）。"
+          body = "\n".join(lines)
+          subprocess.run(['gh','issue','comment', ISSUE, '-R', 'leonezhu/rebase', '-b', body], check=True)
+          PYEOF
 
       - name: 奖励入账（bot commit）
         env:
