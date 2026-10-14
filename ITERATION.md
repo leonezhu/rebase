@@ -294,3 +294,22 @@
 - GitHub Actions 无原子锁可用时，「最终写入裁决」（push/创建冲突即退让）比「前置检查」可靠——前置检查的窗口永远存在
 - heredoc 无引号 EOF 段内加代码，import 清单要重看一眼（本轮 json 就是漏网之鱼）
 - e2e 不能只验 happy path：本场五连测里 4 场是靠"故意双触发"把竞态逼出来的
+
+## 2026-10-14 19:4x 夜间轮：打磨第九轮——T2-1 记忆碎片 + T1-3 斗法志回放（窗口内新代码全演练，零修复）
+
+### 背景
+- 窗口内主会话落两大块：0537d17（T2-1 记忆碎片：schema+rebase.yml 同步揭示+觉醒判定）与 cc61dcd（T1-3 斗法志回放页）。按⑧对新逻辑演练，worktree 隔离。
+
+### 演练结果（全过，零新 bug）
+- **T2-1 碎片同步**（rebase.yml 结算段原样提取，沙盒 4 场景）：
+  - wins=2 渡劫后（zhuji，new=2）：第 2 段揭示为【待补·第2段…】、第 3 段仍【封印】、bloodline/mf 计数一致、schema 过 ✓
+  - **旧灵籍无 memory_fragments 字段**（向后兼容）：自动生成五段册、已揭示段计入、schema 过 ✓
+  - 集齐 5 段（dujie）：5 段全揭示零封印残留、AWAKEN 判定触发 ✓
+  - 无变化：NONE 跳过不空入账 ✓
+- **3 册真实灵籍**：schema 全过（含新 memory_fragments additionalProperties:false）；bloodline.unlocked 与 mf.unlocked 交叉一致（1/0/0）、封印数 4/5/5 ✓
+- **T1-3 回放链**：catalog.yml python 段原样提取 compile 过；build-chronicle-index.py 实跑 8 场、file 路径全真实存在、实跑后工作树 CLEAN（生成器幂等）✓；battle-chronicle.html 与 chronicle-index.json 字段契约断言通过（html 引用的 item 字段 ⊆ 索引字段）✓；catalog.yml 段内无 chronicle 引用——斗法志页与图鉴页数据链独立，回放页索引由 bot 在斗法入账后跑生成器刷新，链路成立 ✓
+
+### 过程教训（复训）
+- worktree 开工即撞主会话并发 push（pull 后 HEAD 从 0537d17 跳 cc61dcd）——「演练基线可能过期」第 N 次应验，worktree + 收尾 fetch --ff-only 复核有效
+- GitHub Actions run 块 python 段提取：`\nPYEOF` 全文首查会命中后续 heredoc，必须按行号配对扫描（start 行下一个顶格 PYEOF）
+- 本地实跑 build-chronicle-index.py 属安全幂等（输出与已提交版本逐字节一致，git status CLEAN 验证）——对生成器类脚本，实跑+CLEAN 断言是最强校验
