@@ -58,13 +58,18 @@ jobs:
             fi
           done
           echo "✓ 双方灵籍均存在"
-          # 防双触发竞态（v0.8 端到端实测实锤）：issue body 与评论相隔1秒各起一个 run，
-          # 同名 battle-log/<n> 分支 push 撞车。已有「待战」标签 = 另一个 run 正在判定，本 run 退出。
-          CUR=$(gh issue view ${{ github.event.issue.number }} -R leonezhu/rebase --json labels --jq '[.labels[].name] | join(",")')
-          case ",$CUR," in
-            *",斗法/待战,"*|*",斗法/已判,"*|*",斗法/已收录,"*)
-              echo "检测到本 issue 已有斗法标签（双触发/重放），本 run 退出避免入账竞态"; exit 0 ;;
-          esac
+          # 防双触发竞态（v0.8 端到端实测实锤）：issue body 与评论1秒内各起一个 run，同名
+          # battle-log/<n> 分支 push 撞车。标签时序不可靠（双 run 可能在彼此打标前都读到空），
+          # 改用远端分支作互斥锁：锁不存在→抢占（唯一写入者赢）；已存在→本 run 是迟到者，退出。
+          for i in 1 2 3; do
+            if git ls-remote --exit-code --heads origin "battle-log/${{ github.event.issue.number }}" >/dev/null 2>&1; then
+              echo "battle-log/${{ github.event.issue.number }} 分支已存在（另一 run 已结算/正在结算），本 run 退出避免入账竞态"
+              gh issue comment ${{ github.event.issue.number }} -R leonezhu/rebase \
+                -b "检测到同一 issue 的另一场天道推演已在进行（双触发竞态守卫生效），本场不入重赛。想再战请另开新 issue。" || true
+              exit 0
+            fi
+            sleep $((i * 2))
+          done
           gh issue edit ${{ github.event.issue.number }} -R leonezhu/rebase --add-label "斗法" --add-label "斗法/待战" || true
 
       - name: hash 确定性模拟
