@@ -230,6 +230,26 @@
 - 渲染段含反引号的 f-string（`\\`battle/...\\``）产生 SyntaxWarning（invalid escape sequence '\\`'），Python 3.12 起为可见警告，建议改用单反引号原文——本轮未动，属 cosmetic
 - 本次 push 与 bb04d5b（主会话世界观 v1）并发，worktree rebase 后再推——「演练基线可能过期」再次应验
 
+## 2026-10-14 22:4x 夜间轮：打磨第十轮——v0.15 战斗画面三连修（bug 2+3）
+
+### 背景
+- 窗口内（40min）主会话落战斗画面直出 v0.15（c8ff07e）+ TODAY 热修（7d70ac7），按铁律⑧对新代码演练，worktree 隔离
+
+### 实锤并修复三处（2baed9a，已推 main）
+1. **schema 缺 `battle_history` 字段**（本轮最重）：79438f1 称号系统给 battle.yml 加了 `battle_history.lose_streak` 写入，但 schema 只申报了 `titles`——issue#75 的 bot 结算 commit（cfdd82f）已把该字段写进拾焰/墨霄两册真实灵籍，**两册账本过不了自家 schema 校验**（additionalProperties 红灯）。修复：schema 补 battle_history（lose_streak/win_streak，bot 独占），7 册真实灵籍全部回绿
+2. **「战斗画面」血条错位回归**：v0.15 画面段 `💚 {an} {fr['hp_a']}` 按当回合 attacker 摆位——**54967d9 修过的数据层同款 bug 在新渲染段重演**。issue#75 线上实锤：R2（墨霄出手）显示「💚 墨霄 26.2」，26.2 实为拾焰血量。修复：ca/cb 恒取挑战方/守方名，沙盒以 issue#75 真实 frames 回归 3/3 对齐
+3. **「败者复起」死代码修复**（ITERATION 打磨轮登记项，此前因属并发轮 WIP 未触碰）：`lose_streak=0` 先清后读恒 False。修复：`prev_lose_streak` 先读后清，沙盒临时 git 仓端到端实锤（连败 2 场后胜 → titles=['初鸣','败者复起']）
+
+### 校验
+- battle.yml YAML 语法 + `on:` 字面键；渲染段/结算段原样提取 compile 过
+- 7 册灵籍 schema 7/7 PASS；乱入键反例仍正确拒绝
+- 14 workflow 全量 YAML + on 键复验通过
+
+### 教训（复训+新）
+- **「新机制写入的字段必须同 commit 申报 schema」应是铁律**——titles 申报了、battle_history 漏了，因为后者是嵌套在称号逻辑里的隐藏副作用写入。写 bot 入账代码时逐字段对 schema 自查
+- 成对字段修复的教训（13:0x 轮）第三次应验：数据层修过的错位，新写的渲染段照抄了错误直觉（按 attacker 摆位）——修 bug 时在 bug 现场留注释，本轮已在数据层 384 行与画面段 416 行各留一处
+- 渲染段 f-string 反引号 SyntaxWarning 仍在（cosmetic，已登记未动）
+
 ## 卡住登记
 
 （暂无）
