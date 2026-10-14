@@ -98,8 +98,23 @@ jobs:
                   base *= 1.15
               elif ELEM_BEATS.get(opp['element']) == beast['element']:
                   base *= 0.87
+              sp = beast.get('spirit', 100)
+              if sp >= 90: base *= 1.05
+              elif sp < 50: base *= 0.9
               fluct = int(rng_slice, 16) % 21 - 10
               return base * (1 + fluct/100)
+
+          # 灵性闭关检查: <30 当日不应战
+          for beast, owner in [(a, C), (b, D)]:
+              if beast.get('spirit', 100) < 30:
+                  raise SystemExit(f"CLOSED:{owner}:{beast['name']}:灵性耗竭，已闭关，明日再战（今日灵性 {beast.get('spirit',100)}）")
+
+          TALENT_TXT = {
+              'burst':  ["★天赋【{t}】觉醒——{d}！伤害暴涨", "★{t}轰然引爆！{d}，灵压如潮"],
+              'shield': ["★天赋【{t}】展开——{d}，来势被卸去大半", "★{t}悄然生效：{d}，伤势大减"],
+              'drain':  ["★天赋【{t}】暗动——{d}，抽走对方灵压反哺己身", "★{t}无声缠上！{d}，此消彼长"],
+              'counter':["★天赋【{t}】反噬——{d}！伤势尽数奉还", "★{t}骤然反卷：{d}，攻守易形"],
+          }
 
           # 逐回合模拟：三回合，每回合双方出手+定威+回合叙事
           def round_sim(r, beast, opp, r0, r1):
@@ -129,8 +144,34 @@ jobs:
               atk_p = power(attacker, rng[(32+i*8):(36+i*8)], defender) * inten
               def_p = power(defender, rng[(36+i*8):(40+i*8)], attacker) * (1.4 - inten)
               dmg = max(5, (atk_p - def_p * 0.9) / 3)
+              # 天赋触发: 每回合双方各30%概率(hash定,确定可复现)
+              ts = rng[i*2:(i*2)+2] + rng[(i*2+8):(i*2+10)]  # 循环取窗,防越界
+              trig_atk = int(ts[0:2], 16) % 100 < 30
+              trig_def = int(ts[2:4], 16) % 100 < 30
+              talent_event = None
+              if trig_def and defender.get('talent'):
+                  kind = defender['talent'].get('kind', 'shield')
+                  if kind == 'shield':
+                      dmg *= 0.5
+                      talent_event = {'side':'def','kind':kind}
+                  elif kind == 'counter':
+                      reflect = dmg * 0.5
+                      talent_event = {'side':'def','kind':kind,'reflect':round(reflect,1)}
+              if trig_atk and attacker.get('talent'):
+                  kind = attacker['talent'].get('kind', 'burst')
+                  if kind == 'burst':
+                      dmg *= 1.6
+                      talent_event = {'side':'atk','kind':kind}
+                  elif kind == 'drain':
+                      heal = dmg * 0.4
+                      talent_event = {'side':'atk','kind':kind,'heal':round(heal,1)}
+              dmg = min(dmg, 90)
               if attacker is a:
-                  hp_b = max(0, hp_b - min(dmg, 70))
+                  hp_b = max(0, hp_b - dmg)
+                  if talent_event and talent_event['kind'] == 'counter':
+                      hp_a = max(0, hp_a - talent_event['reflect'])
+                  if talent_event and talent_event['kind'] == 'drain':
+                      hp_a = min(100, hp_a + talent_event['heal'])
                   frames.append({
                       "n": i+1, "phase": phase,
                       "attacker": A, "defender": B,
@@ -139,10 +180,15 @@ jobs:
                       "move": MOVE_TXT[attacker['element']][i % 2],
                       "adv": ELEM_BEATS.get(attacker['element']) == defender['element'],
                       "dmg": round(dmg, 1),
-                      "hp_a": round(hp_a,1), "hp_b": round(hp_b,1)
+                      "hp_a": round(hp_a,1), "hp_b": round(hp_b,1),
+                      "talent": talent_event
                   })
               else:
-                  hp_a = max(0, hp_a - min(dmg, 70))
+                  hp_a = max(0, hp_a - dmg)
+                  if talent_event and talent_event['kind'] == 'counter':
+                      hp_b = max(0, hp_b - talent_event['reflect'])
+                  if talent_event and talent_event['kind'] == 'drain':
+                      hp_b = min(100, hp_b + talent_event['heal'])
                   frames.append({
                       "n": i+1, "phase": phase,
                       "attacker": A, "defender": B,
@@ -151,16 +197,19 @@ jobs:
                       "move": MOVE_TXT[attacker['element']][i % 2],
                       "adv": ELEM_BEATS.get(attacker['element']) == defender['element'],
                       "dmg": round(dmg, 1),
-                      "hp_a": round(hp_a,1), "hp_b": round(hp_b,1)
+                      "hp_a": round(hp_a,1), "hp_b": round(hp_b,1),
+                      "talent": talent_event
                   })
 
-          winner, loser = (C, D) if pa > pb else (D, C)
-          margin = abs(pa - pb) / max(pa, pb)
+          # 胜负由三回合 HP 推演定（画面即判定）
+          winner, loser = (C, D) if hp_a >= hp_b else (D, C)
+          margin = abs(hp_a - hp_b) / 100.0
 
           result = {
               "winner": winner, "loser": loser,
               "challenger_power": round(pa,1), "defender_power": round(pb,1),
               "seed": seed, "margin": round(margin,3),
+              "spirit_delta": {"challenger": -30 if winner != C else -15, "defender": -30 if winner != D else -15},
               "frames": frames,
               "hp_final": {"challenger": round(hp_a,1), "defender": round(hp_b,1)},
           }
@@ -216,6 +265,21 @@ jobs:
               lines.append(f"### {PHASE[f['phase']]} · 第{f['n']}回合")
               lines.append(f"**{atk}** {f['move']}——")
               lines.append(f"**{dfn}** 灵压受损 **-{f['dmg']}** {adv}")
+              # 天赋事件插入叙事
+              te = f.get('talent')
+              if te:
+                  ta = a.get('talent', {}); tb = b.get('talent', {})
+                  if te['side'] == 'atk':
+                      t = ta; owner_name = NAMES[f['attacker']]
+                  else:
+                      t = tb; owner_name = NAMES[f['defender']]
+                  if t:
+                      kind = te['kind']
+                      K = {'burst':'觉醒','shield':'护体','drain':'汲取','counter':'反噬'}
+                      extra = ''
+                      if kind == 'counter': extra = f"，{NAMES[f['attacker']]} 反受 {te['reflect']} 反噬"
+                      if kind == 'drain': extra = f"，回复 {te['heal']} 灵压"
+                      lines.append(f"　✨ **天赋【{t['name']}】{K[kind]}**：{t['desc']}{extra}")
               ha = f['hp_a'] if f['attacker'] == C else f['hp_b']
               hb = f['hp_b'] if f['attacker'] == C else f['hp_a']
               lines.append(f"")
@@ -227,7 +291,10 @@ jobs:
           lines.append("---")
           lines.append(f"## {icon} {NAMES[w]} 胜！")
           lines.append(f"")
-          lines.append(f"**{NAMES[l]}** 力竭（掉当日气势，无其他损失）")
+          sw = r['spirit_delta'][w] if w in r.get('spirit_delta', {}) else -15
+          sl = r['spirit_delta'][l] if l in r.get('spirit_delta', {}) else -30
+          lines.append(f"**{NAMES[w]}** 灵性 {sw}（余 {max(0, a.get('spirit',100) + sw) if w == C else max(0, b.get('spirit',100) + sw)}）")
+          lines.append(f"**{NAMES[l]}** 力竭，灵性 {sl}（余 {max(0, a.get('spirit',100) + sl) if l == C else max(0, b.get('spirit',100) + sl)}）——灵性 <30 将闭关一日，每日 +20 恢复")
           lines.append(f"")
           lines.append(f"*天道推演：综合灵压 {NAMES[C]} {r['challenger_power']} / {NAMES[D]} {r['defender_power']} · 分差 {r['margin']*100:.1f}%*")
           lines.append(f"")
@@ -253,6 +320,21 @@ jobs:
           WINNER=$(python3 -c "import json;print(json.load(open('battle_result.json'))['winner'])")
           python3 - <<EOF
           import yaml
+          # 灵性结算: 胜-15 败-30, 每日+20由 explore/battle 触发时按日期惰性恢复(spirit_recovered_at)
+          from datetime import date, datetime
+          TODAY = date.today().isoformat()
+          r = __import__('json').load(open('battle_result.json'))
+          for owner, delta in [(r['winner'], -15), (r['loser'], -30)]:
+              p = f'monsters/{owner}/beast.yaml'
+              d = yaml.safe_load(open(p, encoding='utf-8'))
+              last = d.get('spirit_recovered_at')
+              if last != TODAY:
+                  d['spirit'] = min(100, d.get('spirit', 100) + 20)
+                  d['spirit_recovered_at'] = TODAY
+              d['spirit'] = max(0, d.get('spirit', 100) + delta)
+              yaml.safe_dump(d, open(p,'w',encoding='utf-8'), allow_unicode=True)
+              print(f"{owner}: 灵性{delta:+d} → {d['spirit']}")
+          # 奖励
           p = f'monsters/${WINNER}/beast.yaml'
           d = yaml.safe_load(open(p, encoding='utf-8'))
           d['spirit_stones'] = d.get('spirit_stones', 100) + 30
