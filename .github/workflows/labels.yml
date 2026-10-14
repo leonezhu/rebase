@@ -19,16 +19,13 @@ jobs:
     if: github.event_name == 'pull_request' && github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-
       - name: 检测规则层变更并打标签
         env:
           GH_TOKEN: ${{ github.token }}
           PR: ${{ github.event.pull_request.number }}
         run: |
-          BASE="${{ github.event.pull_request.base.sha }}"
-          HEAD="${{ github.event.pull_request.head.sha }}"
-          FILES=$(git diff --name-only $BASE $HEAD)
+          # 用 PR files API 而非 git diff：浅克隆拿不到 base sha（fatal: bad object）
+          FILES=$(gh pr view "$PR" -R leonezhu/rebase --json files --jq '.files[].path')
 
           META=0
           for f in $FILES; do
