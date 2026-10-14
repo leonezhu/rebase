@@ -192,7 +192,9 @@ jobs:
           from pathlib import Path
           owner, delta, cost, exp, drift_s = sys.argv[1], int(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4]), sys.argv[5]
           photo, tape, ticket, tickets = (int(x) for x in drift_s.split(","))
-          p = bf
+          import glob as _gb
+          _cands = [Path(f"players/{owner}.yaml")] + sorted(Path(x) for x in _gb.glob(f"players/{owner}-*.yaml")) + [Path(f"monsters/{owner}/beast.yaml")]
+          p = next(c for c in _cands if c.exists())
           d = yaml.safe_load(p.read_text(encoding="utf-8"))
           d["spirit_stones"] = max(0, d.get("spirit_stones", 100) - cost)
           d["exp"] = d.get("exp", 0) + exp
