@@ -568,7 +568,7 @@ jobs:
           ]
           lines.append(pick(ENDINGS, 'end'))
           lines.append("")
-          lines.append(f"*双方半场心理戏（完整小说版）稍后收录进 [斗法志](https://leonezhu.github.io/rebase/battle-chronicle.html)。*")
+          lines.append(f"*双方半场心理戏（完整小说版）由各自 Agent 收录进人物传记。*")
           lines.append("")
           lines.append("---")
           lines.append("")
@@ -827,49 +827,3 @@ jobs:
             echo "无锋芒内敛播报"
           fi
 
-  # ===== 斗法收录终态：解说 PR 合并后，双方半场齐 → issue 打「斗法/已收录」 =====
-  chronicle-seal:
-    # 解说 PR 标题形如「📝 斗法解说: 燧鸣半场(胜方) issue#3」或「issue#3」（rebase-adventurer skill 约定），从分支名兜底 battle/<issue>-<owner>
-    if: >-
-      github.event.pull_request.merged == true &&
-      (startsWith(github.event.pull_request.title, '📝 斗法解说') || startsWith(github.head_ref, 'battle/'))
-    runs-on: ubuntu-latest
-    steps:
-      - name: 从分支名/标题提取 issue 号
-        id: num
-        run: |
-          N=$(echo "${{ github.head_ref }}" | grep -oP '(?<=battle/)\d+' | head -1)
-          [ -z "$N" ] && N=$(echo "${{ github.event.pull_request.title }}" | grep -oP '(?<=issue#)\d+' | head -1)
-          if [ -z "$N" ]; then
-            echo "非斗法解说 PR，跳过收录检查"; exit 0
-          fi
-          echo "issue=$N" >> $GITHUB_OUTPUT
-
-      - name: checkout（供 ls-tree 统计 chronicle）
-        if: steps.num.outputs.issue != ''
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
-
-      - name: 双方半场齐 → 打「斗法/已收录」终态
-        if: steps.num.outputs.issue != ''
-        env:
-          GH_TOKEN: ${{ github.token }}
-          N: ${{ steps.num.outputs.issue }}
-        run: |
-          # issue 上已有「已收录」则幂等跳过
-          CUR=$(gh issue view $N -R leonezhu/rebase --json labels --jq '[.labels[].name] | join(",")' 2>/dev/null || echo "")
-          case ",$CUR," in
-            *",斗法/已收录,"*) echo "已收录过，跳过"; exit 0 ;;
-          esac
-          # chronicle/ 下两个半场文件 → 已收录（已 checkout，直接读工作树）
-          git fetch origin main --depth 1 2>/dev/null || true
-          HALF=$(git ls-tree -r --name-only origin/main -- chronicle/ | grep -c "issue${N}-" || true)
-          if [ "${HALF:-0}" -ge 2 ]; then
-            gh issue edit $N -R leonezhu/rebase --add-label "斗法/已收录" --remove-label "斗法/已判" || true
-            gh issue comment $N -R leonezhu/rebase \
-              -b "📖 双方半场解说均已收录进 chronicle/（官方传记）。此战落幕，成败皆入史册。（$HALF 篇解说入册）"
-            echo "✓ issue#$N 已打终态「斗法/已收录」"
-          else
-            echo "chronicle/ 仅 ${HALF:-0} 篇，半场未齐，继续等待"
-          fi

@@ -120,8 +120,11 @@ jobs:
           def shanghai(*args):
               return subprocess.run(args, capture_output=True, text=True,
                                     env={**os.environ, "TZ": "Asia/Shanghai"}).stdout
+          import glob as _glob
+          _cands = [Path(f"players/{owner}.yaml")] + sorted(Path(x) for x in _glob.glob(f"players/{owner}-*.yaml")) + [Path(f"monsters/{owner}/beast.yaml")]
+          BEAST_FILE = next((c for c in _cands if c.exists()), None)
           today = shanghai("git", "log", "--all", "--format=%cd|%s",
-                           "--date=format-local:%Y-%m-%d", "--", f"monsters/{owner}/beast.yaml")
+                           "--date=format-local:%Y-%m-%d", "--", str(BEAST_FILE)) if BEAST_FILE else ""
           today_str = shanghai("date", "+%Y-%m-%d").strip()
           settled = sum(1 for l in today.splitlines() if l.startswith(today_str + "|") and "修行" in l)
 
@@ -134,13 +137,14 @@ jobs:
               sys.exit(0)
 
           # ⑤ 灵石余额
-          bf = Path(f"monsters/{owner}/beast.yaml")
-          if not bf.exists():
-              refuse(f"🏝️ 找不到灵籍 monsters/{owner}/beast.yaml——先缔约，再修行。")
+          bf = BEAST_FILE
+          if not bf or not bf.exists():
+              refuse(f"🏝️ 找不到灵籍 players/{owner}*.yaml——先觉醒，再修行。")
           d = yaml.safe_load(bf.read_text(encoding="utf-8"))
           balance = d.get("spirit_stones", 100)
           cost = added_events * COST  # 生存式恒为 0——修行是它自己的功课, 不收费
 
+          open(os.environ["GITHUB_OUTPUT"], "a").write(f"beast_file={bf}\n")
           print(f"delta={added_events}")
           print(f"结算增量：{added_events} 次修行，耗灵石 {cost}，得功力 {added_events * EXP}")
           open(os.environ["GITHUB_OUTPUT"], "a").write(f"delta={added_events}\n")
@@ -188,7 +192,7 @@ jobs:
           from pathlib import Path
           owner, delta, cost, exp, drift_s = sys.argv[1], int(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4]), sys.argv[5]
           photo, tape, ticket, tickets = (int(x) for x in drift_s.split(","))
-          p = Path(f"monsters/{owner}/beast.yaml")
+          p = bf
           d = yaml.safe_load(p.read_text(encoding="utf-8"))
           d["spirit_stones"] = max(0, d.get("spirit_stones", 100) - cost)
           d["exp"] = d.get("exp", 0) + exp
@@ -212,9 +216,10 @@ jobs:
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          BEAST_FILE="${{ steps.settle.outputs.beast_file }}"
           BRANCH="growth-log/${OWNER}-${{ github.run_id }}"
           git checkout -b "$BRANCH"
-          git add "monsters/$OWNER/beast.yaml"
+          git add "$BEAST_FILE"
           git commit -m "修行: $OWNER 共${DELTA}次 灵石-${COST} 功力+${EXP}"
           # 入账链咽喉点：push/create/merge 失败必须显式红灯（禁 || true 吞错），见 ITERATION.md 打磨轮登记
           git push origin "$BRANCH"

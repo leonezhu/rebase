@@ -5,7 +5,6 @@ on:
   push:
     branches: [main]
     paths:
-      - 'chronicle/**'
       - 'chronicle-index.json'
       - 'index.html'
       - 'codex.html'

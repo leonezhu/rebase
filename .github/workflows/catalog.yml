@@ -1,12 +1,12 @@
 name: Catalog (灵籍图鉴)
-# 触发：main push → 扫描 monsters/*/beast.yaml → 生成图鉴静态页存 docs/catalog.html（不部署 Pages——线上页面统一由 pages.yml 管理，2026-10-14 修复主页覆盖事故）
+# 触发：main push → 扫描 players/*.yaml → 生成图鉴静态页存 docs/catalog.html（不部署 Pages——线上页面统一由 pages.yml 管理，2026-10-14 修复主页覆盖事故）
 # 图鉴 = 玩家可见的全服灵籍总览（主页 index.html）
 
 on:
   push:
     branches: [main]
     paths:
-      - 'monsters/**'
+      - 'players/**'
       - '.github/workflows/catalog.yml'
   workflow_dispatch:
 
@@ -56,12 +56,12 @@ jobs:
               return pos if v >= 0 else neg
 
           cards = []
-          beasts = sorted(pathlib.Path('monsters').glob('*/beast.yaml'))
+          beasts = sorted(pathlib.Path('players').glob('*.yaml'))
           for f in beasts:
               d = yaml.safe_load(f.read_text(encoding='utf-8'))
               if not d:
                   continue
-              # 威名对账：录外称号=伪造，红灯终止——双轨全查（monsters/ 灵兽 + players/ 人修档案，见下方 players/ 段）
+              # 威名对账：录外称号=伪造，红灯终止
               _ts = d.get('titles') or []
               _fake = [t for t in _ts if t not in VALID_TITLES]
               if _fake:
@@ -70,43 +70,25 @@ jobs:
               _bonus = sum(TITLE_EFFECT.get(t, 0.0) for t in _ts)
               if _bonus > TITLES_CAP:
                   raise SystemExit(f"威名对账失败：{f} 称号加成合计 {_bonus}% 超全服封顶 {TITLES_CAP}%")
-              el = d.get('element', 'fire')
+              sr = d.get('spirit_root') or {}
+              el = sr.get('element') or d.get('element', 'fire')
               color = ELEMENT_COLOR.get(el, '#aaa')
-              p = d.get('personality', {})
-              traits = ' · '.join([
-                  trait(p.get('courage', 0), '勇', '怯'),
-                  trait(p.get('temper', 0), '躁', '静'),
-                  trait(p.get('pride', 0), '傲', '谦'),
-              ])
-              g = d.get('genes', {})
-              gene_bars = ''.join(
+              purity = sr.get('purity', 0)
+              comp = d.get('comprehension', 0)
+              stat_bars = ''.join(
                   f"<div class='gene'><span>{label}</span>"
-                  f"<div class='bar'><i style='width:{g.get(key,0)}%'></i></div>"
-                  f"<b>{g.get(key,0)}</b></div>"
-                  for key, label in [('ling','灵'),('po','魄'),('qiao','巧'),('ren','韧'),('yun','韵')]
+                  f"<div class='bar'><i style='width:{v}%'></i></div>"
+                  f"<b>{v}</b></div>"
+                  for v, label in [(purity, '灵根'), (comp, '悟性')]
               )
+              gongfa_list = d.get('gongfa') or []
+              gongfa_str = ' · '.join(g.get('name','') for g in gongfa_list) if gongfa_list else '尚未习法'
+              artifacts_list = d.get('artifacts') or []
               origin = html.escape((d.get('origin') or '').strip())
-              mystery = html.escape((d.get('mystery') or '').strip())
+              mystery = html.escape((d.get('mood') or {}).get('state', '') if isinstance(d.get('mood'), dict) else '')
               # 威名(v0.14)：有称号才渲染，紫色一行
               titles = d.get('titles') or []
               titles_html = (f"<div class='titles'>🎖️ 威名：{html.escape(' · '.join(titles))}</div>" if titles else '')
-              # 破壳保密(v0.9.1)：stage: egg → 蛋卡，name/genes/origin/personality 全保密，
-              # 与 codex.html 的 egg 分支同规——图鉴不许剧透未破壳的卵
-              if d.get('stage', 'hatched') == 'egg':
-                  card = f"""
-          <article class='card el-egg'>
-            <div class='card-head'>
-              <span class='glyph'>🥚</span>
-              <div>
-                <h2>未破壳之卵</h2>
-                <p class='sub'>@{html.escape(d.get('owner','?'))} · 孕育中</p>
-              </div>
-            </div>
-            <div class='stats'>问灵五问的答案，正与它融合成形。</div>
-            <div class='stats' style='color:#7a86a0'>破壳之前，谁也不知道它会是什么样子——惊喜要等缔约之后。</div>
-          </article>"""
-                  cards.append(card)
-                  continue
               card = f"""
           <article class='card el-{el}'>
             <div class='card-head'>
@@ -119,22 +101,11 @@ jobs:
             </div>
             <div class='stats'>战力 <b>{power_of(d)}</b> · 灵石 {d.get('spirit_stones',100)} · 功力 {d.get('exp',0)} · 性格 {traits}</div>
             {titles_html}
-            <div class='genes'>{gene_bars}</div>
-            <details><summary>降世故事</summary><p>{origin}</p></details>
-            {'<details class="mystery"><summary>血脉之谜（未解）</summary><p>' + mystery + '</p></details>' if mystery else ''}
+            <div class='genes'>{stat_bars}</div>
+            <div class='stats'>功法：<b>{gongfa_str}</b></div>
+            <details><summary>出身</summary><p>{origin}</p></details>
           </article>"""
               cards.append(card)
-
-          # 人修轨(players/*.yaml)威名对账：v2 玩家档案同样只许天道授予的称号
-          for pf in sorted(pathlib.Path('players').glob('*.yaml')):
-              pd_ = yaml.safe_load(pf.read_text(encoding='utf-8')) or {}
-              _ts = pd_.get('titles') or []
-              _fake = [t for t in _ts if t not in VALID_TITLES]
-              if _fake:
-                  raise SystemExit(f"威名对账失败：{pf} 含录外称号 {_fake}——威名只能天道授予，禁止伪造")
-              _bonus = sum(TITLE_EFFECT.get(t, 0.0) for t in _ts)
-              if _bonus > TITLES_CAP:
-                  raise SystemExit(f"威名对账失败：{pf} 称号加成合计 {_bonus}% 超全服封顶 {TITLES_CAP}%")
 
           now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8)))
           page = f"""<!DOCTYPE html>

@@ -56,12 +56,12 @@ jobs:
         run: |
           create() { gh label create "$1" -R leonezhu/rebase --color "$2" --description "$3" 2>/dev/null \
             && echo "✓ 建标签 $1" || echo "· $1 已存在，跳过"; }
-          create "降世"       "0e8a16" "灵兽降世传记（每兽一个，永久主页/操作台）"
+          create "降世"       "0e8a16" "角色觉醒传记（每人一个，永久主页/操作台）"
           create "斗法"       "d93f0b" "对战 issue"
           create "斗法/待战"   "fbca04" "斗法已发起，等待天道判定"
           create "斗法/已判"   "f9d0c4" "天道已判定胜负，等双方解说"
-          create "斗法/已收录" "0e8a16" "双方解说已合并收录进 chronicle/"
+          create "斗法/已收录" "0e8a16" "双方解说已合并收录进传记"
           create "秘境"       "6f42c1" "定时投放的世界事件"
-          create "放生"       "cccccc" "放生申请与冷静期追踪"
+          create "兵解"       "cccccc" "角色退场申请与冷静期追踪"
           create "悖论"       "e99695" "玩家上报异常，全服可见审计入口"
           create "杂谈"       "0075ca" "社区闲聊，可乱"
