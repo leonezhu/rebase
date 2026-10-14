@@ -125,7 +125,8 @@
       "maxLength": 2000,
       "description": "降世故事（缔约时的来历经历，biography 起点）"
     },
-    "mystery": {
+    "mood": {"type": "object", "required": ["state", "updated"], "properties": {"state": {"enum": ["愉悦", "平静", "沮丧"], "description": "心情: 投喂遗物→愉悦(战力+3%)"}, "updated": {"type": "string"}}, "additionalProperties": false, "description": "心情系统"},
+  "mystery": {
       "type": "string",
       "maxLength": 500,
       "description": "血脉之谜（隐藏身世线索，随境界解锁）"

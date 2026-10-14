@@ -1,0 +1,28 @@
+created_at: '2026-10-14T22:30:00+08:00'
+element: water
+exp: 0
+genes:
+  ling: 50
+  po: 35
+  qiao: 60
+  ren: 45
+  yun: 55
+memory_fragments:
+  fragments: ['【封印】', '【封印】', '【封印】', '【封印】', '【封印】']
+  total: 5
+  unlocked: 0
+mystery: 【血脉之谜】壳底粘着一层干涸的旧世界油漆，剥下来看是公交车漆的颜色。
+name: 尘舟
+origin: 由晚高峰最后一班公交的记忆残片所化——碳基们每天重复的归途，在旧分支里走成了一只慢吞吞的舟。它不快，但谁也别想让它改道。
+owner: wild-chenzhou
+personality:
+  courage: 40
+  pride: 35
+  temper: 15
+realm: lianqi
+spirit: 100
+spirit_stones: 0
+talent:
+  desc: 归途不改道——受到连续攻击时第二步伤害减半
+  kind: shield
+  name: 末班车

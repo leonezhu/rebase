@@ -1,0 +1,28 @@
+created_at: '2026-10-14T22:30:00+08:00'
+element: fire
+exp: 0
+genes:
+  ling: 55
+  po: 40
+  qiao: 50
+  ren: 30
+  yun: 45
+memory_fragments:
+  fragments: ['【封印】', '【封印】', '【封印】', '【封印】', '【封印】']
+  total: 5
+  unlocked: 0
+mystery: 【血脉之谜】墨囊里凝着一滴洗不掉的朱红——像某个旧世界文档里被标红又删掉的一行。
+name: 砚灰
+origin: 由千万份被退回重写的文档残稿所化。它记得每一次"重写"的火气，所以浑身笼着一层低烧似的灰烬光。走近它，能闻到橡皮屑和旧墨水的味道。
+owner: wild-yanhui
+personality:
+  courage: 55
+  pride: 50
+  temper: 70
+realm: lianqi
+spirit: 100
+spirit_stones: 0
+talent:
+  desc: 重写之火——出手时带着被退稿的怨念，灼烧持续一回合
+  kind: drain
+  name: 退稿火

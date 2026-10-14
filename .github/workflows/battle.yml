@@ -35,12 +35,23 @@ jobs:
         id: parse
         run: |
           DEFENDER=$(echo "$CMD_BODY" | grep -oP '(?<=/battle @)[a-zA-Z0-9-]+' | head -1)
+          WILD=""
+          if [ -z "$DEFENDER" ] && echo "$CMD_BODY" | grep -q -- "--wild"; then
+            # 野斗: 未点名对手 → 从野生游魂名册确定性抽一只(hash(issue号+挑战者), 复现可回放)
+            DEFENDER=$(python3 -c "
+          import hashlib
+          WANDERERS = ['wild-leigu', 'wild-chenzhou', 'wild-yanhui']
+          seed = hashlib.sha256('${{ github.event.issue.number }}-${{ github.event.comment.user.login }}'.encode()).hexdigest()
+          print(WANDERERS[int(seed[:8], 16) % len(WANDERERS)])")
+            WILD="1"
+          fi
           if [ -z "$DEFENDER" ]; then
-            echo "::error::用法: /battle @对方缔约者"
+            echo "::error::用法: /battle @对方缔约者 ｜ 或 /battle --wild 野斗游魂"
             exit 1
           fi
           echo "challenger=$CHALLENGER" >> $GITHUB_OUTPUT
           echo "defender=$DEFENDER" >> $GITHUB_OUTPUT
+          echo "wild=$WILD" >> $GITHUB_OUTPUT
 
       - name: 读取双方灵籍
         id: beasts
@@ -115,6 +126,9 @@ jobs:
               sp = beast.get('spirit', 100)
               if sp >= 90: base *= 1.05
               elif sp < 50: base *= 0.9
+              # 心情系统: 今日有投喂(愉悦) ×1.03, 沮丧按spirit衰减日的低心情 -3%(简化: 只认愉悦加成)
+              if beast.get('mood', {}).get('state') == '愉悦':
+                  base *= 1.03
               fluct = int(rng_slice, 16) % 21 - 10
               return base * (1 + fluct/100)
 

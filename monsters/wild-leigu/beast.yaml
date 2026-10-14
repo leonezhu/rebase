@@ -1,0 +1,28 @@
+created_at: '2026-10-14T22:30:00+08:00'
+element: wood
+exp: 0
+genes:
+  ling: 40
+  po: 55
+  qiao: 45
+  ren: 50
+  yun: 35
+memory_fragments:
+  fragments: ['【封印】', '【封印】', '【封印】', '【封印】', '【封印】']
+  total: 5
+  unlocked: 0
+mystery: 【血脉之谜】肋骨间卡着半枚生锈的图钉——旧世界墙上钉过什么的痕迹，它自己也不记得了。
+name: 雷骨
+origin: 旧分支废墟里游荡的野生游魂，由某个被 force-push 抹去的深夜提交所化。骨架是折断的 CI 日志，走路时咯咯作响。它不主动伤人，但谁踏进它的废墟它就跟谁急。
+owner: wild-leigu
+personality:
+  courage: 70
+  pride: 20
+  temper: 55
+realm: lianqi
+spirit: 100
+spirit_stones: 0
+talent:
+  desc: 骨架是断裂的日志，受击时碎骨飞溅反扎来敌
+  kind: counter
+  name: 断日志

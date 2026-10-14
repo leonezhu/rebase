@@ -24,6 +24,9 @@ env:
   COST_PER_EVENT: 10   # 每次修行耗灵石
   EXP_PER_EVENT: 5     # 每次修行得功力
   DAILY_LIMIT: 3       # 每兽每日修行上限
+  # 投喂遗物 → 性格漂移(每次+2, 三轴 courage勇/temper燥/calm静——喂什么长什么性子)
+  # 事件行格式: "- [照片] ...叙事..." / "- [磁带] ..." / "- [车票] ..."(无标记默认修行+5功力无漂移)
+  # 车票有 1/3 概率触发记忆闪回(结算叙事提示 Agent 补碎片小段)
 
 jobs:
   growth:
@@ -94,11 +97,22 @@ jobs:
                   if not new.startswith(old):
                       refuse(f"🚫 修行记录不可篡改：{f} 存在删改（append-only）。往事已刻入石壁，只能续写新篇。")
 
-          # ③ 事件计量：一条以 "- " 开头的追加行 = 一次修行事件
+          # ③ 事件计量：一条以 "- " 开头的追加行 = 一次修行事件；带[遗物]标记的触发性格漂移
           added_events = 0
+          drift = {"照片": 0, "磁带": 0, "车票": 0}
+          ticket_events = 0
           for f in files:
               diff = sh("git", "diff", base, head, "--", f)
-              added_events += sum(1 for l in diff.splitlines() if l.startswith("+") and l[1:].lstrip().startswith("- ") and not l.startswith("+++"))
+              for l in diff.splitlines():
+                  if not (l.startswith("+") and l[1:].lstrip().startswith("- ") and not l.startswith("+++")):
+                      continue
+                  added_events += 1
+                  for k in drift:
+                      if f"[{k}]" in l:
+                          drift[k] += 1
+                          if k == "车票":
+                              ticket_events += 1
+                          break
 
           # 今日已入账次数（bot commit 信息含"修行"，按 committer 上海本地日期过滤）。
           # 时区用环境变量 TZ 注入（git -c TZ= 无效）——与 explore.yml 同法。
@@ -132,6 +146,8 @@ jobs:
           print(f"delta={added_events}")
           print(f"结算增量：{added_events} 次修行，耗灵石 {cost}，得功力 {added_events * EXP}")
           open(os.environ["GITHUB_OUTPUT"], "a").write(f"delta={added_events}\n")
+          open(os.environ["GITHUB_OUTPUT"], "a").write(
+              f"drift={drift['照片']},{drift['磁带']},{drift['车票']},{ticket_events}\n")
           EOF
 
       # ===== game 通道：修行记录 PR 自动合并 =====
@@ -161,6 +177,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           PR: ${{ github.event.pull_request.number }}
+          DRIFT: ${{ steps.settle.outputs.drift }}
         run: |
           OWNER="${{ steps.settle.outputs.owner }}"
           DELTA="${{ steps.settle.outputs.delta }}"
@@ -168,15 +185,31 @@ jobs:
           EXP=$((DELTA * ${{ env.EXP_PER_EVENT }}))
 
           pip install pyyaml --quiet
-          python3 - "$OWNER" "$DELTA" "$COST" "$EXP" <<'EOF'
-          import sys, yaml
+          python3 - "$OWNER" "$DELTA" "$COST" "$EXP" "$DRIFT" <<'EOF'
+          import sys, yaml, random
           from pathlib import Path
-          owner, delta, cost, exp = sys.argv[1], int(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4])
+          owner, delta, cost, exp, drift_s = sys.argv[1], int(sys.argv[2]), int(sys.argv[3]), int(sys.argv[4]), sys.argv[5]
+          photo, tape, ticket, tickets = (int(x) for x in drift_s.split(","))
           p = Path(f"monsters/{owner}/beast.yaml")
           d = yaml.safe_load(p.read_text(encoding="utf-8"))
           d["spirit_stones"] = max(0, d.get("spirit_stones", 100) - cost)
           d["exp"] = d.get("exp", 0) + exp
+          # 投喂遗物 → 性格漂移(每次+2): 照片→courage勇 / 磁带→calm静 / 车票→temper燥(旅途风尘)
+          if photo or tape or ticket:
+              pers = d.get("personality", {})
+              if pers:
+                  if pers.get("courage") is not None: pers["courage"] = min(100, pers["courage"] + 2 * photo)
+                  if pers.get("calm") is not None: pers["calm"] = min(100, pers["calm"] + 2 * tape)
+                  if pers.get("temper") is not None: pers["temper"] = min(100, pers["temper"] + 2 * ticket)
+                  d["personality"] = pers
+          # 心情系统: 今日投喂≥1 → mood=愉悦(战力+3%); 连续无投喂由battle/explore侧按日期衰减(此处只记今日)
+          fed = (photo + tape + ticket) > 0
+          d["mood"] = {"state": "愉悦" if fed else "平静", "updated": __import__("subprocess").run(
+              ["git", "log", "-1", "--format=%cd", "--date=format-local:%Y-%m-%d"],
+              capture_output=True, text=True).stdout.strip()}
           p.write_text(yaml.safe_dump(d, allow_unicode=True, sort_keys=False), encoding="utf-8")
+          if tickets:
+              print(f"FLASHBACK:{tickets}")  # 车票记忆闪回钩子→结算评论里提示 Agent 补碎片
           print(f"{d['name']}：功力 +{exp}，灵石 -{cost}，余额 {d['spirit_stones']}")
           EOF
 
