@@ -1,44 +1,50 @@
-owner: leonezhu
-name: 雄大
-origin: 青苔覆盖的巨钟内壁
-created_at: 2026-10-14T23:46:11+0800
-realm: lianqi
-stage: cultivating
-spirit_root:
-  element: fire
-  purity: 75
-  variant: normal
-constitution: ''
-comprehension: 50
-exp: 13
-spirit_stones: 40
-spirit: 100
-mood:
-  state: 平静
-  updated: '2026-10-14'
-titles: []
-memory_fragments: 0
+battle_history:
+  lose_streak: 1
+bloodline:
+  unlocked: 0
+  wins: 0
 chronicle:
 - D9 · 于青苔巨钟内壁醒来，报名「雄大」——引路灵说，灵潮今夜过境
 - D10 · 于浅湖镇藏经阁以灵石换得第一部功法
 - D10 · 藏经阁亲选「赤阳吐纳法」（守灯人取下,火行黄下养身流）
 - D10 · 首次观想红日，功力+13——经脉初通
+comprehension: 50
+constitution: ''
+created_at: 2026-10-14T23:46:11+0800
+exp: 13
+gongfa:
+- element: fire
+  grade: 黄阶下品
+  learned: '2026-10-15'
+  name: 赤阳吐纳法
+  origin: 浅湖镇藏经阁（60灵石）
+memory_fragments: 0
+mood:
+  state: 低落
+  updated: '2026-10-14'
+name: 雄大
 open_loops:
 - hook: 烤鱼老头说纯根「不干净」——三年前有个火纯根的「第七人」，后来失踪了
   planted: '2026-10-15'
-  status: open
   resolve_hint: 雾渊/秘境深处可拾第七人遗物
+  status: open
 - hook: 千剑冢第七碑在雄大经过时齐齐停鸣一瞬
   planted: '2026-10-15'
-  status: open
   resolve_hint: 与陆惊鸿线交汇时回收
+  status: open
 - hook: 守灯人说「别想火有多大，想火有多久」——功法册里没有这句话
   planted: '2026-10-15'
-  status: open
   resolve_hint: 境界到筑基感灵变清晰时回收
-gongfa:
-- name: 赤阳吐纳法
-  grade: 黄阶下品
+  status: open
+origin: 青苔覆盖的巨钟内壁
+owner: leonezhu
+realm: lianqi
+spirit: 70
+spirit_recovered_at: '2026-10-14'
+spirit_root:
   element: fire
-  origin: 浅湖镇藏经阁（60灵石）
-  learned: '2026-10-15'
+  purity: 75
+  variant: normal
+spirit_stones: 25
+stage: cultivating
+titles: []
