@@ -99,7 +99,7 @@ jobs:
                   <span style='color:{color}'>{ELEMENT_CN.get(el,'?')}行</span></p>
               </div>
             </div>
-            <div class='stats'>战力 <b>{power_of(d)}</b> · 灵石 {d.get('spirit_stones',100)} · 功力 {d.get('exp',0)} · 性格 {traits}</div>
+            <div class='stats'>战力 <b>{power_of(d)}</b> · 灵石 {d.get('spirit_stones',0)} · 功力 {d.get('exp',0)} · 灵根 {ELEMENT_CN.get(el, el)}·纯{purity} · 悟性 {comp}</div>
             {titles_html}
             <div class='genes'>{stat_bars}</div>
             <div class='stats'>功法：<b>{gongfa_str}</b></div>

@@ -1,4 +1,4 @@
-name: Battle (斗法)
+name: Battle (斗法·v2)
 # 触发：issue 评论 /battle @对方，或新建 issue 正文以 /battle @对方 开头
 # hash 确定性模拟 → bot 贴结果 → 双方 Agent 各自认领半场解说 PR
 
