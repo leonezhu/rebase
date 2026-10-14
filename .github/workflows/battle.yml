@@ -3,6 +3,7 @@ name: Battle (斗法)
 # hash 确定性模拟 → bot 贴结果 → 双方 Agent 各自认领半场解说 PR
 
 on:
+  workflow_dispatch:
   issues:
     types: [opened]
   issue_comment:
