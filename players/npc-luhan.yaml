@@ -11,9 +11,10 @@ artifacts:
   power: 短距离身法爆发，一步三丈，配「惊鸿一瞥」施展无迹
 battle_history:
   lose_streak: 0
+  win_streak: 1
 bloodline:
   unlocked: 3
-  wins: 2
+  wins: 3
 chronicle:
 - D1 · 醒于千剑冢，手中已有断剑——剑冢万剑齐鸣三日不绝
 - D5 · 第七碑前悟「惊鸿一瞥」，守碑人败于其手，笑赠惊鸿佩
@@ -21,7 +22,7 @@ chronicle:
 comprehension: 88
 constitution: 剑心通明
 created_at: '2026-10-14T11:00:00+08:00'
-exp: 750
+exp: 770
 gongfa:
 - element: metal
   grade: 地阶下品
@@ -45,13 +46,13 @@ open_loops:
 origin: 醒来时在千剑冢的剑碑林里，手里已经握着一柄无名断剑
 owner: npc-luhan
 realm: jindan
-spirit: 70
+spirit: 55
 spirit_recovered_at: '2026-10-14'
 spirit_root:
   element: metal
   purity: 91
   variant: normal
-spirit_stones: 314
+spirit_stones: 326
 stage: cultivating
 titles:
 - 越级斩
