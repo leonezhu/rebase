@@ -1,5 +1,5 @@
 battle_history:
-  lose_streak: 0
+  lose_streak: 1
 bloodline:
   unlocked: 0
   wins: 1
@@ -33,9 +33,9 @@ personality:
   pride: 25
   temper: 35
 realm: lianqi
-spirit: 55
+spirit: 25
 spirit_recovered_at: '2026-10-14'
-spirit_stones: 147
+spirit_stones: 132
 stage: hatched
 titles:
 - 初鸣

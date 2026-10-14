@@ -1,11 +1,11 @@
 battle_history:
   lose_streak: 0
 bloodline:
-  unlocked: 0
-  wins: 1
+  unlocked: 1
+  wins: 2
 created_at: '2026-10-14T01:00:00+08:00'
 element: water
-exp: 250
+exp: 300
 genes:
   ling: 78
   po: 62
@@ -14,13 +14,13 @@ genes:
   yun: 85
 memory_fragments:
   fragments:
-  - 【封印】
+  - 【待补·第1段——斗法胜场中闪回的碎片，由缔约者 Agent 编排后入册】
   - 【封印】
   - 【封印】
   - 【封印】
   - 【封印】
   total: 5
-  unlocked: 0
+  unlocked: 1
 mystery: 【血脉之谜】鳞片残影里藏着一帧陌生画面：某个大雾的清晨，它与一只翼上有灼痕的灵兽并肩立在崖边——它从未见过那只兽，却觉得熟悉。
 name: 墨霄
 origin: 灵界土生土长的老江湖，生于深潭之下千年冲刷的墨玉。它记得山中每一场大雾散去的时辰，因此做事谋定后动：先看清所有路，再选一条走到底。灵界 NPC，陪新缔约者磨刀。
@@ -30,13 +30,13 @@ personality:
   pride: 10
   temper: -60
 realm: lianqi
-spirit: 40
+spirit: 25
 spirit_recovered_at: '2026-10-14'
-spirit_stones: 250
+spirit_stones: 280
 talent:
   desc: 潭面如镜映尽来招,守势滴水不漏
   kind: shield
-  mastery: 1
+  mastery: 3
   name: 镜潭
 titles:
 - 初鸣
