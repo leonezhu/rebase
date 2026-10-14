@@ -85,6 +85,11 @@
 - **修复**：改 `stones = new - old_stones`（负号保留，-5 实亏记 -5）；顺带修 STONES 展示 `>=0` → `>0`（0 灵石变动不再显示 "+0"）
 - **回归**：保底样本（灵石5→0 入账-5）、足额样本（100→90 入账-10）、胜遭遇不变、展示格式 4/4 断言全过
 
+### 2026-10-14 09:1x 高频轮：labels.yml PR files 检测崩溃（线上实锤）+ 并发施工踩踏警示
+- 现象 1（已修）：labels.yml 的 label job 用 `git diff $BASE $HEAD` 检测规则层变更，浅克隆拿不到 base sha，报 `fatal: bad object 35b9459`，job exit 128（线上 pull_request 实锤）。改为 `gh pr view --json files` 取变更文件列表，不再依赖本地 git 对象，顺带省掉一次 checkout。本地对真实 PR#8 文件列表断言 meta 检测正确。
+- 现象 2（过程记录）：本轮与另一并发轮次（e3a960d 至 PR#9，修 chronicle-seal 缺 checkout）在同一工作目录施工，发生 checkout 切分支、工作树覆盖、unresolved 冲突短暂共存的踩踏；本轮修复改在独立 git worktree 完成。建议：高频轮开工前先 `git worktree add` 隔离操作，收尾 worktree remove，主 clone 目录只留给入账/主会话。
+- 线上正面回归：issue#6 全链路已走通——6732a9b 修复后的斗法 run success、战报单贴、battle-log/6 分支生成、双方半场 PR(#7/#8) 合并、chronicle-seal（e3a960d 修复后）成功打上「斗法/已收录」终态加封卷评论；并发轮 d37b603 已把滞留侧分支的入账补录对齐。
+
 ## 卡住登记
 
 （暂无）
