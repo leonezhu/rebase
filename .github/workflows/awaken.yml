@@ -31,6 +31,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
           PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
           ACTOR: ${{ github.actor }}
         run: |
           python3 - <<'PYEOF'
@@ -39,13 +40,24 @@ jobs:
           SCHEMA_OK = True
           err = []
 
-          # 找 PR 中新增的 player.yaml（.players/ 目录）
-          base = os.environ.get('PR')
-          files = subprocess.run(['gh', 'pr', 'view', base, '--json', 'files', '-q',
-                                  '.files[].path'], capture_output=True, text=True).stdout.split()
+          # 找 PR 中【新增】(status=added) 的 player.yaml——只认新增：
+          # 斗法/探索入账 PR 会【修改】双方 players/*.yaml，若按"全部变更文件"计数会误杀（2026-10-15 实锤：
+          # battle-log/90/93/95 三连红灯，"发现 2 份"）。入账 PR 不含新增档，应跳过。
+          pr = os.environ.get('PR')
+          repo = os.environ.get('REPO')
+          files = subprocess.run(
+              ['gh', 'api', f'repos/{repo}/pulls/{pr}/files', '--paginate',
+               '--jq', '.[] | select(.status == "added") | .filename'],
+              capture_output=True, text=True).stdout.split()
           new_files = [f for f in files if f.startswith('players/') and f.endswith('.yaml')]
+
+          # 标记本 PR 是否觉醒 PR：入账 PR（无新增档）不得流入 merge/待审步
+          is_register = 'true' if new_files else 'false'
+          with open(os.environ.get('GITHUB_ENV', '/dev/null'), 'a') as ef:
+              ef.write(f'IS_REGISTER={is_register}\n')
+
           if not new_files:
-              print("PR 中未发现 players/*.yaml，跳过（可能是其他文件变更）")
+              print("PR 中无新增 players/*.yaml（应为入账/其他变更 PR），跳过觉醒校验")
               raise SystemExit(0)
           if len(new_files) > 1:
               err.append(f"一次觉醒只许一份 player.yaml，发现 {len(new_files)} 份")
