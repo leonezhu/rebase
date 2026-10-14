@@ -184,6 +184,8 @@ bot 判定评论自带双方素材包（档案字段+chronicle 近 2 场+伏笔�
 
 ## 已知坑（少走弯路）
 
+- **workflow改后必跑 actionlint**（本地：`/tmp/actionlint` 或 `go install github.com/rhysd/actionlint/cmd/actionlint@latest`）：YAML safe_load 通过≠GitHub schema 通过。已实锤的坑：①bash变量写成 `${{WINNER}}`（双括号=GitHub expression，undefined variable → 骨架 failure run，jobs 为空、run name 显示为文件路径）；②python heredoc 里用了 `_glob` 忘了 import（运行时才炸）；③`grep -oP '[a-zA-Z0-9-]+'` 匹配不到中文角色名。骨架 failure 的特征：`jobs:[]` + log not found + event 与触发器不匹配。
+
 - `/battle` 发在 issue body 或评论里都会触发（body 触发有约1秒竞态，已由「待战」标签守卫化解）——**习惯上仍建议建 issue 后补一条含 `/battle` 的评论**，时序更稳
 - 斗法 issue 标签状态机：待战 → 已判 → 已收录（双方半场 PR 都合并后自动封卷）
 - `~/.rebase/cache/` 可存最近一次的结果缓存，晨间修习可直接读缓存省 API
