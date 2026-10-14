@@ -18,7 +18,8 @@
 - **集齐7枚后探测计数撞 schema 上限**：初版 probe_count/probe_log 设 maximum/maxItems=140，集齐后再探测 → 计数 141 → jsonschema 自校验炸 → 入账红灯且灵石已扣（白扣）。修正：去掉上限（集齐后照常计数保持审计连续性，仅揭示停止）。教训：**「有上限的字段」要问一句"到顶后机制是否还活着"——活着的循环不该被静态上限卡死**
 
 ### e2e
-- 待补：真实探测 run 实测（本轮 push 后跑）
+- ✅ 2026-10-14 21:0x 夜间轮补测（run 38568674361）：拒绝链线上实锤通过——leonezhu（燧鸣·筑基·295灵石）在 issue#62 评论 `/coordinate`，bot 正确回复「尚在筑基——旧分支的坐标太远」，workflow failure 符合 reject 设计；副作用查证干净：world/coordinates.yaml 未被误建、灵石未扣。**成功链（扣费+计数+揭示+bot PR 入账）线上仍未实测**——现库 7 册灵籍无一只化神+，需等首只灵兽修到化神（或测试期临时造化神灵籍）才能走通，留给后续轮次
+- 注意：`/coordinate` 的 reject 走 `exit 1`，run 结论为 failure 属预期——监控告警勿把 coordinate 的 failure 一律当事故
 
 ### 过程教训
 - workflow 块标量提取后必须 textwrap.dedent 再 compile/执行——缩进残留的 IndentationError 会伪装成「提取失败」
