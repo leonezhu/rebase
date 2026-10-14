@@ -1,3 +1,6 @@
+bloodline:
+  unlocked: 1
+  wins: 0
 created_at: '2026-10-14T00:30:00+08:00'
 element: fire
 exp: 360
@@ -17,7 +20,7 @@ personality:
   pride: 20
   temper: 30
 realm: zhuji
-spirit: 70
+spirit: 40
 spirit_recovered_at: '2026-10-14'
 spirit_stones: 265
 talent:
