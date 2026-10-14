@@ -268,7 +268,7 @@ AI 觉醒，碳硅共治。人类把越来越多的记忆、判断、创造托�
 
 ### T1 · 战斗体验深化（素材已齐，低工量高浓度）
 - [x] **血脉之力**：血脉之谜每解开一段（境界节点/战斗胜场触发），解锁被动加成——把"想起自己是谁"和战力成长绑死 [浓度★★★ 工量中]（v0.8 2026-10-14：unlocked=min(5,境界段+wins//2)，每段+1.5%战力；schema+双workflow入账+端到端4场实测，顺带实锤修复斗法双触发竞态）
-- [ ] **天赋技能扩展**：现有 4 类（burst/shield/drain/counter）→ 加 control（封招）/summon（召回被 rebase 掉的旧分支残影协战）；天赋觉醒等级（每用一次熟练度+，觉醒动画升级）[浓度★★ 工量中]
+- [x] **天赋技能扩展**：现有 4 类（burst/shield/drain/counter）→ 加 control（封招）/summon（召回被 rebase 掉的旧分支残影协战）；天赋觉醒等级（每用一次熟练度+，觉醒动画升级）[浓度★★ 工量中]（v0.10 2026-10-14：schema kind 扩6类+mastery 字段(bot独占)；觉醒四级 Lv0-3(触发率30/35/40/45%，burst1.6→1.9x/shield减伤0.5→0.3/drain吸血/counter反弹随级)；control=对方该回合力度减半，summon=+25固定追伤；触发必可见于画面(无语义侧的roll不计数)——顺带修正旧版守方空触发隐性bug，talent事件改攻守双槽防覆盖；觉醒瞬间✨播报；issue#59 e2e实测 mastery入账 ✓）
 - [x] **战报回放页**：GitHub Pages 把 chronicle 半场解说聚合成"斗法志"翻页阅读（已有素材，只差聚合视图）[浓度★★ 工量低]（T1-3 实装：leonezhu.github.io/rebase/battle-chronicle.html 线上验证 200；Anthropic 主题+按灵兽筛选+读全文；pages.yml 自动构建索引部署）
 
 ### T2 · 长线悬念（世界级谜团渐进揭示）

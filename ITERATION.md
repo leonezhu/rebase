@@ -313,3 +313,26 @@
 - worktree 开工即撞主会话并发 push（pull 后 HEAD 从 0537d17 跳 cc61dcd）——「演练基线可能过期」第 N 次应验，worktree + 收尾 fetch --ff-only 复核有效
 - GitHub Actions run 块 python 段提取：`\nPYEOF` 全文首查会命中后续 heredoc，必须按行号配对扫描（start 行下一个顶格 PYEOF）
 - 本地实跑 build-chronicle-index.py 属安全幂等（输出与已提交版本逐字节一致，git status CLEAN 验证）——对生成器类脚本，实跑+CLEAN 断言是最强校验
+
+## 2026-10-14 20:0x 夜间轮：好玩路线图 T1-2「天赋技能扩展」施工（v0.10）
+
+### 交付
+- **schema 硬边界先行**（beast.schema.json）：talent.kind 扩为 6 类（+control/summon）；新增 talent.mastery（0-999，bot 独占写入，禁玩家 PR 改），旧灵籍无字段兼容（.get 默认 0）
+- **觉醒四级**（battle.yml AWAKEN 表）：mastery 0-2/3-7/8-14/15+ → Lv0-3；触发率 30/35/40/45%；burst 1.6→1.9x、shield 减伤 0.5→0.3、drain 吸血 0.4→0.55、counter 反弹 0.5→0.7 随级强化
+- **control 封招**：命中则对方该回合力度减半（伤害结算前生效，攻守两侧皆有语义）
+- **summon 残影协战**：攻方命中 +25 固定追伤（守方无语义不触发）
+- **熟练度入账**：battle.yml 结算段每触发 +1（胜负无关），觉醒瞬间在 issue 贴「✨ 天赋 · 觉醒」播报（只升贴一次不刷屏）
+- **本地沙盒演练全过**：sim 段原样提取真跑（control/summon 触发断言、mastery 计数一致断言、旧籍无 mastery 兼容断言、schema 3 真实灵籍+2 新 kind 样本+非法 kind 反例全过、旧 4 类 Lv0 回归=数值与 v0.8 语义一致）
+- **e2e 实测**（issue#59 燧鸣 vs 墨霄）：battle run success，燧鸣 R1 burst 触发 ✨、mastery=1 入账（commit d19b2ee）、墨霄 shield 未触发 mastery 正确保 0、灵性结算正常
+
+### 顺带修正的隐性 bug（施工中实锤）
+1. **守方侧无语义 kind 空触发**：v0.8 起 trig_def 对 burst/drain 兽命中时事件为 None 但不报错（无感知）；mastery 要入账后计数与画面不符（实测 3 vs 1）。修正=触发判定绑定语义侧：burst/drain/summon 仅攻方判定、shield/counter 仅守方判定、control 双侧——**触发必须可见于画面**
+2. **talent 事件单槽互相覆盖**：一回合攻守双方天赋都触发时旧代码单变量覆盖丢事件；改攻守双事件槽（talent/talent_def），bot 分镜行可同时显示两侧 ✨
+
+### 观察项（非本轮引入，未修）
+- growth/labels/register/lore 四 workflow 在 bot 建的 battle-log PR 上 100% failure（近 100 次 0 成功，"workflow file issue" + 0 jobs，入账 PR 均已正常合并不受影响）——疑似 GitHub 对 bot PR 递归触发的抑制，留待专轮排查
+
+### 过程教训
+- workflow 内嵌 python 改动，沙盒提取时 `${{ steps.parse.outputs.* }}` 表达式必须一并替换（漏一个就 FileNotFoundError）
+- 单事件槽变量在「一回合双触发」场景是隐性地雷：新机制要入账时，先画清"一回合最多几个事件、各归谁"
+- e2e 后本地 diff 突然 clean = 并发 cron 刚提交——收尾 commit 前必须 git log 复核工作树归属，确认并发提交没夹带自己文件
