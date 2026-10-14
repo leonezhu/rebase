@@ -1,5 +1,6 @@
 battle_history:
-  lose_streak: 2
+  lose_streak: 3
+  loss_count: 1
 bloodline:
   unlocked: 0
   wins: 0
@@ -39,12 +40,12 @@ open_loops:
 origin: 青苔覆盖的巨钟内壁
 owner: leonezhu
 realm: lianqi
-spirit: 40
+spirit: 10
 spirit_recovered_at: '2026-10-14'
 spirit_root:
   element: fire
   purity: 75
   variant: normal
-spirit_stones: 10
+spirit_stones: 0
 stage: cultivating
 titles: []
