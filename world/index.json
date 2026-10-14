@@ -295,5 +295,13 @@
       }
     ]
   ],
-  "tales": []
+  "tales": [
+    {
+      "id": "leonezhu",
+      "name": "leonezhu传",
+      "entries": 6,
+      "status": "连载中",
+      "last_update": "大变基第十日"
+    }
+  ]
 }
