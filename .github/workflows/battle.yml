@@ -112,6 +112,20 @@ jobs:
               # 注意：不得补空 genes/personality——power() 以 'genes' in beast 分流人修/灵兽公式
               return d
 
+          # ===== 威名录(v0.20 称号收口·数值正源)：world/lore/titles.yaml 是唯一权威 =====
+          # 威名不只是文案：每枚称号按录内 effect% 加成，全服封顶 TITLES_CAP=5%
+          # （录缺失/坏档=显式红灯，禁静默降级——账本类失败必须可见）
+          import yaml as _yreg
+          _reg = _yreg.safe_load(open('world/lore/titles.yaml', encoding='utf-8'))
+          if not isinstance(_reg, list) or not _reg:
+              raise SystemExit("REGISTRY:world/lore/titles.yaml 缺失或为空，天道账本不可用")
+          TITLE_EFFECT = {t['name']: float(t.get('effect', 0)) for t in _reg}
+          TITLES_CAP = 5.0
+          def titles_mult(beast):
+              ts = beast.get('titles') or []
+              bonus = min(TITLES_CAP, sum(TITLE_EFFECT.get(t, 0.0) for t in ts))
+              return 1 + bonus / 100.0
+
           def load(owner):
               return norm_player(load_beast(owner))
 
@@ -148,7 +162,7 @@ jobs:
                       elif m.get('state') == '低落':
                           base *= 0.97
                   fluct = int(rng_slice, 16) % 21 - 10
-                  return base * (1 + fluct / 100)
+                  return base * titles_mult(beast) * (1 + fluct / 100)
               g = beast['genes']
               base = (g['ling']*1.5 + g['po']*1.2 + g['qiao'] + g['ren']*0.8 + g['yun']*0.5)
               p = beast['personality']
@@ -170,7 +184,7 @@ jobs:
                   elif m.get('state') == '低落':
                       base *= 0.97
               fluct = int(rng_slice, 16) % 21 - 10
-              return base * (1 + fluct/100)
+              return base * titles_mult(beast) * (1 + fluct/100)
 
           # ===== 天赋觉醒等级(v0.10)：熟练度→等级→触发率/特效倍率 =====
           def awaken(tal):

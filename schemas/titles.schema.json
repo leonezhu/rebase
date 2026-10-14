@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "titles-registry",
+  "description": "威名录硬边界：称号系统的数值正源。effect=战力加成百分数，全服加成封顶由对账闸强制（TITLES_CAP=5.0）",
+  "type": "array",
+  "minItems": 1,
+  "maxItems": 30,
+  "items": {
+    "type": "object",
+    "required": ["id", "name", "how", "effect", "granted_by_bot"],
+    "additionalProperties": false,
+    "properties": {
+      "id": { "type": "string", "pattern": "^[a-z][a-z0-9-]{1,30}$", "description": "拼音唯一id" },
+      "name": { "type": "string", "minLength": 2, "maxLength": 6, "description": "称号名（玩家可见，须全中文）" },
+      "how": { "type": "string", "minLength": 6, "maxLength": 60, "description": "取得之道（世界观口吻，零技术术语）" },
+      "effect": { "type": "number", "minimum": 0, "maximum": 2.0, "description": "每枚战力加成%（≤2.0，防单枚失衡）" },
+      "first_seen": { "type": "string", "description": "首见于哪个引擎版本（append-only 史料）" },
+      "granted_by_bot": { "type": "boolean", "const": true, "description": "威名只能天道授予，恒 true" }
+    }
+  }
+}

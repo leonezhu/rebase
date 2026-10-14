@@ -29,6 +29,15 @@ jobs:
           python3 - <<'EOF'
           import yaml, json, pathlib, html, datetime
 
+          # ===== 威名对账闸(v0.20 称号收口)：world/lore/titles.yaml 是唯一权威 =====
+          # 灵籍出现录外称号=伪造（威名只能天道授予）→ 显式红灯，禁静默放行
+          _reg = yaml.safe_load(pathlib.Path('world/lore/titles.yaml').read_text(encoding='utf-8'))
+          if not isinstance(_reg, list) or not _reg:
+              raise SystemExit("威名录 world/lore/titles.yaml 缺失或为空——天道账本不可用")
+          VALID_TITLES = {t['name'] for t in _reg}
+          TITLE_EFFECT = {t['name']: float(t.get('effect', 0)) for t in _reg}
+          TITLES_CAP = 5.0
+
           REALM_CN = {
               "lianqi": "炼气", "zhuji": "筑基", "jindan": "金丹",
               "yuanying": "元婴", "huashen": "化神", "dujie": "渡劫", "dacheng": "大乘",
@@ -52,6 +61,15 @@ jobs:
               d = yaml.safe_load(f.read_text(encoding='utf-8'))
               if not d:
                   continue
+              # 威名对账：录外称号=伪造，红灯终止——双轨全查（monsters/ 灵兽 + players/ 人修档案，见下方 players/ 段）
+              _ts = d.get('titles') or []
+              _fake = [t for t in _ts if t not in VALID_TITLES]
+              if _fake:
+                  raise SystemExit(f"威名对账失败：{f} 含录外称号 {_fake}——威名只能天道授予，禁止伪造")
+              # 全服封顶对账：单灵籍加成和超 TITLES_CAP 同为账实不符
+              _bonus = sum(TITLE_EFFECT.get(t, 0.0) for t in _ts)
+              if _bonus > TITLES_CAP:
+                  raise SystemExit(f"威名对账失败：{f} 称号加成合计 {_bonus}% 超全服封顶 {TITLES_CAP}%")
               el = d.get('element', 'fire')
               color = ELEMENT_COLOR.get(el, '#aaa')
               p = d.get('personality', {})
@@ -106,6 +124,17 @@ jobs:
             {'<details class="mystery"><summary>血脉之谜（未解）</summary><p>' + mystery + '</p></details>' if mystery else ''}
           </article>"""
               cards.append(card)
+
+          # 人修轨(players/*.yaml)威名对账：v2 玩家档案同样只许天道授予的称号
+          for pf in sorted(pathlib.Path('players').glob('*.yaml')):
+              pd_ = yaml.safe_load(pf.read_text(encoding='utf-8')) or {}
+              _ts = pd_.get('titles') or []
+              _fake = [t for t in _ts if t not in VALID_TITLES]
+              if _fake:
+                  raise SystemExit(f"威名对账失败：{pf} 含录外称号 {_fake}——威名只能天道授予，禁止伪造")
+              _bonus = sum(TITLE_EFFECT.get(t, 0.0) for t in _ts)
+              if _bonus > TITLES_CAP:
+                  raise SystemExit(f"威名对账失败：{pf} 称号加成合计 {_bonus}% 超全服封顶 {TITLES_CAP}%")
 
           now = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8)))
           page = f"""<!DOCTYPE html>

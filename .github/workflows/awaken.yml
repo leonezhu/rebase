@@ -93,6 +93,10 @@ jobs:
           if got.get('element') != expect_elem or got.get('purity') != expect_purity or got.get('variant') != expect_var:
               err.append(f"灵根与天道 hash 不符（命格不可自选：由 owner+created_at 派生）")
 
+          # 防伪(v0.20 称号收口)：觉醒不可自带威名——威名只能天道授予（bot 入账），新档案 titles 必须为空
+          if d.get('titles'):
+              err.append(f"觉醒档案自带称号 {d['titles']}——威名只能天道授予，不可自带（伪造）")
+
           if err:
               print("校验失败：")
               for e in err: print(f"- {e}")
