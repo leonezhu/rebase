@@ -64,6 +64,11 @@
 - ~~explore 每日限额靠 `git log --since="today 00:00"`（runner 本地时区）~~ → ✅ 2026-10-14 打磨轮实锤并修复：该 approxidate 语法实测返回空集（限额恒 0 = 每日 3 次永不触发），改按 committer 上海本地日期精确过滤（--date=format-local），真灵籍与注入边界样本（跨日/+负时区）验证通过
 - [x] 斗法三态状态机断链（2026-10-14 打磨轮发现并修复）：①「斗法/已收录」终态无任何 workflow 会打——解说 PR 合并后 issue 永远停在「已判」；②结算时「斗法/待战」不摘除，已判 issue 会同时挂待战+已判两个矛盾标签（线上 issue#3 因旧 GH_TOKEN bug 标签全空，属历史遗留）。修复：battle.yml 新增 chronicle-seal job（pull_request closed 触发，分支名 battle/<issue>-* 或标题 issue#N 提取，chronicle/ 下同 issue 半场 ≥2 篇才打终态，幂等防重），结算步加 --remove-label 待战。本地用 issue#3 真实状态演练判定通过（2 篇半场 → 应判已收录）；待下一次真实解说 PR 合并做线上回归
 
+
+### 2026-10-14 20:45 ｜ 斗法胜场解锁的记忆碎片不同步（打磨轮发现并修复）
+- **现象**：skill 定案「memory_fragments.unlocked 计数与血脉之力共用（境界节点+胜场解锁）」，rebase.yml 渡劫链在段数上涨时会同步揭示封印段为【待补】占位，但 battle.yml 斗法入账只更新 bloodline，不同步 memory_fragments——斗法赢 2 场触发「🩸 血脉之力·苏醒」时，说好的记忆段仍是【封印】，且集齐 5 段的觉醒剧情经胜场路线永远无法触发。
+- **修复**：battle.yml 血脉入账段补 memory_fragments 同步逻辑（与 rebase.yml 渡劫链一致：新解锁段揭示为【待补·第N段——斗法胜场中闪回的碎片】占位，旧灵籍无字段则动态补建默认结构）。本地沙盒从 workflow 原样提取执行，4 场景断言全过：胜1场不涨段不揭示/金丹+2胜涨段揭示第3段/旧灵籍动态补建/大乘封顶5段揭示第5段；败方字段不受污染。
+
 ## 异常登记
 
 ### 2026-10-14 ｜ growth 链路缺失（打磨轮发现并补齐）

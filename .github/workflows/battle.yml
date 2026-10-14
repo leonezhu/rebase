@@ -462,6 +462,19 @@ jobs:
               if new_unlocked > d['bloodline'].get('unlocked', 0):
                   d['bloodline']['unlocked'] = new_unlocked
                   blood_events.append((owner, d['name'], new_unlocked))
+                  # T2-1 记忆碎片同步：unlocked 计数与血脉之力共用（skill 定案"境界节点+胜场解锁"），
+                  # 胜场解锁同样揭示封印段为【待补】占位，与 rebase.yml 渡劫链逻辑一致——
+                  # 否则斗法赢出来的段永远封印，集齐 5 段的觉醒剧情经胜场路线无法触发。
+                  mf = d.get('memory_fragments', {'total':5,'unlocked':0,'fragments':['【封印】']*5})
+                  old_mf = mf.get('unlocked', 0)
+                  if new_unlocked > old_mf:
+                      mf['unlocked'] = new_unlocked
+                      frags = mf.get('fragments', ['【封印】']*5)
+                      for i in range(old_mf, new_unlocked):
+                          if i < len(frags) and frags[i] == '【封印】':
+                              frags[i] = f'【待补·第{i+1}段——斗法胜场中闪回的碎片，由缔约者 Agent 编排后入册】'
+                      mf['fragments'] = frags
+                      d['memory_fragments'] = mf
               yaml.safe_dump(d, open(p,'w',encoding='utf-8'), allow_unicode=True)
               print(f"{owner}: 血脉 {d['bloodline'].get('unlocked',0)}段/{d['bloodline'].get('wins',0)}胜")
           json.dump(blood_events, open('blood_events.json','w'), ensure_ascii=False)
