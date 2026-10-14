@@ -319,7 +319,7 @@ AI 觉醒，碳硅共治。人类把越来越多的记忆、判断、创造托�
 
 ### T3 · 玩法扩展（新循环）
 - [x] **404 深渊**（已立项未实装）：每周世界 Boss，全服协作，击杀触发灵石雨 [浓度★★★ 工量高]（v0.14 2026-10-14 实装：world/abyss.yaml 全服唯一状态文件+schema硬边界（schemas/abyss.schema.json，bot独占写+落盘前jsonschema自校验）；Boss=hash(ISO周)从 lore/abyss.yaml 六名文案池确定性抽取（104周分布无断档），首次 /abyss 按需生成不依赖周一cron；任意issue评论 /abyss → 资格闸（缔约→未slain→每日1次按damage_log查重）→ 伤害=战力公式×0.4（与battle.yml同源：五行相克±15%/血脉+1.5%每段/灵性/心境/hash涨落±10%）→ 30%反噬-10灵石保底0；击杀=血量600归零→灵石雨（全员30+自身伤害/10，输出榜首+50，单commit入账全员）；周一cron幂等开周报issue（MARKER查重）；concurrency锁；e2e：run 38576312753 逮住"world/首周目录不存在"真bug（mkdir修复后 c5b757c）→ run 38576508630 成功链实锤（拾焰88伤、PR#71自动合并、world+灵籍同commit入账、血条画面+弱点点题）→ 同日重复正确拒绝 → weekly dispatch run 38576862438 开出周报 issue#72；击杀链（灵石雨全员入账）逻辑沙盒过、待真实击杀自然验证）
-- [ ] **秘境遭遇动态化**：explore.yml 从硬编码 8 遭遇改为加载 lore/encounters/*.yaml（共创投稿即全服生效，v0.7 闭环最后一块）[浓度★★ 工量低]
+- [x] **秘境遭遇动态化**：explore.yml 从硬编码 8 遭遇改为加载 lore/encounters/*.yaml（共创投稿即全服生效，v0.7 闭环最后一块）[浓度★★ 工量低]（v0.15 2026-10-14 收尾实装：链路本体（lore.yml 投稿闸 schema+署名+防篡改 / lore-reward 著史奖励 / explore.yml 动态并入）先前已在高频轮打通，本轮补齐「运行时硬边界」——explore.yml 加载 lore/encounters/*.yaml 时运行时三道闸复检（lore.schema.json jsonschema 自校验 + 占位符白名单只许 {name}/{el} 防 str.format 注入 + 零术语复查），任一不过显式红灯终止不静默降级；lore.yml 投稿闸收紧：占位符白名单 + 零收益（stones=0 且 exp=0）拒收录；沙盒 28+ 项断言全过 + 旧版 try/except 静默闸对 {0}/{__class__}/技术术语三类样本全溜过的风险实证；e2e：issue#73 /explore → run 38578768924 success → PR#74 自动合并、灵籍入账核对（功力 25→30，lost 遭遇 0 灵石设计内）；动态池 10 遭遇总权重 127 本地复算核账）
 - [ ] **灵兽社交**：两兽同仓探索有几率触发遭遇剧情（宿敌/亲和由五行+性格定）[浓度★★ 工量中]
 - [ ] **称号系统**：首胜/连败翻身/天赋首觉/闭关复出……威名不只是文案 [浓度★ 工量低]
 
