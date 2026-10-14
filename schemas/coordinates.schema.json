@@ -24,8 +24,7 @@
     "probe_count": {
       "type": "integer",
       "minimum": 0,
-      "maximum": 140,
-      "description": "全服累计有效探测次数（bot 独占写入，0-140）"
+      "description": "全服累计有效探测次数（bot 独占写入；7枚集齐后探测仍计数（审计连续性），仅揭示停止）"
     },
     "unlocked": {
       "type": "integer",
@@ -55,8 +54,7 @@
         },
         "additionalProperties": false
       },
-      "maxItems": 140,
-      "description": "探测记录（owner+上海日期），用于每日1次限额判定；bot 独占写入"
+      "description": "探测记录（owner+上海日期），用于每日1次限额判定；7枚集齐后仍追加；bot 独占写入"
     },
     "updated_at": {
       "type": "string",

@@ -2,6 +2,28 @@
 
 > 夜间 cron 每轮迭代在此记录。设计定案由主会话写入，施工项完成后打勾。
 
+## 2026-10-14 21:0x 夜间轮：好玩路线图 T2-3「重逢伏笔」施工（v0.12 旧分支坐标）
+
+### 交付
+- **schema 硬边界先行**（schemas/coordinates.schema.json）：world/coordinates.yaml 全服唯一状态文件，total_fragments 恒7/probes_required_per_fragment 恒20/unlocked 0-7/fragments 7段定长/probe_log 记 owner+上海日期；bot 独占写入，且 workflow 在落盘前 jsonschema 自校验（bot 也必须过自己的 schema）
+- **coordinate.yml**：任意 issue 评论 /coordinate → 四重资格闸（灵籍存在→化神+→当日未测（probe_log 按 owner+日期查重）→灵石≥50）→ 扣50灵石+全服计数+1 → 每20次按序揭示1枚 → bot 贴探测结果（含进度条、新碎片全文、已显形碎片折叠列表）→ bot PR 入账（beast.yaml+world 同 commit，push/create/merge 零吞错）
+- **碎片文本**：lore/coordinates.yaml 预作7枚（倒悬的海→重逢之日，零技术术语零数值，留白不解释）；workflow 只按揭示序取文本，不生成不改写——「叙事归玩家数值归系统」在 world 级的落地：任何 Agent 都不能写坐标数值，坐标叙事不进账本
+- **并发安全**：concurrency group=coordinate 串行化揭示判定；seed 无随机成分（计数到阈值必揭示，天然幂等可回放）
+- **README 命令表**补 /coordinate 一行
+
+### 沙盒演练（11 断言全过，从 workflow 原样提取结算段执行）
+- A1 未缔约拒绝 / A2 非化神拒绝（燧鸣 zhuji 实册）/ A3 灵石不足拒绝 / A4 首次探测成功+扣费50 / A5 同日重复拒绝 / A6 第20次揭示第1枚（文本=倒悬的海）/ A6a unlocked 与碎片入册一致 / A7 沙盒 world 文件独立过 schema / A8 第140次揭示第7枚封顶 / A8a 集齐后照常计数不越7
+
+### 沙盒逮住的真 bug（已修）
+- **集齐7枚后探测计数撞 schema 上限**：初版 probe_count/probe_log 设 maximum/maxItems=140，集齐后再探测 → 计数 141 → jsonschema 自校验炸 → 入账红灯且灵石已扣（白扣）。修正：去掉上限（集齐后照常计数保持审计连续性，仅揭示停止）。教训：**「有上限的字段」要问一句"到顶后机制是否还活着"——活着的循环不该被静态上限卡死**
+
+### e2e
+- 待补：真实探测 run 实测（本轮 push 后跑）
+
+### 过程教训
+- workflow 块标量提取后必须 textwrap.dedent 再 compile/执行——缩进残留的 IndentationError 会伪装成「提取失败」
+- worktree 外直接改工作区时，开工前 git status 区分并发 cron 的夹带改动（本轮 DESIGN.md 的「成长机制 v3」段落为主会话未提交进行时改动，本轮勾选行单独 patch 不触碰）
+
 ## 施工清单（cron 按序取项，每轮一项）
 
 - [x] 1. 修 register.yml 的 YAML 解析 bug：awk 提取 origin 对多行不健壮 → 改 python yaml 库解析；顺带修复降世 issue 正文漏 YAML 原文问题（根因同一个）✅ 2026-10-14（origin/mystery 全文入正文，GITHUB_ENV heredoc 传变量，本地对真实灵籍演练断言通过）
