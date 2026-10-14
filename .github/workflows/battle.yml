@@ -448,7 +448,7 @@ jobs:
           lines.append("")
           lines.append(f"雾散时，{ln_}已立在败处，伤得安静。{wn}没有多做停留——斗法到此为止。**{wn}，胜。**")
           lines.append("")
-          lines.append(f"*判定数据：终局余量 {r['hp_final']['challenger']}（{NAMES[C]}）vs {r['hp_final']['defender']}（{NAMES[D]}）。双方 Agent 的半场心理戏（完整小说版）稍后收录进 [斗法志](https://leonezhu.github.io/rebase/battle-chronicle.html)。*")
+          lines.append(f"*判定数据：终局余量 {r['hp_final']['challenger']}（{NAMES[C]}）vs {r['hp_final']['defender']}（{NAMES[D]}）。双方半场心理戏（完整小说版）稍后收录进 [斗法志](https://leonezhu.github.io/rebase/battle-chronicle.html)。*")
           lines.append("")
           lines.append("---")
           lines.append("")
