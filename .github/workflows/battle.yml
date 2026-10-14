@@ -152,10 +152,21 @@ jobs:
           SUMMON_DMG   = 25   # summon 固定协战伤害
           CONTROL_CUT  = 0.5  # control 封招：对方该回合力度减半
 
-          # 灵性闭关检查: <30 当日不应战
+          comeback_set = set()  # v0.18 闭关复出标：恢复前<30而出关可战者，胜则授「闭关复出」
+          # 灵性闭关检查: <30 当日不应战——v0.18 修正：
+          # ①先做当日惰性恢复再判定（旧版先拒后弃，闭关兽当日再无恢复机会，若无人 /battle
+          #   触发恢复则 spirit_recovered_at 永不更新=永久闭关死锁）
+          # ②「恢复前<30（本该闭关）而恢复后>=30（出关可战）」的场次打 comeback 标，
+          #   该兽本场若获胜 → 入账段授予「闭关复出」称号（威名=绝境翻身，不只是文案）
           for beast, owner in [(a, C), (b, D)]:
-              if beast.get('spirit', 100) < 30:
-                  raise SystemExit(f"CLOSED:{owner}:{beast['name']}:灵性耗竭，已闭关，明日再战（今日灵性 {beast.get('spirit',100)}）")
+              was_below = beast.get('spirit', 100) < 30   # 恢复前先读（先读后改，防「败者复起」式死代码）
+              if beast.get('spirit_recovered_at') != TODAY:
+                  beast['spirit'] = min(100, beast.get('spirit', 100) + 20)
+                  beast['spirit_recovered_at'] = TODAY
+              if beast['spirit'] < 30:
+                  raise SystemExit(f"CLOSED:{owner}:{beast['name']}:灵性耗竭，已闭关，明日再战（今日灵性 {beast['spirit']}）")
+              if was_below:
+                  comeback_set.add(owner)
 
           TALENT_TXT = {
               'burst':  ["★天赋【{t}】觉醒——{d}！伤害暴涨", "★{t}轰然引爆！{d}，灵压如潮"],
@@ -295,6 +306,8 @@ jobs:
               "hp_final": {"challenger": round(hp_a,1), "defender": round(hp_b,1)},
               # 天赋熟练度(v0.10)：本场各触发次数，bot 入账 +1/次
               "mastery_gained": mastery_gained,
+              # v0.18 称号系统收口：闭关复出标（本战从闭关中被放出关者）——胜者授「闭关复出」
+              "comeback": sorted(comeback_set),
           }
           # 境界压制：高 2 境以上直接碾压
           realms = ["lianqi","zhuji","jindan","yuanying","huashen","dujie","dacheng"]
@@ -533,12 +546,16 @@ jobs:
           # 连败史先读后清(顺序不可倒:清零后再读恒为0,"败者复起"永远不可达)
           prev_lose_streak = d.get('battle_history', {}).get('lose_streak', 0)
           d.setdefault('battle_history', {})['lose_streak'] = 0
-          # 称号授予(v0.14): 只增不减
+          # 称号授予(v0.14/收口 v0.18): 只增不减
           titles = d.setdefault('titles', [])
           earned = []
           if not titles and d.get('exp', 0) >= win_exp: earned.append('初鸣')  # 首胜
           if mult >= 2.5: earned.append('越级斩')
           if prev_lose_streak >= 2: earned.append('败者复起')  # 连败≥2后翻身
+          # v0.18 闭关复出：sim 段标了 comeback（恢复前<30 本该闭关、恢复后出关可战）且本战获胜
+          # （直接读 r['winner']，与段内 python 变量一致；勿用 $WINNER——那是 bash 层变量，unquoted heredoc 里能碰巧展开但脆弱）
+          if r['winner'] in r.get('comeback', []):
+              earned.append('闭关复出')
           for t in earned:
               if t not in titles: titles.append(t)
           if earned: print(f"🎖️ 称号授予: {', '.join(earned)}")
@@ -590,6 +607,7 @@ jobs:
           # 觉醒播报只在新等级 > 旧等级时贴一次（升级瞬间，非每场刷屏）。
           AWAKEN_NAME = {0: '初醒', 1: '渐悟', 2: '大成', 3: '圆满'}
           awaken_events = []
+          talent_debut = []  # v0.18 天赋首觉(首次跨入Lv1)——授「天赋初醒」称号
           mg = r.get('mastery_gained', {})
           for owner in [r['winner'], r['loser']]:
               p = f'monsters/{owner}/beast.yaml'
@@ -600,6 +618,13 @@ jobs:
               old_lv = (3 if d['talent']['mastery'] >= 15 else 2 if d['talent']['mastery'] >= 8 else 1 if d['talent']['mastery'] >= 3 else 0)
               d['talent']['mastery'] += mg.get(owner, 0)
               new_lv = (3 if d['talent']['mastery'] >= 15 else 2 if d['talent']['mastery'] >= 8 else 1 if d['talent']['mastery'] >= 3 else 0)
+              # v0.18 天赋首觉：首次从 Lv0 跨入 Lv1+ → 「天赋初醒」（只增不减，已有则不重复）
+              if old_lv == 0 and new_lv >= 1:
+                  d.setdefault('titles', [])
+                  if '天赋初醒' not in d['titles']:
+                      d['titles'].append('天赋初醒')
+                      talent_debut.append(owner)
+                      print(f"🎖️ {owner}: 称号授予 天赋初醒")
               yaml.safe_dump(d, open(p,'w',encoding='utf-8'), allow_unicode=True)
               print(f"{owner}: 天赋熟练度 +{mg.get(owner,0)} → {d['talent']['mastery']} (Lv{new_lv})")
               if new_lv > old_lv:
@@ -659,6 +684,26 @@ jobs:
             )
             gh issue comment ${{ github.event.issue.number }} -R leonezhu/rebase -b "$BODY"
           fi
+          # 威名授予播报(v0.18 称号收口)：闭关复出/天赋初醒——🎖️ 与 🩸/✨ 同级的戏眼
+          # （heredoc 加引号防 bash 展开，issue 号经环境变量传入——引号内 ${{ }} 不展开）
+          export TCISSUE=${{ github.event.issue.number }}
+          python3 - <<'TCEOF'
+          import json, subprocess, os
+          r = json.load(open('battle_result.json'))
+          ev = []
+          if r['winner'] in r.get('comeback', []):
+              ev.append((r['winner'], '闭关复出'))
+          if not ev:
+              print("无威名授予，跳过播报")
+          else:
+              lines = ["", "## 🎖️ 威名 · 铸成", "",
+                       "> 威名不是谁赏的，是自己一场一场挣来的——", ""]
+              for owner, title in ev:
+                  lines.append(f"**@{owner}** 获授「**{title}**」——从闭关中被放出关来，还赢了这一场。")
+              lines.append("")
+              subprocess.run(['gh', 'issue', 'comment', os.environ['TCISSUE'],
+                              '-R', 'leonezhu/rebase', '-b', "\n".join(lines)], check=True)
+          TCEOF
 
   # ===== 斗法收录终态：解说 PR 合并后，双方半场齐 → issue 打「斗法/已收录」 =====
   chronicle-seal:
