@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#faf9f5">
+<title>人物传记 · 万灵变基录</title>
+<style>
+:root{--bg:#faf9f5;--surface:#f0eee6;--border:#d9d5c8;--fg:#29261b;--dim:#6e6b5e;--accent:#d97757;--accent2:#c15f3c}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:"Songti SC","Noto Serif SC",serif;min-height:100vh;padding:1.5rem 1rem}
+.wrap{max-width:700px;margin:0 auto}
+h1{text-align:center;letter-spacing:.3em;margin-bottom:.3rem;font-size:1.6rem}
+.sub{text-align:center;color:var(--dim);font-size:.85rem;margin-bottom:2rem}
+.back{display:inline-block;margin-bottom:1rem;color:var(--accent2);cursor:pointer;font-size:.9rem;text-decoration:none}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.2rem;margin-bottom:.8rem;transition:transform .15s,border-color .15s;text-decoration:none;color:var(--fg);display:block}
+.card:hover{transform:translateY(-2px);border-color:var(--accent)}
+.card h3{font-size:1.05rem;margin-bottom:.3rem}
+.card .meta{font-size:.78rem;color:var(--dim);margin-bottom:.4rem}
+.card .desc{font-size:.9rem;line-height:1.6;color:var(--dim)}
+.loading{text-align:center;color:var(--dim);padding:3rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+<a class="back" href="index.html">← 返回主页</a>
+<h1>人物传记</h1>
+<p class="sub">每个人都是这个世界的书写者</p>
+<div id="list" class="loading">加载中…</div>
+</div>
+
+<script>
+const TALES = {
+  "leonezhu": {name: "雄大传", entries: 6, status: "连载中", desc: "大变基第九日，于青苔巨钟内壁醒来。火纯根，浅湖镇藏经阁学《赤阳吐纳法》，目前炼气初入。"}
+};
+const LIST = document.getElementById('list');
+Object.entries(TALES).forEach(([id, t]) => {
+  const d = document.createElement('a');
+  d.className = 'card';
+  d.href = 'tales/view.html?owner=' + id;
+  d.innerHTML = `<h3>${t.name}</h3><div class="meta">${t.status}${t.entries ? ' · '+t.entries+' 回' : ''}</div><div class="desc">${t.desc}</div>`;
+  LIST.appendChild(d);
+});
+</script>
+</body>
+</html>
