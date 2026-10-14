@@ -145,7 +145,7 @@ jobs:
                   hp_a = max(0, hp_a - min(dmg, 70))
                   frames.append({
                       "n": i+1, "phase": phase,
-                      "attacker": B, "defender": A,
+                      "attacker": A, "defender": B,
                       "atk_el": ELEM_CN[attacker['element']],
                       "def_el": ELEM_CN[defender['element']],
                       "move": MOVE_TXT[attacker['element']][i % 2],
@@ -204,9 +204,10 @@ jobs:
           NAMES = {C: a['name'], D: b['name']}
           ELEM = {'metal':'金','wood':'木','earth':'土','water':'水','fire':'火'}
 
+          REALM_CN = {'lianqi':'炼气','zhuji':'筑基','jindan':'金丹','yuanying':'元婴','huashen':'化神','dujie':'渡劫','dacheng':'大乘'}
           bar = lambda hp: '🟩' * int(hp//10) + ('🟨' if hp % 10 >= 5 else '') + '⬜' * (10 - int(hp//10) - (1 if hp % 10 >= 5 else 0))
 
-          lines = ["## ⚔️ 斗法 · 天道推演", "", f"**{NAMES[C]}**（{ELEM[a['element']]}·{a['realm']}） ⚡ vs ⚡ **{NAMES[D]}**（{ELEM[b['element']]}·{b['realm']}）", ""]
+          lines = ["## ⚔️ 斗法 · 天道推演", "", f"**{NAMES[C]}**（{ELEM[a['element']]}·{REALM_CN.get(a['realm'], a['realm'])}） ⚡ vs ⚡ **{NAMES[D]}**（{ELEM[b['element']]}·{b['realm']}）", ""]
           PHASE = {"开场":"☽ 开场","中盘":"⚔️ 中盘","决胜":"🔥 决胜"}
           for f in r['frames']:
               atk = NAMES[f['attacker']]; dfn = NAMES[f['defender']]
