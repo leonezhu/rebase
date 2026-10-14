@@ -30,17 +30,25 @@ h1{text-align:center;letter-spacing:.3em;margin-bottom:.3rem;font-size:1.6rem}
 </div>
 
 <script>
-const TALES = {
-  "leonezhu": {name: "雄大传", entries: 6, status: "连载中", desc: "大变基第九日，于青苔巨钟内壁醒来。火纯根，浅湖镇藏经阁学《赤阳吐纳法》，目前炼气初入。"}
-};
-const LIST = document.getElementById('list');
-Object.entries(TALES).forEach(([id, t]) => {
-  const d = document.createElement('a');
-  d.className = 'card';
-  d.href = 'tales/view.html?owner=' + id;
-  d.innerHTML = `<h3>${t.name}</h3><div class="meta">${t.status}${t.entries ? ' · '+t.entries+' 回' : ''}</div><div class="desc">${t.desc}</div>`;
-  LIST.appendChild(d);
-});
+fetch('world/index.json')
+  .then(r => r.json())
+  .then(json => {
+    const list = document.getElementById('list');
+    list.innerHTML = '';
+    const tales = json.tales || [];
+    if(!tales.length) { list.innerHTML = '<p class="loading">暂无传记记录</p>'; return; }
+    tales.forEach(item => {
+      const d = document.createElement('a');
+      d.className = 'card';
+      d.href = 'tales/view.html?owner=' + item.id;
+      d.innerHTML = '<h3>'+item.name+'</h3><div class="meta">'+item.status+(item.entries?' · '+item.entries+' 回':'')+'</div>';
+      if(item.desc) d.innerHTML += '<div class="desc">'+item.desc+'</div>';
+      list.appendChild(d);
+    });
+  })
+  .catch(e => {
+    document.getElementById('list').innerHTML = '<p class="loading" style="color:#c15f3c">加载失败: '+e.message+'</p>';
+  });
 </script>
 </body>
 </html>

@@ -246,17 +246,27 @@ document.querySelectorAll('.tab').forEach(t => {
   });
 });
 
-// load and render
-const keys = Object.keys(DATA);
-const stats = document.getElementById('stats');
-stats.textContent = '共 ' + Object.values(DATA).reduce((s,v)=>s+v.length,0) + ' 条资产记录';
-
-renderLocations(DATA.locations);
-renderNPCs(DATA.npcs);
-renderGongfa(DATA.gongfa);
-renderArtifacts(DATA.artifacts);
-renderEvents(DATA.events);
-renderTales(DATA.tales);
+// load from world/index.json
+fetch('world/index.json')
+  .then(r => { if(!r.ok) throw new Error('加载失败'); return r.json(); })
+  .then(json => {
+    Object.assign(DATA, json);
+    const total = Object.values(DATA).reduce((s,v)=>s+v.length,0);
+    document.getElementById('stats').textContent = '共 '+total+' 条资产记录';
+    renderLocations(DATA.locations);
+    renderNPCs(DATA.npcs);
+    renderGongfa(DATA.gongfa);
+    renderArtifacts(DATA.artifacts);
+    renderEvents(DATA.events);
+    renderTales(DATA.tales);
+  })
+  .catch(e => {
+    document.getElementById('stats').textContent = '加载失败: '+e.message;
+    ['locations','npcs','gongfa','artifacts','events','tales'].forEach(k => {
+      const el2 = document.getElementById('view-'+k);
+      if(el2) el2.innerHTML='<p style="text-align:center;color:#c15f3c;padding:2rem">数据加载失败</p>';
+    });
+  });
 </script>
 </body>
 </html>
