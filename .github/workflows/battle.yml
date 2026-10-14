@@ -622,12 +622,19 @@ jobs:
           # 连败史先读后清(顺序不可倒:清零后再读恒为0,"败者复起"永远不可达)
           prev_lose_streak = d.get('battle_history', {}).get('lose_streak', 0)
           d.setdefault('battle_history', {})['lose_streak'] = 0
+          # v0.19 连胜计数(胜方+1,败方清零)——锋芒内敛称号依据
+          d.setdefault('battle_history', {})['win_streak'] = d.get('battle_history', {}).get('win_streak', 0) + 1
           # 称号授予(v0.14/收口 v0.18): 只增不减
           titles = d.setdefault('titles', [])
           earned = []
           if not titles and d.get('exp', 0) >= win_exp: earned.append('初鸣')  # 首胜
           if mult >= 2.5: earned.append('越级斩')
           if prev_lose_streak >= 2: earned.append('败者复起')  # 连败≥2后翻身
+          # v0.19 锋芒内敛：连胜≥3且心境未低落——强而不狂的威名
+          ws = d.get('battle_history', {}).get('win_streak', 0)
+          mood_state = d.get('mood', {}).get('state', '')
+          if ws >= 3 and mood_state != '低落':
+              earned.append('锋芒内敛')
           # v0.18 闭关复出：sim 段标了 comeback（恢复前<30 本该闭关、恢复后出关可战）且本战获胜
           # （直接读 r['winner']，与段内 python 变量一致；勿用 $WINNER——那是 bash 层变量，unquoted heredoc 里能碰巧展开但脆弱）
           if r['winner'] in r.get('comeback', []):
@@ -646,8 +653,16 @@ jobs:
           ld['mood'] = {'state': '低落', 'updated': __import__('datetime').date.today().isoformat()}
           bh = ld.setdefault('battle_history', {})
           bh['lose_streak'] = bh.get('lose_streak', 0) + 1
+          # v0.19 总败场计数(胜方不增)——负隅顽抗称号依据
+          bh['loss_count'] = bh.get('loss_count', 0) + 1
+          # v0.19 负隅顽抗：总败场≥3——虽败犹战的称号，败方独自入账
+          if bh['loss_count'] >= 3:
+              ld.setdefault('titles', [])
+              if '负隅顽抗' not in ld['titles']:
+                  ld['titles'].append('负隅顽抗')
+                  print(f"🎖️ {LOSER}: 称号授予 负隅顽抗")
           yaml.safe_dump(ld, open(lp,'w',encoding='utf-8'), allow_unicode=True)
-          print(f"败方 ${LOSER} -{lost} 灵石(疗伤) 心境→低落")
+          print(f"败方 ${LOSER} -{lost} 灵石(疗伤) 心境→低落 (败场总计 {bh['loss_count']})")
           # 血脉之力(v0.8)：胜场累计 + 解锁公式重算（境界段数与 rebase.yml 天梯一致）
           REALM_SEG = {"lianqi":0,"zhuji":1,"jindan":2,"yuanying":3,"huashen":4,"dujie":5,"dacheng":5}
           blood_events = []
@@ -778,6 +793,21 @@ jobs:
           BCEOF
           else
             echo "无威名授予，跳过播报"
+          fi
+          # 威名授予播报(v0.19)：锋芒内敛——连胜≥3且心境未低落，同级的戏眼
+          # （与🩸/✨/🎖️闭关复出同框，胜方多一条威名）
+          if python3 -c "import json,sys;import yaml as y,os as _os;r=json.load(open('battle_result.json'));owner=r.get('winner');p=next(c for c in (f'players/{owner}.yaml',f'monsters/{owner}/beast.yaml') if _os.path.exists(c));d=y.safe_load(open(p,encoding='utf-8'));ws=d.get('battle_history',{}).get('win_streak',0);mood=d.get('mood',{}).get('state','');sys.exit(0 if ws>=3 and mood!='低落' else 1)"; then
+            WINNER=$(python3 -c "import json;print(json.load(open('battle_result.json'))['winner'])")
+            WNAME=$(python3 -c "import yaml,os as _os;o='${WINNER}';p=next(c for c in (f'players/{o}.yaml',f'monsters/{o}/beast.yaml') if _os.path.exists(c));print(yaml.safe_load(open(p,encoding='utf-8'))['name'])")
+            gh issue comment ${{ github.event.issue.number }} -R leonezhu/rebase --body-file - <<FCEOF
+          ## 🎖️ 威名 · 铸成
+
+          > 威名不是谁赏的，是自己一场一场挣来的——
+
+          **@${WINNER}**（${WNAME}）获授「**锋芒内敛**」——连胜三场，不狂不躁，气韵自敛。
+          FCEOF
+          else
+            echo "无锋芒内敛播报"
           fi
 
   # ===== 斗法收录终态：解说 PR 合并后，双方半场齐 → issue 打「斗法/已收录」 =====

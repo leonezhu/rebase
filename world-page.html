@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#faf9f5">
+<title>世界资产 · 万灵变基录</title>
+<style>
+:root{--bg:#faf9f5;--surface:#f0eee6;--border:#d9d5c8;--fg:#29261b;--dim:#6e6b5e;--accent:#d97757;--accent2:#c15f3c}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:"Songti SC","Noto Serif SC",serif;min-height:100vh;padding:1.5rem 1rem}
+.wrap{max-width:800px;margin:0 auto}
+h1{text-align:center;letter-spacing:.3em;margin-bottom:.5rem;font-size:1.6rem}
+.sub{text-align:center;color:var(--dim);font-size:.85rem;margin-bottom:2rem}
+.tabs{display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;margin-bottom:1.5rem}
+.tab{padding:.4rem 1rem;border:1px solid var(--border);border-radius:20px;cursor:pointer;font-size:.88rem;color:var(--dim);transition:all .15s}
+.tab.active{background:var(--accent2);color:#fff;border-color:var(--accent2)}
+.view{display:none}
+.view.active{display:block}
+.card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.2rem;margin-bottom:.8rem;transition:transform .15s,border-color .15s}
+.card:hover{transform:translateY(-2px);border-color:var(--accent)}
+.card h3{font-size:1.05rem;margin-bottom:.3rem}
+.card .meta{font-size:.78rem;color:var(--dim);margin-bottom:.4rem}
+.card .desc{font-size:.9rem;line-height:1.7}
+.card .detail{margin-top:.6rem;padding-top:.6rem;border-top:1px solid var(--border);font-size:.85rem;color:var(--dim);line-height:1.6;display:none}
+.card.expanded .detail{display:block}
+.tag{display:inline-block;padding:.1rem .4rem;border-radius:4px;font-size:.75rem;background:var(--bg);border:1px solid var(--border);margin-right:.3rem}
+.fire{color:#c15f3c}.metal{color:#8a8a8a}.water{color:#4a6fa5}.wood{color:#4a7c59}.earth{color:#8b6914}
+.back{display:inline-block;margin-bottom:1rem;color:var(--accent2);cursor:pointer;font-size:.9rem;text-decoration:none}
+.detail-section{margin-top:.8rem;padding:.8rem;background:var(--bg);border-radius:8px;font-size:.88rem;line-height:1.8}
+.detail-section h4{font-size:.85rem;color:var(--accent2);margin-bottom:.4rem}
+ul{margin-left:1.2rem}
+.stats{text-align:center;color:var(--dim);font-size:.85rem;margin-bottom:1rem}
+</style>
+</head>
+<body>
+<div class="wrap">
+<a class="back" href="index.html">← 返回主页</a>
+<h1>世界资产</h1>
+<p class="sub">每个人写自己的故事，故事长出的资产归全世界</p>
+<div class="stats" id="stats"></div>
+<div class="tabs">
+<span class="tab active" data-view="locations">🗺️ 地点</span>
+<span class="tab" data-view="npcs">👤 人物</span>
+<span class="tab" data-view="gongfa">📖 功法</span>
+<span class="tab" data-view="artifacts">⚔️ 法宝</span>
+<span class="tab" data-view="events">🎲 事件</span>
+<span class="tab" data-view="tales">📚 传记</span>
+</div>
+
+<div class="view active" id="view-locations"></div>
+<div class="view" id="view-npcs"></div>
+<div class="view" id="view-gongfa"></div>
+<div class="view" id="view-artifacts"></div>
+<div class="view" id="view-events"></div>
+<div class="view" id="view-tales"></div>
+</div>
+
+<script>
+const DATA = {"gongfa":[],"artifacts":[],"locations":[],"npcs":[],"events":[],"tales":[]};
+let expanded = null;
+
+function el(tag, cls, txt) {
+  const e = document.createElement(tag);
+  if(cls) e.className = cls;
+  if(txt) e.textContent = txt;
+  return e;
+}
+
+function renderLocations(data) {
+  const c = document.getElementById('view-locations');
+  c.innerHTML='';
+  data.forEach(item => {
+    const d = el('div','card');
+    const elemClass = item.element||'';
+    const h3 = el('h3',null,item.name);
+    const meta = el('div','meta');
+    meta.append(el('span','tag',item.type||''), el('span','tag',elemClass));
+    if(item.holders) meta.append(el('span','tag',item.holders[0]));
+    const desc = el('div','desc',item.desc);
+    const detail = el('div','detail');
+    if(item.notable) {
+      const s = el('div','detail-section');
+      s.appendChild(el('h4',null,' notable'));
+      item.notable.forEach(n => s.appendChild(el('li',null,n)));
+      detail.appendChild(s);
+    }
+    if(item.danger) {
+      const s = el('div','detail-section');
+      s.appendChild(el('h4',null,' danger'));
+      s.appendChild(document.createTextNode(item.danger));
+      detail.appendChild(s);
+    }
+    if(item.first_seen) {
+      const s = el('div','detail-section');
+      s.appendChild(el('h4',null,' first seen'));
+      s.appendChild(document.createTextNode(item.first_seen));
+      detail.appendChild(s);
+    }
+    d.append(h3,meta,desc,detail);
+    d.addEventListener('click',()=>d.classList.toggle('expanded'));
+    c.appendChild(d);
+  });
+}
+
+function renderNPCs(data) {
+  const c = document.getElementById('view-npcs');
+  c.innerHTML='';
+  data.forEach(item => {
+    const d = el('div','card');
+    const h3 = el('h3',null,item.name);
+    const meta = el('div','meta');
+    meta.append(el('span','tag',item.location||''));
+    const desc = el('div','desc',item.desc);
+    const detail = el('div','detail');
+    if(item.personality) {
+      const s = el('div','detail-section');
+      s.appendChild(el('h4',null,' personality'));
+      item.personality.forEach(p => s.appendChild(el('li',null,p)));
+      detail.appendChild(s);
+    }
+    if(item.quotes) {
+      const s = el('div','detail-section');
+      s.appendChild(el('h4',null,' quotes'));
+      item.quotes.forEach(q => s.appendChild(el('li',null,q)));
+      detail.appendChild(s);
+    }
+    if(item.first_seen) {
+      const s = el('div','detail-section');
+      s.appendChild(el('h4',null,' first seen'));
+      s.appendChild(document.createTextNode(item.first_seen));
+      detail.appendChild(s);
+    }
+    d.append(h3,meta,desc,detail);
+    d.addEventListener('click',()=>d.classList.toggle('expanded'));
+    c.appendChild(d);
+  });
+}
+
+function renderGongfa(data) {
+  const c = document.getElementById('view-gongfa');
+  c.innerHTML='';
+  data.forEach(item => {
+    const d = el('div','card');
+    const h3 = el('h3',null,item.name);
+    const meta = el('div','meta');
+    meta.append(el('span','tag',item.grade||''), el('span','tag',(item.element||'')));
+    const desc = el('div','desc',item.desc);
+    const detail = el('div','detail');
+    if(item.holders) {
+      const s = el('div','detail-section');
+      s.appendChild(el('h4',null,' holders'));
+      item.holders.forEach(h => s.appendChild(el('li',null,h)));
+      detail.appendChild(s);
+    }
+    if(item.first_seen) {
+      const s = el('div','detail-section');
+      s.appendChild(el('h4',null,' first seen'));
+      s.appendChild(document.createTextNode(item.first_seen));
+      detail.appendChild(s);
+    }
+    d.append(h3,meta,desc,detail);
+    d.addEventListener('click',()=>d.classList.toggle('expanded'));
+    c.appendChild(d);
+  });
+}
+
+function renderArtifacts(data) {
+  const c = document.getElementById('view-artifacts');
+  c.innerHTML='';
+  data.forEach(item => {
+    const d = el('div','card');
+    const h3 = el('h3',null,item.name+(item.unique?' ★':''));
+    const meta = el('div','meta');
+    meta.append(el('span','tag',item.grade||''), el('span','tag',(item.element||'')));
+    if(item.power) meta.append(el('span','tag',item.power+''));
+    const desc = el('div','desc',item.desc);
+    const detail = el('div','detail');
+    if(item.holders) {
+      const s = el('div','detail-section');
+      s.appendChild(el('h4',null,' holders'));
+      item.holders.forEach(h => s.appendChild(el('li',null,h)));
+      detail.appendChild(s);
+    }
+    if(item.hooks) {
+      const s = el('div','detail-section');
+      s.appendChild(el('h4',null,' hooks'));
+      item.hooks.forEach(h => s.appendChild(el('li',null,h)));
+      detail.appendChild(s);
+    }
+    d.append(h3,meta,desc,detail);
+    d.addEventListener('click',()=>d.classList.toggle('expanded'));
+    c.appendChild(d);
+  });
+}
+
+function renderEvents(data) {
+  const c = document.getElementById('view-events');
+  c.innerHTML='';
+  data.forEach(item => {
+    const d = el('div','card');
+    const h3 = el('h3',null,item.name+' · x'+item.weight);
+    const meta = el('div','meta');
+    meta.append(el('span','tag','when: '+(item.when||'')));
+    const hook = el('div','desc',item.hook||'');
+    const detail = el('div','detail');
+    if(item.yields) {
+      const s = el('div','detail-section');
+      s.appendChild(el('h4',null,' yields'));
+      item.yields.forEach(y => s.appendChild(el('li',null,y)));
+      detail.appendChild(s);
+    }
+    d.append(h3,meta,hook,detail);
+    d.addEventListener('click',()=>d.classList.toggle('expanded'));
+    c.appendChild(d);
+  });
+}
+
+function renderTales(data) {
+  const c = document.getElementById('view-tales');
+  c.innerHTML='';
+  data.forEach(item => {
+    const d = el('div','card');
+    const h3 = el('h3',null,item.name);
+    const meta = el('div','meta');
+    meta.append(el('span','tag',(item.entries||'')+' 回'));
+    meta.append(el('span','tag',item.status||''));
+    const last = el('div','desc');
+    last.textContent = 'Last: '+(item.last_update||'—');
+    const a = document.createElement('a');
+    a.href = 'tales/'+item.id+'.html';
+    a.textContent = '→ 查看专题页';
+    a.style.cssText = 'display:inline-block;margin-top:.5rem;color:var(--accent2);text-decoration:none';
+    d.append(h3,meta,last,a);
+    c.appendChild(d);
+  });
+}
+
+// tabs
+document.querySelectorAll('.tab').forEach(t => {
+  t.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.view').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('view-'+t.dataset.view).classList.add('active');
+  });
+});
+
+// load and render
+const keys = Object.keys(DATA);
+const stats = document.getElementById('stats');
+stats.textContent = '共 ' + Object.values(DATA).reduce((s,v)=>s+v.length,0) + ' 条资产记录';
+
+renderLocations(DATA.locations);
+renderNPCs(DATA.npcs);
+renderGongfa(DATA.gongfa);
+renderArtifacts(DATA.artifacts);
+renderEvents(DATA.events);
+renderTales(DATA.tales);
+</script>
+</body>
+</html>

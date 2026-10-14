@@ -10,6 +10,9 @@ on:
       - 'battle-chronicle.html'
       - 'index.html'
       - 'codex.html'
+      - 'world-page.html'
+      - 'world/index.json'
+      - 'tales/*.html'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 permissions:

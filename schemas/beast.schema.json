@@ -166,6 +166,11 @@
           "type": "integer",
           "minimum": 0,
           "description": "连胜计数(保留扩展位)"
+        },
+        "loss_count": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "总败场计数(败方累计,胜方不增)——负隅顽抗称号依据"
         }
       },
       "additionalProperties": false,

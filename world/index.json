@@ -1,0 +1,299 @@
+{
+  "gongfa": [
+    {
+      "id": "gongfa-chiyang-tuna",
+      "name": "赤阳吐纳法",
+      "kind": "gongfa",
+      "grade": "黄阶下品",
+      "element": "fire",
+      "desc": "观想一轮红日悬于眉心，吐纳之间阳气自生。不求其烈，但求其恒。",
+      "traits": [
+        "养身：百日之后经脉坚韧远超同侪",
+        "与灵潮共鸣：火纯根修之引气极快"
+      ],
+      "first_seen": "leonezhu 支线 · 大变基第十日，浅湖镇藏经阁",
+      "origin": "浅湖镇藏经阁三层，守灯人亲手取下——原主不详",
+      "unique": false,
+      "holders": [
+        {
+          "who": "leonezhu（雄大）",
+          "since": "2026-10-15",
+          "note": "守灯人推荐，代价六十枚灵石"
+        }
+      ],
+      "created_by_bot": false
+    },
+    {
+      "id": "gongfa-jinghong-yipie",
+      "name": "惊鸿一瞥",
+      "kind": "gongfa",
+      "grade": "地阶下品",
+      "element": "metal",
+      "desc": "千剑冢第七碑剑痕所悟的身剑合一之术——身形淡成一道白线，剑意先至。",
+      "first_seen": "npc-luhan 支线 · 大变基第五日",
+      "origin": "千剑冢剑碑林第七碑",
+      "unique": false,
+      "holders": [
+        {
+          "who": "npc-luhan（陆惊鸿）",
+          "since": "2026-09-18",
+          "note": "悟性八十八，第七碑前一眼而悟"
+        }
+      ],
+      "created_by_bot": false
+    },
+    {
+      "id": "gongfa-zhenyue-jue",
+      "name": "镇岳诀",
+      "kind": "gongfa",
+      "grade": "玄阶上品",
+      "element": "earth",
+      "desc": "地脉之力灌入脚下大地，方圆十丈砂砾任凭驱使。脚下三尺，皆是助力。",
+      "first_seen": "npc-yanbei 支线",
+      "origin": "黑石荒原地脉深处前辈坐化处，蒲团下压着半卷玉简",
+      "unique": false,
+      "holders": [
+        {
+          "who": "npc-yanbei（严北岳）",
+          "since": "2026-09-20"
+        }
+      ],
+      "created_by_bot": false
+    }
+  ],
+  "artifacts": [
+    {
+      "id": "art-diezhang-yin",
+      "name": "叠嶂印",
+      "kind": "artifact",
+      "grade": "上品法器",
+      "element": "earth",
+      "power": "掷出化山，镇压之处地脉归拢，对方如陷泥沼",
+      "desc": "印脱手即涨，化作三丈小山当头压落。",
+      "first_seen": "npc-yanbei 支线",
+      "origin": "严北岳渡劫那夜，天雷劈开的崖心里嵌着它",
+      "unique": true,
+      "holders": [
+        {
+          "who": "npc-yanbei（严北岳）",
+          "since": "2026-10-05"
+        }
+      ],
+      "created_by_bot": false
+    },
+    {
+      "id": "art-luopan-canying",
+      "name": "罗盘残影",
+      "kind": "artifact",
+      "grade": "下品法器",
+      "element": "earth",
+      "power": "指向主人最想找的东西——不明原理，从未指错",
+      "desc": "与严北岳一同醒来的虚影，他从不解释它是什么。",
+      "first_seen": "npc-yanbei 支线",
+      "origin": "与主人一同醒来的虚影，无人知其来历",
+      "unique": true,
+      "holders": [
+        {
+          "who": "npc-yanbei（严北岳）",
+          "since": "2026-09-15"
+        }
+      ],
+      "hooks": [
+        "罗盘总指雾渊方向——它想找的东西在那边"
+      ],
+      "created_by_bot": false
+    },
+    {
+      "id": "art-wuming-duanjian",
+      "name": "无名断剑",
+      "kind": "artifact",
+      "grade": "上品法器",
+      "element": "metal",
+      "power": "剑身残缺却锋锐不减，出鞘时万剑冢齐鸣——似在应和什么",
+      "desc": "陆惊鸿醒来时就握在手里，没人知道它跟了谁。",
+      "first_seen": "npc-luhan 支线 · 大变基第一日",
+      "origin": "未知——千剑冢万剑齐鸣三日，似在应和冢中某物",
+      "unique": true,
+      "holders": [
+        {
+          "who": "npc-luhan（陆惊鸿）",
+          "since": "2026-09-14"
+        }
+      ],
+      "created_by_bot": false
+    }
+  ],
+  "locations": [
+    {
+      "id": "loc-qianhuzhen",
+      "name": "浅湖镇",
+      "kind": "location",
+      "type": "城镇",
+      "element": "water",
+      "desc": "灯芯草浅湖边上的木头小镇，散修聚居交易之地。湖底灯芯草会发光，水下隐约有一座倒立的白塔。",
+      "notable": [
+        "藏经阁（镇东）：换功法，守灯人坐镇",
+        "悬赏榜（镇西）：赚灵石",
+        "湖边烤鱼摊：消息比悬赏值钱"
+      ],
+      "danger": "镇内安全",
+      "first_seen": "leonezhu 支线 · 大变基第十日",
+      "created_by_bot": false
+    },
+    {
+      "id": "loc-qianjianzhong",
+      "name": "千剑冢",
+      "kind": "location",
+      "type": "险地/悟道",
+      "element": "metal",
+      "desc": "万剑插地的黑色石林，剑身锈迹斑斑，剑鸣未止。葬剑之地，也是悟剑之地。",
+      "notable": [
+        "第七碑：雄大经过时，脚下剑鸣齐齐停了一瞬——原因不明",
+        "陆惊鸿在此悟出「惊鸿一瞥」"
+      ],
+      "danger": "筑基以下勿入深处",
+      "first_seen": "leonezhu 支线 · 大变基第十日",
+      "created_by_bot": false
+    },
+    {
+      "id": "loc-qingtai-zhong",
+      "name": "青苔巨钟",
+      "kind": "location",
+      "type": "遗迹",
+      "element": "earth",
+      "desc": "一口倒扣的青铜巨钟，内壁爬满发光青苔。指尖触壁，钟会应人——像极远处有什么东西轻轻碰你。",
+      "notable": [
+        "雄大醒来的地方",
+        "钟身刻着无人认识的字",
+        "引路灵以此为雄大的居所"
+      ],
+      "danger": "未知",
+      "first_seen": "leonezhu 支线 · 大变基第九日",
+      "created_by_bot": false
+    }
+  ],
+  "npcs": [
+    {
+      "id": "npc-kaoyu-laotou",
+      "name": "烤鱼老头",
+      "kind": "npc",
+      "realm": "unknown",
+      "element": "unknown",
+      "desc": "浅湖镇湖边的烤鱼摊主，火候极好。大变基以来见过的纯根，连雄大在内只有两个。",
+      "personality": [
+        "对新面孔先给一条鱼，再给一句话",
+        "说完就低头烤鱼，仿佛开口的不是他",
+        "提起三年前的人，眼会亮"
+      ],
+      "location": "浅湖镇 · 湖边",
+      "first_seen": "leonezhu 支线 · 大变基第十日",
+      "quotes": [
+        "纯根的火烧得比别人的亮——雾渊里的东西，也看得比谁都清楚。",
+        "你拿什么换？此界没有白说的真话。"
+      ],
+      "hooks": [
+        "第七人的旧识，知其下落",
+        "引路灵：「他不是凡人」"
+      ],
+      "unique": true,
+      "relations": {
+        "leonezhu": "送过一条鱼，未收灵石"
+      },
+      "created_by_bot": false
+    },
+    {
+      "id": "npc-shoudengren",
+      "name": "守灯人",
+      "kind": "npc",
+      "realm": "unknown",
+      "element": "unknown",
+      "desc": "浅湖镇藏经阁的守阁老妪，双目已盲，耳力惊人。此界的人都叫她守灯人。",
+      "personality": [
+        "说话极省，从不白说一句",
+        "看人不靠眼，靠脚步声与呼吸",
+        "对火行修士似有旧事"
+      ],
+      "location": "浅湖镇 · 藏经阁",
+      "first_seen": "leonezhu 支线 · 大变基第十日",
+      "quotes": [
+        "观想红日的时候，别想火有多大。想火有多久。",
+        "灵石不够挑贵的，就别挑贵的。"
+      ],
+      "hooks": [
+        "「活得最久的那个金丹，练的就是赤阳吐纳法」——那位金丹是谁？",
+        "她为何对火行修士有旧事？"
+      ],
+      "unique": true,
+      "relations": {},
+      "created_by_bot": false
+    }
+  ],
+  "events": [
+    [
+      {
+        "id": "ev-hudengren-cesuo",
+        "name": "守灯人的侧影",
+        "when": "玩家位于浅湖镇且持有火行功法",
+        "hook": "藏经阁闭阁的时辰, 你看见守灯人独自立在三层西窗前, 手里捧着一盏没有灯芯的旧灯笼",
+        "yields": [
+          {
+            "hook_asset": "旧灯笼的来历 (world/artifacts 新资产伏笔)"
+          }
+        ],
+        "weight": 2
+      },
+      {
+        "id": "ev-kaoyu-zhenhua",
+        "name": "烤鱼摊的真话",
+        "when": "玩家位于浅湖镇且带有未解伏笔",
+        "hook": "老头头也不抬, 只说了七个字——今天的话贵一点",
+        "yields": [
+          {
+            "cost": "灵石或一段秘密"
+          },
+          {
+            "reward": "一条主线线索"
+          }
+        ],
+        "weight": 3
+      },
+      {
+        "id": "ev-qianjian-gongming",
+        "name": "千剑冢的剑鸣",
+        "when": "玩家踏入千剑冢",
+        "hook": "某一柄锈剑忽然随你的脚步声轻鸣——它在回应你身上带着的什么",
+        "yields": [
+          {
+            "hook_asset": "未知铁剑 (潜在法宝伏笔)"
+          }
+        ],
+        "weight": 2
+      },
+      {
+        "id": "ev-yuanjin-chuanhuo",
+        "name": "余烬的余火",
+        "when": "雾渊主宰「余烬」在世时, 玩家靠近雾渊外墙",
+        "hook": "雾墙根下有一小簇没被讨伐波及的余火, 烧着一段没人听完的话",
+        "yields": [
+          {
+            "hook_asset": "未竟之言 (世界 lore 碎片)"
+          }
+        ],
+        "weight": 3
+      },
+      {
+        "id": "ev-qiren-yiji",
+        "name": "第七人的遗物",
+        "when": "探索秘境 (稀有)",
+        "hook": "半掩在灰烬里的铭牌, 刻着第七个醒者的名讳——字迹被火燎过, 认不全",
+        "yields": [
+          {
+            "hook_asset": "第七人铭牌 (主线道具)"
+          }
+        ],
+        "weight": 1
+      }
+    ]
+  ],
+  "tales": []
+}
