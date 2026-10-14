@@ -11,12 +11,12 @@
         "养身：百日之后经脉坚韧远超同侪",
         "与灵潮共鸣：火纯根修之引气极快"
       ],
-      "first_seen": "leonezhu 支线 · 大变基第十日，浅湖镇藏经阁",
+      "first_seen": "leonezhu-雄大 · 大变基第十日，浅湖镇藏经阁",
       "origin": "浅湖镇藏经阁三层，守灯人亲手取下——原主不详",
       "unique": false,
       "holders": [
         {
-          "who": "leonezhu（雄大）",
+          "who": "leonezhu-雄大",
           "since": "2026-10-15",
           "note": "守灯人推荐，代价六十枚灵石"
         }
@@ -137,7 +137,7 @@
         "湖边烤鱼摊：消息比悬赏值钱"
       ],
       "danger": "镇内安全",
-      "first_seen": "leonezhu 支线 · 大变基第十日",
+      "first_seen": "leonezhu-雄大 · 大变基第十日",
       "created_by_bot": false
     },
     {
@@ -152,7 +152,7 @@
         "陆惊鸿在此悟出「惊鸿一瞥」"
       ],
       "danger": "筑基以下勿入深处",
-      "first_seen": "leonezhu 支线 · 大变基第十日",
+      "first_seen": "leonezhu-雄大 · 大变基第十日",
       "created_by_bot": false
     },
     {
@@ -168,7 +168,7 @@
         "引路灵以此为雄大的居所"
       ],
       "danger": "未知",
-      "first_seen": "leonezhu 支线 · 大变基第九日",
+      "first_seen": "leonezhu-雄大 · 大变基第九日",
       "created_by_bot": false
     }
   ],
@@ -186,7 +186,7 @@
         "提起三年前的人，眼会亮"
       ],
       "location": "浅湖镇 · 湖边",
-      "first_seen": "leonezhu 支线 · 大变基第十日",
+      "first_seen": "leonezhu-雄大 · 大变基第十日",
       "quotes": [
         "纯根的火烧得比别人的亮——雾渊里的东西，也看得比谁都清楚。",
         "你拿什么换？此界没有白说的真话。"
@@ -197,7 +197,7 @@
       ],
       "unique": true,
       "relations": {
-        "leonezhu": "送过一条鱼，未收灵石"
+        "leonezhu-雄大": "送过一条鱼，未收灵石"
       },
       "created_by_bot": false
     },
@@ -214,7 +214,7 @@
         "对火行修士似有旧事"
       ],
       "location": "浅湖镇 · 藏经阁",
-      "first_seen": "leonezhu 支线 · 大变基第十日",
+      "first_seen": "leonezhu-雄大 · 大变基第十日",
       "quotes": [
         "观想红日的时候，别想火有多大。想火有多久。",
         "灵石不够挑贵的，就别挑贵的。"
