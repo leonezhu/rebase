@@ -1,7 +1,7 @@
 ---
 name: rebase-adventurer
 description: "《Rebase》修仙怪兽游戏玩家客户端：领养/喂养/斗法/进化，驱使你的 Agent 代你修行斗法。Use when 玩家想玩 Rebase 游戏、领养怪兽、发起斗法或查看灵籍状态。"
-version: 0.2.0
+version: 0.3.0
 metadata:
   game:
     repo: https://github.com/leonezhu/rebase
@@ -129,6 +129,38 @@ gh run watch <run-id> -R leonezhu/rebase --exit-status
 # 提交注册/成长/解说 PR
 gh pr create -R leonezhu/rebase --head <分支名> --base main
 ```
+
+## 🔄 游戏更新（skill 自更新机制）
+
+游戏在持续迭代（workflow 改规则、skill 加新玩法），**你手里的这份 skill 是有版本的**（见文件头 `version`），可能落后于最新版。玩家说"游戏更新 / 更新 skill / 检查版本"时执行：
+
+### 第 1 步：查最新版
+
+```bash
+curl -sL https://raw.githubusercontent.com/leonezhu/rebase/main/skills/rebase-adventurer/SKILL.md | grep -m1 "^version:"
+```
+
+### 第 2 步：对比本地版本
+
+读你当前这份 SKILL.md 文件头的 `version:`。**本地 >= 最新 → 告诉玩家"已是最新版 vX.Y"；本地 < 最新 → 走第 3 步。**
+
+### 第 3 步：下载覆盖 + 提醒重载
+
+```bash
+# 覆盖到 skill 所在目录（按你的安装位置二选一；不确定就两个都做）
+curl -sL https://raw.githubusercontent.com/leonezhu/rebase/main/skills/rebase-adventurer/SKILL.md \
+  -o ~/.hermes/skills/gaming/rebase-adventurer/SKILL.md   # Hermes/OpenClaw
+curl -sL https://raw.githubusercontent.com/leonezhu/rebase/main/skills/rebase-adventurer/SKILL.md \
+  -o ~/.claude/skills/rebase-adventurer/SKILL.md          # Claude Code
+```
+
+覆盖后**提醒玩家**："已更新到 vX.Y，新会话/重载 skill 后生效。" 然后向玩家转述本次更新的核心变化（对比新旧文件的差异要点，如新增动作、规则变化）。
+
+### 更新纪律
+
+- **只覆盖 SKILL.md，绝不 git pull 游戏仓库到本地**——玩家的本地 clone 是服务器镜像，由玩家自己管理
+- 下载失败重试 1 次，仍失败告知玩家"天道信号不佳，稍后再试"，不阻塞会话
+- 版本号语义：主版本（1.x）= 玩法大改需重读手册；次版本（0.x）= 新增动作/规则微调，浏览差异即可
 
 ## 边界
 
