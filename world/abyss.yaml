@@ -1,0 +1,13 @@
+week_id: 2026-W42
+boss:
+  name: 余烬
+  title: 深渊主宰·余烬
+  element: fire
+  hp_max: 600
+  hp_current: 512
+slain: false
+damage_log:
+- owner: leonezhu
+  date: '2026-10-14'
+  damage: 88
+updated_at: '2026-10-14T13:59:30.666667+00:00'
