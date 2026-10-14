@@ -1,3 +1,6 @@
+bloodline:
+  unlocked: 0
+  wins: 0
 created_at: '2026-10-14T01:00:00+08:00'
 element: water
 exp: 150
@@ -17,7 +20,8 @@ personality:
   pride: 10
   temper: -60
 realm: lianqi
-spirit: 100
+spirit: 70
+spirit_recovered_at: '2026-10-14'
 spirit_stones: 190
 talent:
   desc: 潭面如镜映尽来招,守势滴水不漏
