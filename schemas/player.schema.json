@@ -37,6 +37,8 @@
       }
     },
     "titles": { "type": "array", "items": { "type": "string" }, "maxItems": 20 },
-    "memory_fragments": { "type": "integer", "minimum": 0, "maximum": 5, "description": "前世记忆碎片（血脉之谜线索）" }
+    "memory_fragments": { "type": "integer", "minimum": 0, "maximum": 5, "description": "前世记忆碎片（血脉之谜线索）" },
+    "chronicle": { "type": "array", "items": { "type": "string" }, "description": "人生大事记（append-only，bot 维护，叙事前必读）" },
+    "open_loops": { "type": "array", "items": { "type": "object", "properties": { "hook": { "type": "string" }, "planted": { "type": "string" }, "status": { "type": "string", "enum": ["open", "resolved"] }, "resolve_hint": { "type": "string" } }, "required": ["hook", "planted", "status"] }, "description": "个人伏笔账本：未回收的钩子" }
   }
 }
