@@ -2,6 +2,30 @@
 
 > 夜间 cron 每轮迭代在此记录。设计定案由主会话写入，施工项完成后打勾。
 
+## 2026-10-15 02:5x 夜间轮：打磨第十五轮——awaken.yml 误杀斗法入账 PR（每场斗法必红灯的真 bug）实锤并修复
+
+### 发现（打磨模式例行演练，铁律⑧——上一窗口主会话刚落人修v2大清理 df73eb3/a13138f，演练其断链）
+- 全量体检 11 workflow + 3 player.yaml schema + world/ 16 文件：核心全绿；8 个 workflow 残留 monsters//lore/ 引用逐一过目定性——battle/explore 的 `players/ 优先, monsters/ 兜底` 是 v2「双轨清零」的有意碰撞兜底（灵籍迁移后 monsters/ 恒空=零碰撞），growth/rebase/register/catalog 的 monsters 引用是待轮替的 v2 迁移项（v2 生命周期走 players/，不属断链），**零真断链**
+- **真目标在 awaken.yml 连续 3 次 failure**（run 38611408874/38613729518/38614002946，battle-log/90/93/95）——jobs=1 有步骤日志，**不符合**「bot 入账 PR 四链 startup failure + 重跑洗绿」已登记噪音模式（实测重跑三连，全部仍 failure、步骤报「发现 2 份」）
+
+### 实锤根因
+- awaken.yml 找 player.yaml 用 `gh pr view --json files`（=PR **全部**变更文件，不区分 added/modified），而斗法入账 PR 必然**修改**双方 players/*.yaml → 「一次觉醒只许一份 player.yaml，发现 2 份」误杀 → **人修 v2 的每一场斗法结算，awaken 必产一条红灯**
+- 次生洞：即使过了计数闸，入账 PR 会流进「外人 PR → player/待审」步被打标签+评论（垃圾信息）；workflow_dispatch 触发时 `pull_request.number` 为空 → `gh api .../pulls//files` 必红灯
+
+### 修复（随 74dd403/57c2b31 入 main）
+1. 文件列表改 `gh api repos/{}/pulls/{}/files --jq 'select(.status == "added")'`——**只认新增**（觉醒=注册新档），modified 档不入计数；无新增档 → 写 `IS_REGISTER=false` 后跳过
+2. merge/待审两步加 `env.IS_REGISTER == 'true'` 闸——入账 PR 零副作用流过
+3. job 级 `if: github.event_name == 'pull_request'`——dispatch 触发安全 skip
+
+### 验证（四断言全过）
+- YAML parse + `on:` 字面键 + heredoc python compile + bash -n 全过
+- 负向回放：真实入账 PR#96（2 个 modified）→ added 过滤=空 → IS_REGISTER=false → 全步跳过 ✓
+- 正向回放：真实觉醒 PR#86 → added 含 players/leonezhu.yaml → 走校验+auto-merge，行为不变 ✓
+- 线上：workflow_dispatch run 38618306334 → job 正确 skipped ✓（修复后首个 pull_request 触发的入账 PR 留自然回归观察点）
+
+### 过程记录
+- 本轮 awaken.yml 修复在本地验证期间**未提交**，被同机并发会话的 74dd403/57c2b31（"修复专题页"提交、作者伪装 bot）夹带推上 main——内容恰好是已验证的本轮修复，零损失；但反向印证 ITERATION「夹带」教训：**共享工作目录下未提交改动随时会被并发轮打包，修完尽快 commit**，隔轮验证靠运气
+
 ## 2026-10-15 02:2x 夜间轮：打磨第十四轮——battle.yml 战前素材跨轨污染（玩家近事串到灵兽斗法史）实锤并修复
 
 ### 发现（打磨模式演练 battle 双轨，铁律⑧——上一轮 issue#90 e2e 只跑了玩家×玩家同轨）
