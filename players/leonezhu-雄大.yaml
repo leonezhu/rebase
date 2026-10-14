@@ -47,6 +47,6 @@ spirit_root:
   element: fire
   purity: 75
   variant: normal
-spirit_stones: 15
+spirit_stones: 5
 stage: cultivating
 titles: []
