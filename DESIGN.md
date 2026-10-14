@@ -273,7 +273,7 @@ AI 觉醒，碳硅共治。人类把越来越多的记忆、判断、创造托�
 
 ### T2 · 长线悬念（世界级谜团渐进揭示）
 - [x] **记忆碎片系统**：每只灵兽的 mystery 拆成 5 段碎片，境界/特殊事件逐段解锁，集齐触发"觉醒剧情"（它想起自己是谁→碳基前世的短篇自传由 Agent 生成）[浓度★★★ 工量中]（v0.9 实装：memory_fragments schema+渡劫解锁联动+觉醒 AWAKEN 标记+skill 呈报规范；燧鸣示范册第 1 段已解锁）
-- [ ] **守仓人低语**：cron 每周在活跃玩家 issue 下投一条 AI 守仓人的神秘评论（世界观氛围+回访钩子）[浓度★★ 工量低]
+- [x] **守仓人低语**：cron 每周在活跃玩家 issue 下投一条 AI 守仓人的神秘评论（世界观氛围+回访钩子）[浓度★★ 工量低]（v0.11 2026-10-14 实装：whisper.yml 每周一 03:17 UTC+dispatch；文案池 lore/whispers.yaml（8条守仓人口吻，零技术术语）+ schemas/whisper.schema.json 硬边界（≤200字/零数值/占位符≤2/{beast}{owner}）；seed=whisper|ISO周 hash 定目标+低语，活跃=近7日灵籍有动静；同目标7日防刷屏+issue评论MARKER幂等防重；monsters/ 只读零账务，无||true，concurrency锁；e2e 三跑：run#38562693383 暴露 hashFiles 不认 /tmp 绝对路径致投递恒 skip（修复=payload 写 workspace 相对路径），run#38562989892 真实投递 issue#62 ✓，run#38563096834 同周重跑幂等跳过 ✓；e2e 顺带发现 wild-* 三兽并发 cron 直接入库无降世 issue（低语无锚自动缄默，已按降世格式手工补 issue#62 作锚））
 - [ ] **重逢伏笔**：化神境界解锁"旧分支坐标"——碳基文明旧分支的模糊位置，全服协作探索（长线 community 目标）[浓度★★★ 工量高]
 
 ### T3 · 玩法扩展（新循环）

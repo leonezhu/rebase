@@ -11,6 +11,8 @@
   - ⚠️ 遗留：CODEOWNERS 的强制 review 需仓库 Settings → Branch protection 开启 "Require review from Code Owners"，workflow 层无法代设，待主人在网页端开启
 - [x] 5. issue 标签体系（v0.6 设计定案，见下）✅ 2026-10-14（9 个游戏标签已提前用 API 建入仓库；battle.yml：/battle 触发打「斗法」+「斗法/待战」，结算贴结果前打「斗法/已判」；labels.yml 新增 ensure-labels push 兜底 job 幂等补建全部游戏标签（含斗法三态子标签）；README 增「issue 标签导航」表；本地 YAML+断言校验全过；push 后线上 ensure-labels 实跑 success，斗法三态子标签已在仓库生效）
 
+- [x] 6. 守仓人低语（T2-2，v0.11）✅ 2026-10-14（schema 先行=schemas/whisper.schema.json 纯叙事硬边界：≤200字/零数值字段/占位符≤2——铁律"叙事归玩家数值归系统"由 schema 落地；文案池 lore/whispers.yaml 8条+whisper-pick.py 本地6断言全过（其间修掉一个断言自写错的假红灯A5）；whisper.yml 每周一确定性投递；e2e 三跑实锤：首跑投递步骤恒 skip → 根因 hashFiles() 不支持 /tmp 绝对路径（只认 workspace 相对模式），修复后真实投递 issue#62 ✓ + 同周重跑幂等跳过 ✓；观察项：wild-* 三兽由并发 cron 绕过 register 直接入库导致无降世 issue，低语机制"无锚即缄默"正确兜底，但降世 issue 缺失本身是 register 流程纪律问题，留给后续轮次定夺）
+
 ## 已知 bug
 
 - [x] issue body 里的 `/battle` 不触发 issue_comment 事件——✅ 2026-10-14 修复：battle.yml 增加 `issues: [opened]` 触发，job if 双事件分流，CMD_BODY/CHALLENGER 用 `comment.x || issue.x` 兜底统一取值；模拟种子改用 `github.event.id`（comment.id 在 issues 事件下为空，会导致 issues 入口的种子后缀恒空，属顺带修掉的隐性 bug）。本地断言+模拟脚本注入双事件变量独立执行通过
