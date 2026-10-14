@@ -122,6 +122,23 @@ jobs:
           }
 
           def power(beast, rng_slice, opp):
+              # 人修v2: players档案无genes——用灵根纯度+悟性+功法法宝推导
+              if 'genes' not in beast:
+                  base = 100 + beast.get('spirit_root', {}).get('purity', 50) * 1.2                       + beast.get('comprehension', 50) * 0.8                       + len(beast.get('gongfa', [])) * 12                       + len(beast.get('artifacts', [])) * 10
+                  if beast.get('constitution'):
+                      base *= 1.08
+                  if ELEM_BEATS.get(beast['element']) == opp['element']:
+                      base *= 1.15
+                  elif ELEM_BEATS.get(opp['element']) == beast['element']:
+                      base *= 0.87
+                  m = beast.get('mood', {})
+                  if m.get('updated') == TODAY:
+                      if m.get('state') == '昂扬':
+                          base *= 1.03
+                      elif m.get('state') == '低落':
+                          base *= 0.97
+                  fluct = int(rng_slice, 16) % 21 - 10
+                  return base * (1 + fluct / 100)
               g = beast['genes']
               base = (g['ling']*1.5 + g['po']*1.2 + g['qiao'] + g['ren']*0.8 + g['yun']*0.5)
               p = beast['personality']
