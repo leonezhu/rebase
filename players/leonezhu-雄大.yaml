@@ -12,10 +12,11 @@ chronicle:
 - D11 · 首入秘境拾灵露，得灵石15——三败后重新起身
 - D11 · 二探见血失灵石，三探再得——跌倒过的地方，第二次走就轻车熟路
 - D11 · 烤鱼老头见伤递鱼，动作顿了半拍——「三年前，也有人这样坐在火边」
+- '- D11 · 夜半与黎明前各一坐，红日观想渐稳——「想火有多久」'
 comprehension: 50
 constitution: ''
 created_at: 2026-10-14T23:46:11+0800
-exp: 33
+exp: 43
 gongfa:
 - element: fire
   grade: 黄阶下品
@@ -24,8 +25,8 @@ gongfa:
   origin: 浅湖镇藏经阁（60灵石）
 memory_fragments: 0
 mood:
-  state: 低落
-  updated: '2026-10-14'
+  state: 渐平
+  updated: '2026-10-15'
 name: 雄大
 open_loops:
 - hook: 烤鱼老头说纯根「不干净」——三年前有个火纯根的「第七人」，后来失踪了
