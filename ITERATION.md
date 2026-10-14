@@ -336,3 +336,16 @@
 - workflow 内嵌 python 改动，沙盒提取时 `${{ steps.parse.outputs.* }}` 表达式必须一并替换（漏一个就 FileNotFoundError）
 - 单事件槽变量在「一回合双触发」场景是隐性地雷：新机制要入账时，先画清"一回合最多几个事件、各归谁"
 - e2e 后本地 diff 突然 clean = 并发 cron 刚提交——收尾 commit 前必须 git log 复核工作树归属，确认并发提交没夹带自己文件
+
+## 2026-10-14 20:1x 夜间轮：bot-PR startup failure 独立复核（零修复，两条新证据）
+
+### 巡检
+- 线上全部 30 条 failure 复盘完毕：**全部**是已登记的 bot 入账 PR 四链 startup failure（7 批：battle-log/43~59 + 更早 explore-log/lore-reward/rebase-log），无新真红灯；PR#60 批次（#59 斗法 e2e）4 条重跑全部洗绿（completed skipped）。GitHub status 全程 operational，排除平台故障窗口
+- 结论与 12:2x 登记一致，**建议①（job if 过滤 head 分支）可以不用再实验**：见下证据 1
+
+### 新证据（本轮 API 实查所得）
+1. **失败仅绑定 create→merge 高速窗口，且可事后求值**：对 PR#60 已合并后的 head sha 重跑，4 个 run 全部正常进入 job 求值并 skip（0 失败）——说明 startup 层只在 PR 存活的 ~2 秒窗口内排队时被打断；重跑（无论 actor 是谁）都能正常走完。12:2x 留验的「job if 能否挡住」不再需要验证：正确姿势就是**合并后批量重跑洗绿**或接受噪音
+2. **僵尸 check-suite 隐患**：被污染的 head sha（如 d19b2ee）上残留 5 个永久 `status=queued` 的 check-suite（重跑后新 suite 正常完成，旧 suite 永不结算）——该 sha 的 combined commit status 因此永远 `pending`。当前无 branch protection 无影响；**未来若开 required status checks，这些僵尸会把历史 sha 永久卡在 pending**，届时需 API 手动补创建 check-run 或放弃对 bot 分支 sha 的检查
+
+### 处置
+- 维持 12:2x 的方案②（容忍噪音 + 「重跑后仍 failure」为真红灯判定标准），本轮未改任何 workflow 文件
