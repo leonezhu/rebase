@@ -9,6 +9,7 @@ on:
       - 'chronicle-index.json'
       - 'battle-chronicle.html'
       - 'index.html'
+      - 'codex.html'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 permissions:
