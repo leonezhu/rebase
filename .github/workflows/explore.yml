@@ -106,6 +106,17 @@ jobs:
           old_stones = d.get('spirit_stones', 100)
           d['spirit_stones'] = max(0, old_stones + stones)
           d['exp'] = d.get('exp', 0) + exp
+          # 称号(v0.14): 只增不减——首次探索踏雾者/单次大收获寻珍者
+          titles = d.setdefault('titles', [])
+          earned = []
+          if '踏雾者' not in titles and d.get('exp', 0) <= exp:
+              earned.append('踏雾者')  # 首探(exp恰好等于本次所得=此前为0)
+          if '寻珍者' not in titles and exp >= 20:
+              earned.append('寻珍者')
+          for t in earned:
+              titles.append(t)
+          if earned:
+              print(f"TITLES:{','.join(earned)}")
           if stones < 0:
               stones = d['spirit_stones'] - old_stones  # 实际损失（保底后，保持负号——丢灵石不可记成正入账）
 

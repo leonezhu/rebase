@@ -454,6 +454,17 @@ jobs:
           win_stones = int(30 * mult); win_exp = int(50 * mult)
           d['spirit_stones'] = d.get('spirit_stones', 100) + win_stones
           d['exp'] = d.get('exp', 0) + win_exp
+          d.setdefault('battle_history', {})['lose_streak'] = 0
+          # 称号授予(v0.14): 只增不减
+          titles = d.setdefault('titles', [])
+          earned = []
+          if not titles and d.get('exp', 0) >= win_exp: earned.append('初鸣')  # 首胜
+          if mult >= 2.5: earned.append('越级斩')
+          streak = d.get('battle_history', {}).get('lose_streak', 0)
+          if streak >= 2: earned.append('败者复起')  # 连败≥2后翻身
+          for t in earned:
+              if t not in titles: titles.append(t)
+          if earned: print(f"🎖️ 称号授予: {', '.join(earned)}")
           yaml.safe_dump(d, open(p,'w',encoding='utf-8'), allow_unicode=True)
           print(f"胜方 ${WINNER} +{win_stones} 灵石 +{win_exp} 功力(境界差动×{mult})")
           # 败方代价(v0.13 有增有减): 疗伤/赔礼 -15灵石(保底0)——输一场真的变穷
@@ -462,6 +473,8 @@ jobs:
           lost = min(15, ld.get('spirit_stones', 0))
           ld['spirit_stones'] = ld.get('spirit_stones', 0) - lost
           ld['mood'] = {'state': '低落', 'updated': __import__('datetime').date.today().isoformat()}
+          bh = ld.setdefault('battle_history', {})
+          bh['lose_streak'] = bh.get('lose_streak', 0) + 1
           yaml.safe_dump(ld, open(lp,'w',encoding='utf-8'), allow_unicode=True)
           print(f"败方 ${LOSER} -{lost} 灵石(疗伤) 心境→低落")
           # 血脉之力(v0.8)：胜场累计 + 解锁公式重算（境界段数与 rebase.yml 天梯一致）

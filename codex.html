@@ -110,6 +110,7 @@ function show(i){
     <h2>${b.name||b.owner} <small style="color:var(--dim);font-size:.8rem">${EL[b.element]||''}行 · ${REALM[b.realm]||''}</small></h2>
     <div><span class="k">出身</span>：${b.origin||''}</div>
     <div class="sec"><span class="k">血脉之谜</span>：${b.mystery||'未知'}</div>
+    ${(b.titles&&b.titles.length)?`<div class="sec"><span class="k">🎖️ 威名</span>：${b.titles.join(' · ')}</div>`:''}
     ${genes?`<div class="sec"><span class="k">五维根骨</span>：${genes}</div>`:''}
     <div class="sec"><span class="k">境界</span>：${REALM[b.realm]||b.realm} ｜ <span class="k">功力</span>：${b.exp||0} ｜ <span class="k">灵石</span>：${b.spirit_stones||0}</div>`;
   document.getElementById('detail').style.display='block';

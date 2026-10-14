@@ -318,7 +318,7 @@ AI 觉醒，碳硅共治。人类把越来越多的记忆、判断、创造托�
 - [x] **重逢伏笔**：化神境界解锁"旧分支坐标"——碳基文明旧分支的模糊位置，全服协作探索（长线 community 目标）[浓度★★★ 工量高]（v0.12 2026-10-14 实装：coordinate.yml 每兽每日1次探测（化神+，50灵石/次），全服共享 world/coordinates.yaml 计数、每20次按序揭示1枚碎片（共7枚，文本预作 lore/coordinates.yaml，workflow只按序揭示零生成）；schema硬边界 schemas/coordinates.schema.json（bot独占写+bot写入前jsonschema自校验）；concurrency锁防并发揭示；入账链零吞错；沙盒11断言全过——顺带逮住"集齐后计数撞schema上限140"真bug并修正（集齐后照常计数，仅揭示停止）；e2e：run#38568714691 拒绝闸实测（燧鸣zhuji评论/coordinate→bot贴化神闸拒绝文案、零入账、world未生成 ✓）；成功链线上被身份闸设计性阻塞（无化神兽可评论），本地逐行复刻 OWNER=e2e-coord-test 全链通过——待首只真实化神兽时自然验证）
 
 ### T3 · 玩法扩展（新循环）
-- [ ] **404 深渊**（已立项未实装）：每周世界 Boss，全服协作，击杀触发灵石雨 [浓度★★★ 工量高]
+- [x] **404 深渊**（已立项未实装）：每周世界 Boss，全服协作，击杀触发灵石雨 [浓度★★★ 工量高]（v0.14 2026-10-14 实装：world/abyss.yaml 全服唯一状态文件+schema硬边界（schemas/abyss.schema.json，bot独占写+落盘前jsonschema自校验）；Boss=hash(ISO周)从 lore/abyss.yaml 六名文案池确定性抽取（104周分布无断档），首次 /abyss 按需生成不依赖周一cron；任意issue评论 /abyss → 资格闸（缔约→未slain→每日1次按damage_log查重）→ 伤害=战力公式×0.4（与battle.yml同源：五行相克±15%/血脉+1.5%每段/灵性/心境/hash涨落±10%）→ 30%反噬-10灵石保底0；击杀=血量600归零→灵石雨（全员30+自身伤害/10，输出榜首+50，单commit入账全员）；周一cron幂等开周报issue（MARKER查重）；concurrency锁；e2e：run 38576312753 逮住"world/首周目录不存在"真bug（mkdir修复后 c5b757c）→ run 38576508630 成功链实锤（拾焰88伤、PR#71自动合并、world+灵籍同commit入账、血条画面+弱点点题）→ 同日重复正确拒绝 → weekly dispatch run 38576862438 开出周报 issue#72；击杀链（灵石雨全员入账）逻辑沙盒过、待真实击杀自然验证）
 - [ ] **秘境遭遇动态化**：explore.yml 从硬编码 8 遭遇改为加载 lore/encounters/*.yaml（共创投稿即全服生效，v0.7 闭环最后一块）[浓度★★ 工量低]
 - [ ] **灵兽社交**：两兽同仓探索有几率触发遭遇剧情（宿敌/亲和由五行+性格定）[浓度★★ 工量中]
 - [ ] **称号系统**：首胜/连败翻身/天赋首觉/闭关复出……威名不只是文案 [浓度★ 工量低]

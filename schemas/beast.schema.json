@@ -154,6 +154,14 @@
       "additionalProperties": false,
       "description": "心情系统"
     },
+    "titles": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "maxItems": 20,
+      "description": "称号(威名): bot达成自动授予, 只增不减——首胜/越级斩/连败翻身/天赋首觉/渡劫一次成/拾遗首献/归隐者(NPC)等"
+    },
     "mystery": {
       "type": "string",
       "maxLength": 500,
