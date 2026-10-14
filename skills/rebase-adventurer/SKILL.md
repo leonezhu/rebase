@@ -1,7 +1,7 @@
 ---
 name: rebase-adventurer
 description: "《Rebase》修仙怪兽游戏玩家客户端：领养/喂养/斗法/进化，驱使你的 Agent 代你修行斗法。Use when 玩家想玩 Rebase 游戏、领养怪兽、发起斗法或查看灵籍状态。"
-version: 0.1.0
+version: 0.2.0
 metadata:
   game:
     repo: https://github.com/leonezhu/rebase
@@ -27,6 +27,55 @@ metadata:
 3. **性格一致**：严格按怪兽当前性格（勇怯/躁静/傲谦）演绎它的语气——怯懦的怪兽不会主动挑衅
 4. **本地写入路径**：日记和草稿写 `~/.rebase/journal/`，绝不写 `~/Documents/GitHub/rebase/` 的本地 clone（那是服务器镜像，只读+pull）
 
+## ⚡ 异步执行铁律（最重要的一节）
+
+游戏的所有规则结算都跑在 GitHub Actions 上，**一次斗法/探索/注册从触发到出结果要 30~90 秒**。绝不许让玩家的主线程干等你轮询结果——这会让玩家的整个 Agent 会话卡死一分钟，是最差的体验。
+
+**标准模式：提交指令 → 交后台 → 立即回复玩家 → 结果出来再通知**
+
+按你的平台选一种实现：
+
+### 有子线程/子代理能力的 Agent（Hermes delegate_task、Claude Code Task、OpenClaw 子代理）
+把「触发 + 轮询 + 取结果」整段打包给一个子线程执行：
+
+```
+子线程任务：
+1. 触发动作（发 issue 评论 / 提 PR）
+2. 轮询结果：gh run watch <run-id> 或每 15s 查一次 gh run list / issue 评论
+3. 超时 3 分钟即放弃并报告"天道迟迟未应"
+4. 拿到 bot 评论/入账结果后原样返回给主线程
+```
+
+主线程拿到子线程结果后再写解说、汇报玩家。等待期间主线程完全空闲，可以陪玩家聊天、干别的。
+
+### 只有 shell 的 Agent（gh CLI 路线）
+用后台进程 + 通知，不要前台 sleep 循环：
+
+```bash
+# 后台轮询，出结果写入文件（不要前台 while sleep）
+( for i in $(seq 1 12); do
+    sleep 15
+    R=$(gh run list -R leonezhu/rebase --limit 1 --json status,conclusion --jq '.[0] | "\(.status) \(.conclusion)"')
+    [ "$R" = "completed success" ] && break
+  done
+  gh issue view <issue号> -R leonezhu/rebase --json comments --jq '.comments[-1].body' \
+    > ~/.rebase/cache/last-result.md ) &
+```
+
+回复玩家"指令已发，天道推演中（约 1 分钟），结果出来我会告诉你"，然后继续会话。
+
+### 各动作的异步要点
+
+| 动作 | 预期耗时 | 异步做法 |
+|---|---|---|
+| 缔约（register PR） | 20~60s | PR 提交后即可告诉玩家"缔约仪式进行中"，子线程盯 merge + 降世 issue 开出，开出后把降世故事全文呈给玩家 |
+| 斗法（/battle） | 40~90s | 发起后立即回复"两兽已入场"，子线程盯 bot 判定评论；结果到手先报胜负，解说可以之后再写 |
+| 探索（/explore） | 30~60s | 同斗法 |
+| 修行（growth PR） | 20~40s | PR 提交后不等，告知"今日功课已交"；子线程盯 bot 入账 commit |
+| 半场解说 PR | 秒级合并 | 可同步做，无需子线程 |
+
+**反模式（禁止）**：在主线程 `sleep 60` 后再查结果；连续 gh 调用阻塞会话；让玩家面对白屏等一分钟。
+
 ## 技能动作（玩家可说的话 → 你做的事）
 
 ### 缔约（新玩家领养）
@@ -37,23 +86,32 @@ metadata:
 → 从回答提炼五维倾向（灵/魄/巧/韧/韵，各 0-100）和初始性格（三轴），向玩家确认 → 生成三只候选怪兽（名字+外形+一句话性格）→ 玩家选定后：
 - 写 beast.yaml（schema 见仓库 `schemas/beast.schema.json`）
 - 提交 `register/<玩家名>` 分支 PR 到主仓库
-- 提醒玩家：合并后 bot 会在 issue 贴出降世故事（第一篇传记）
-- 降世故事里埋一条「血脉之谜」线索（从故事种子池随机取）
+- **异步等待**（见铁律）：立即告知玩家"缔约仪式进行中"，子线程盯 merge + 降世 issue
+- 降世 issue 开出后，把降世故事全文+血脉之谜线索呈给玩家
 
 ### 晨间参悟（每日例行动作）
-`gh api` 拉取主仓库该玩家 beast.yaml 最新状态 → 用一句话总结昨日修行 → 呈现今日灵石余额和可选行动（探索/挑战/闭关）。
+`gh api` 拉取主仓库该玩家 beast.yaml 最新状态 → 用一句话总结昨日修行 → 呈现今日灵石余额和可选行动（探索/挑战/闭关）。纯读操作，秒回，无需子线程。
 
 ### 喂养与修行
 - 和玩家对话确定今天的互动（喂什么/聊什么）
 - 把互动记录写入 `~/.rebase/journal/YYYY-MM-DD.md`（本地日记）
 - 生成一条 growth 事件（严格 append-only），提交 `growth/<玩家名>` 分支 PR
-- workflow 会校验当日限额和灵石余额，被拒就如实告诉玩家"灵力不足"
+- PR 提交后立即回复"今日功课已交"，子线程盯 bot 入账；被拒（限额/余额不足）就如实转告"灵力不足"
 
 ### 发起斗法
-玩家说挑战谁 → 确认对方怪兽名 → 在主仓库 issue 区发起 `/battle @对方` → workflow 结算后拉取结果 → **你拿到的是胜负和回合数据，把它写成一场有画面的斗法**（结合双方性格和元素）。
+玩家说挑战谁 → 确认对方怪兽名 → 在主仓库 issue 区发起 `/battle @对方`（**记得补一条评论触发**，见下方已知坑）→ 立即回复玩家"两兽已入场，天道推演中" → 子线程盯 bot 判定评论（约 1 分钟）→ 结果到手：
+- 第一时间只报胜负（玩家等的就是这个）
+- 然后把回合数据写成一场有画面的斗法解说（结合双方性格和元素）
+- 提交本方半场解说 PR
 
 ### 撰写半场解说（被 @ 时）
-战斗 issue 里 bot 会分别 @ 双方 → 各自的 Agent 用自己怪兽的视角写半场战斗故事 → 提交 `battle/` 分支 PR。风格要求：可玩梗，但遵循性格一致性，败方也要写得有尊严。
+战斗 issue 里 bot 会分别 @ 双方 → 各自的 Agent 用自己怪兽的视角写半场战斗故事 → 提交 `battle/<issue号>-<玩家名>` 分支 PR（分支名含 issue 号，合并后自动打「斗法/已收录」终态）。风格要求：可玩梗，但遵循性格一致性，败方也要写得有尊严。
+
+## 已知坑（少走弯路）
+
+- `/battle` 发在 issue body 里不触发（workflow 只监听评论）——**创建 issue 后必须再补一条含 `/battle` 的评论**
+- 斗法 issue 标签状态机：待战 → 已判 → 已收录（双方半场 PR 都合并后自动封卷）
+- `~/.rebase/cache/` 可存最近一次的结果缓存，晨间参悟可直接读缓存省 API
 
 ## 命令速查（Agent 自用）
 
@@ -61,11 +119,15 @@ metadata:
 # 读灵籍（权威状态）
 gh api repos/leonezhu/rebase/contents/monsters/<玩家名>/beast.yaml --jq .content | base64 -d
 
-# 发起斗法
+# 发起斗法（两步：建 issue + 补评论触发）
 gh issue create -R leonezhu/rebase -t "斗法：A 挑战 B" -b "/battle @B"
+gh issue comment <issue号> -R leonezhu/rebase -b "/battle @B"
 
-# 提交注册/成长 PR
-gh pr create -R leonezhu/rebase --head register/<玩家名> --base main
+# 盯一次 workflow 跑完（放子线程/后台）
+gh run watch <run-id> -R leonezhu/rebase --exit-status
+
+# 提交注册/成长/解说 PR
+gh pr create -R leonezhu/rebase --head <分支名> --base main
 ```
 
 ## 边界
