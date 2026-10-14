@@ -397,6 +397,7 @@ jobs:
           lines.append("")
           lines.append("---")
           lines.append("")
+          import yaml, json, hashlib
           # ⚔️ 战斗画面直出(v0.17): 纯小说体——无回合标题/无数值, 三次交锋织成连续动作流
           lines.append("## ⚔️ 战斗画面")
           lines.append("")
