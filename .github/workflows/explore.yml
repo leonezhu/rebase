@@ -39,6 +39,9 @@ jobs:
           # 实测 approxidate 对该语法解析不可靠（返回空集），会导致每日 3 次限额永不触发
           TODAY=$(TZ=Asia/Shanghai git log --format="%cd|%s" --date=format-local:"%Y-%m-%d" -- "$F" \
             | grep "^$(TZ=Asia/Shanghai date +%Y-%m-%d)|" | grep -c "秘境探索" || true)
+          # 转世豁免(v0.13): 灵籍created_at=今日(新缔约/转世第一日)不计旧账——new life new day
+          CREATED=$(python3 -c "import yaml;print(str(yaml.safe_load(open('$F', encoding='utf-8')).get('created_at',''))[:10])")
+          if [ "$CREATED" = "$(TZ=Asia/Shanghai date +%Y-%m-%d)" ]; then TODAY=0; fi
           if [ "${TODAY:-0}" -ge 3 ]; then
             gh issue comment $ISSUE -R leonezhu/rebase \
               -b "@${EXPLORER} 今日秘境已探索 ${TODAY} 次，灵兽灵力耗竭，明日再来（每日限 3 次）。"
