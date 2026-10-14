@@ -51,6 +51,7 @@ jobs:
           YEAR, WEEK, _ = NOW.isocalendar()
           WEEK_ID = f"{YEAR}-W{WEEK:02d}"
           F = f'monsters/{OWNER}/beast.yaml'
+          Path('world').mkdir(exist_ok=True)
 
           def reject(msg):
               print(json.dumps({'ok': False, 'msg': msg}, ensure_ascii=False)); raise SystemExit
