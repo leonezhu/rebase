@@ -1,5 +1,7 @@
 name: Lore 奖励入账（共创收录后）
-true:
+# 触发：lore/* PR 被 merge → 给投稿人发灵石 + 更新著史者名录
+# ⚠️ 此文件严禁用 PyYAML safe_dump 整文件回写：裸键 on 会被解析成布尔 True 再 dump 成 true，workflow 永久失效（e176bc5/2cf3bcc 两次实锤）
+on:
   pull_request:
     types:
     - closed
