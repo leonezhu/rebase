@@ -2,6 +2,13 @@ log:
 - date: '2026-10-14'
   pair:
   - leonezhu
+  - wild-chenzhou
+  relation: 萍水
+  stones: 0
+  exp: 4
+- date: '2026-10-14'
+  pair:
+  - leonezhu
   - wild-leigu
   relation: 亲和
   stones: 12

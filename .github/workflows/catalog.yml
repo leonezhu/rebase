@@ -69,6 +69,26 @@ jobs:
               )
               origin = html.escape((d.get('origin') or '').strip())
               mystery = html.escape((d.get('mystery') or '').strip())
+              # 威名(v0.14)：有称号才渲染，紫色一行
+              titles = d.get('titles') or []
+              titles_html = (f"<div class='titles'>🎖️ 威名：{html.escape(' · '.join(titles))}</div>" if titles else '')
+              # 破壳保密(v0.9.1)：stage: egg → 蛋卡，name/genes/origin/personality 全保密，
+              # 与 codex.html 的 egg 分支同规——图鉴不许剧透未破壳的卵
+              if d.get('stage', 'hatched') == 'egg':
+                  card = f"""
+          <article class='card el-egg'>
+            <div class='card-head'>
+              <span class='glyph'>🥚</span>
+              <div>
+                <h2>未破壳之卵</h2>
+                <p class='sub'>@{html.escape(d.get('owner','?'))} · 孕育中</p>
+              </div>
+            </div>
+            <div class='stats'>问灵五问的答案，正与它融合成形。</div>
+            <div class='stats' style='color:#7a86a0'>破壳之前，谁也不知道它会是什么样子——惊喜要等缔约之后。</div>
+          </article>"""
+                  cards.append(card)
+                  continue
               card = f"""
           <article class='card el-{el}'>
             <div class='card-head'>
@@ -80,6 +100,7 @@ jobs:
               </div>
             </div>
             <div class='stats'>战力 <b>{power_of(d)}</b> · 灵石 {d.get('spirit_stones',100)} · 功力 {d.get('exp',0)} · 性格 {traits}</div>
+            {titles_html}
             <div class='genes'>{gene_bars}</div>
             <details><summary>降世故事</summary><p>{origin}</p></details>
             {'<details class="mystery"><summary>血脉之谜（未解）</summary><p>' + mystery + '</p></details>' if mystery else ''}
@@ -126,6 +147,8 @@ jobs:
             summary {{ cursor:pointer; color:var(--dim); }}
             details p {{ margin-top:.5rem; color:var(--text); white-space:pre-wrap; }}
             .mystery summary {{ color:#8a6fb0; }}
+            .titles {{ margin:.4rem 0; font-size:.88rem; color:#b08fd8; }}
+            .el-egg {{ border-top:3px solid #7a86a0; opacity:.92; }}
             footer {{ text-align:center; color:var(--dim); font-size:.8rem; margin-top:3rem; }}
           </style>
           </head>

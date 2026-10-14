@@ -287,6 +287,10 @@ jobs:
           fi
           git commit -m "秘境探索($CODE): $OWNER ${STONES:+灵石$STONES}${EXP:+功力$EXP}"
           # 入账链咽喉点：push/create/merge 失败必须显式红灯（禁 || true 吞错），见 ITERATION.md 打磨轮登记
+          # 并发竞态修复(v0.16.1)：多条 /explore 排队同跑时 beast.yaml+social_log.yaml 双双撞车
+          # （issue#80 实锤：评论已报账但 PR 冲突未合并=账实不符）——push 前先 rebase 吸收 main，
+          # 冲突仍挂则显式红灯（不静默重试，防同一次 roll 双入账）
+          git pull --rebase origin main
           git push origin "$BRANCH"
           gh pr create -R leonezhu/rebase --head "$BRANCH" --base main \
             -t "秘境探索入账 · $OWNER (#${{ github.event.issue.number }})" -b "bot 结算，自动合并"
