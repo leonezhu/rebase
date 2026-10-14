@@ -44,7 +44,7 @@ if (m && !PASS_THROUGH.includes(m[1])) {
   const ID = decodeURIComponent(m[1]);
   document.title = ID + ' · 万灵变基录';
   try {
-    const res = await fetch('./' + encodeURIComponent(ID) + '.md');
+    const res = await fetch('./' + encodeURIComponent(ID) + '.md?v=' + Date.now());
     if (!res.ok) throw new Error('未找到「' + ID + '」的传记');
     const md = await res.text();
     const titleMatch = md.match(/^#\s+(.+)$/m);
