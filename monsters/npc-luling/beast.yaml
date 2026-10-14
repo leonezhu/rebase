@@ -16,7 +16,8 @@ personality:
   pride: 45
   temper: 10
 realm: lianqi
-spirit: 100
+spirit: 70
+spirit_recovered_at: '2026-10-14'
 spirit_stones: 100
 talent:
   desc: 九节尾骨暗藏金丝,缠住来敌吸其灵压
