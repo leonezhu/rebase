@@ -1,0 +1,25 @@
+created_at: '2026-10-15T00:00:00+08:00'
+element: fire
+exp: 0
+genes:
+  ling: 40
+  po: 40
+  qiao: 40
+  ren: 40
+  yun: 40
+memory_fragments:
+  fragments: ['【封印】', '【封印】', '【封印】', '【封印】', '【封印】']
+  total: 5
+  unlocked: 0
+mystery: 【血脉之谜】尚未破壳，它身上的谜与它自己一样，还在等一个答案。
+name: 未名
+origin: 一枚刚降临灵界的灵兽之卵，壳上流转着微光，等着与某个远方的意识融合成形——问灵五问的答案，将决定它破壳时的样子与性子。
+owner: leonezhu
+personality:
+  courage: 30
+  pride: 30
+  temper: 30
+realm: lianqi
+spirit: 100
+spirit_recovered_at: '2026-10-15'
+spirit_stones: 100
