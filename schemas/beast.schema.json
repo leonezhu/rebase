@@ -154,6 +154,23 @@
       "additionalProperties": false,
       "description": "心情系统"
     },
+    "battle_history": {
+      "type": "object",
+      "properties": {
+        "lose_streak": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "连败计数(败方+1,胜方清零)——败者复起称号依据"
+        },
+        "win_streak": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "连胜计数(保留扩展位)"
+        }
+      },
+      "additionalProperties": false,
+      "description": "斗法历史(bot独占写入):连败/连胜计数,称号系统依据"
+    },
     "titles": {
       "type": "array",
       "items": {
