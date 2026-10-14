@@ -1,0 +1,13 @@
+id: loc-qingtai-zhong
+name: 青苔巨钟
+kind: location
+type: 遗迹
+element: earth
+desc: 一口倒扣的青铜巨钟，内壁爬满发光青苔。指尖触壁，钟会应人——像极远处有什么东西轻轻碰你。
+notable:
+  - 雄大醒来的地方
+  - 钟身刻着无人认识的字
+  - 引路灵以此为雄大的居所
+danger: 未知
+first_seen: leonezhu 支线 · 大变基第九日
+created_by_bot: false

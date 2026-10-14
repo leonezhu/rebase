@@ -1,0 +1,12 @@
+id: loc-qianjianzhong
+name: 千剑冢
+kind: location
+type: 险地/悟道
+element: metal
+desc: 万剑插地的黑色石林，剑身锈迹斑斑，剑鸣未止。葬剑之地，也是悟剑之地。
+notable:
+  - 第七碑：雄大经过时，脚下剑鸣齐齐停了一瞬——原因不明
+  - 陆惊鸿在此悟出「惊鸿一瞥」
+danger: 筑基以下勿入深处
+first_seen: leonezhu 支线 · 大变基第十日
+created_by_bot: false

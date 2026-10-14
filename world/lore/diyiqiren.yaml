@@ -1,0 +1,10 @@
+id: lore-diyiqiren
+name: 第七人之谜
+kind: lore
+desc: 大变基以来第七个醒者，火纯根，三年前进雾渊未归。烤鱼老头称其「孩子」。
+threads:
+  - 烤鱼老头是第七人的什么人？
+  - 「功力该追上严北岳了吧」——若活着，他在雾渊里如何修行？
+  - 第七人铭牌 (event ev-qiren-yiji) 可以此展开
+first_seen: leonezhu 支线 · 大变基第十日
+status: open

@@ -1,0 +1,14 @@
+id: gongfa-jinghong-yipie
+name: 惊鸿一瞥
+kind: gongfa
+grade: 地阶下品
+element: metal
+desc: 千剑冢第七碑剑痕所悟的身剑合一之术——身形淡成一道白线，剑意先至。
+first_seen: npc-luhan 支线 · 大变基第五日
+origin: 千剑冢剑碑林第七碑
+unique: false
+holders:
+  - who: npc-luhan（陆惊鸿）
+    since: "2026-09-18"
+    note: 悟性八十八，第七碑前一眼而悟
+created_by_bot: false

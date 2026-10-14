@@ -1,0 +1,14 @@
+id: art-wuming-duanjian
+name: 无名断剑
+kind: artifact
+grade: 上品法器
+element: metal
+power: 剑身残缺却锋锐不减，出鞘时万剑冢齐鸣——似在应和什么
+desc: 陆惊鸿醒来时就握在手里，没人知道它跟了谁。
+first_seen: npc-luhan 支线 · 大变基第一日
+origin: 未知——千剑冢万剑齐鸣三日，似在应和冢中某物
+unique: true
+holders:
+  - who: npc-luhan（陆惊鸿）
+    since: "2026-09-14"
+created_by_bot: false

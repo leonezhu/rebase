@@ -1,0 +1,44 @@
+# 事件池 · 随机遭遇模板
+# 引擎(随机或定时)从池中抽事件, 编入玩家探索支线
+# 每个事件: id/名称/触发条件/叙事钩子/可产出资产
+
+- id: ev-hudengren-cesuo
+  name: 守灯人的侧影
+  when: 玩家位于浅湖镇且持有火行功法
+  hook: 藏经阁闭阁的时辰, 你看见守灯人独自立在三层西窗前, 手里捧着一盏没有灯芯的旧灯笼
+  yields:
+    - hook_asset: 旧灯笼的来历 (world/artifacts 新资产伏笔)
+  weight: 2
+
+- id: ev-kaoyu-zhenhua
+  name: 烤鱼摊的真话
+  when: 玩家位于浅湖镇且带有未解伏笔
+  hook: 老头头也不抬, 只说了七个字——今天的话贵一点
+  yields:
+    - cost: 灵石或一段秘密
+    - reward: 一条主线线索
+  weight: 3
+
+- id: ev-qianjian-gongming
+  name: 千剑冢的剑鸣
+  when: 玩家踏入千剑冢
+  hook: 某一柄锈剑忽然随你的脚步声轻鸣——它在回应你身上带着的什么
+  yields:
+    - hook_asset: 未知铁剑 (潜在法宝伏笔)
+  weight: 2
+
+- id: ev-yuanjin-chuanhuo
+  name: 余烬的余火
+  when: 雾渊主宰「余烬」在世时, 玩家靠近雾渊外墙
+  hook: 雾墙根下有一小簇没被讨伐波及的余火, 烧着一段没人听完的话
+  yields:
+    - hook_asset: 未竟之言 (世界 lore 碎片)
+  weight: 3
+
+- id: ev-qiren-yiji
+  name: 第七人的遗物
+  when: 探索秘境 (稀有)
+  hook: 半掩在灰烬里的铭牌, 刻着第七个醒者的名讳——字迹被火燎过, 认不全
+  yields:
+    - hook_asset: 第七人铭牌 (主线道具)
+  weight: 1

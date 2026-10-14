@@ -1,0 +1,16 @@
+id: art-luopan-canying
+name: 罗盘残影
+kind: artifact
+grade: 下品法器
+element: earth
+power: 指向主人最想找的东西——不明原理，从未指错
+desc: 大变基前严北岳的随身之物，意识迁跃时唯一「跟过来」的虚影。
+first_seen: npc-yanbei 支线
+origin: 旧世界地质勘探罗盘的残影
+unique: true
+holders:
+  - who: npc-yanbei（严北岳）
+    since: "2026-09-15"
+hooks:
+  - 罗盘总指雾渊方向——它想找的东西在那边
+created_by_bot: false

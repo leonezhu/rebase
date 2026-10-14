@@ -1,0 +1,22 @@
+id: npc-kaoyu-laotou
+name: 烤鱼老头
+kind: npc
+realm: unknown
+element: unknown
+desc: 浅湖镇湖边的烤鱼摊主，火候极好。大变基以来见过的纯根，连雄大在内只有两个。
+personality:
+  - 对新面孔先给一条鱼，再给一句话
+  - 说完就低头烤鱼，仿佛开口的不是他
+  - 提起三年前的人，眼会亮
+location: 浅湖镇 · 湖边
+first_seen: leonezhu 支线 · 大变基第十日
+quotes:
+  - 纯根的火烧得比别人的亮——雾渊里的东西，也看得比谁都清楚。
+  - 你拿什么换？此界没有白说的真话。
+hooks:
+  - 第七人的旧识，知其下落
+  - 引路灵：「他不是凡人」
+unique: true
+relations:
+  leonezhu: 送过一条鱼，未收灵石
+created_by_bot: false

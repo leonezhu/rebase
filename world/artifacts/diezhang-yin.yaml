@@ -1,0 +1,14 @@
+id: art-diezhang-yin
+name: 叠嶂印
+kind: artifact
+grade: 上品法器
+element: earth
+power: 掷出化山，镇压之处地脉归拢，对方如陷泥沼
+desc: 印脱手即涨，化作三丈小山当头压落。
+first_seen: npc-yanbei 支线
+origin: 严北岳渡劫那夜，天雷劈开的崖心里嵌着它
+unique: true
+holders:
+  - who: npc-yanbei（严北岳）
+    since: "2026-10-05"
+created_by_bot: false

@@ -1,0 +1,13 @@
+id: gongfa-zhenyue-jue
+name: 镇岳诀
+kind: gongfa
+grade: 玄阶上品
+element: earth
+desc: 地脉之力灌入脚下大地，方圆十丈砂砾任凭驱使。脚下三尺，皆是助力。
+first_seen: npc-yanbei 支线
+origin: 黑石荒原地脉深处前辈坐化处，蒲团下压着半卷玉简
+unique: false
+holders:
+  - who: npc-yanbei（严北岳）
+    since: "2026-09-20"
+created_by_bot: false

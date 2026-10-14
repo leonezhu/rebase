@@ -1,0 +1,13 @@
+id: loc-qianhuzhen
+name: 浅湖镇
+kind: location
+type: 城镇
+element: water
+desc: 灯芯草浅湖边上的木头小镇，散修聚居交易之地。湖底灯芯草会发光，水下隐约有一座倒立的白塔。
+notable:
+  - 藏经阁（镇东）：换功法，守灯人坐镇
+  - 悬赏榜（镇西）：赚灵石
+  - 湖边烤鱼摊：消息比悬赏值钱
+danger: 镇内安全
+first_seen: leonezhu 支线 · 大变基第十日
+created_by_bot: false
