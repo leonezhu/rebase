@@ -27,10 +27,10 @@ personality:
   courage: 40
   pride: 20
   temper: 30
-realm: zhuji
+realm: jindan
 spirit: 25
 spirit_recovered_at: '2026-10-14'
-spirit_stones: 295
+spirit_stones: 145
 talent:
   desc: 羽上灼痕即天雷烙印,危局中雷光暴走
   kind: burst
