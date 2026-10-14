@@ -188,6 +188,29 @@
       },
       "additionalProperties": false,
       "description": "天赋技能(战斗分镜中概率触发)"
+    },
+    "bloodline": {
+      "type": "object",
+      "description": "血脉之力(v0.8)：血脉之谜解开段数→被动战力加成，bot独占",
+      "required": [
+        "unlocked",
+        "wins"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "unlocked": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 5,
+          "description": "已解开段数(0-5,仅bot可改)：每段+1.5%战力，最高+7.5%"
+        },
+        "wins": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "斗法胜场累计(仅bot可改)：每2胜解锁1段"
+        }
+      },
+      "description": "解锁公式：unlocked = min(5, 境界段数(炼气0/筑基1/金丹2/元婴3/化神4/渡劫5/大乘5) + wins//2)"
     }
   },
   "additionalProperties": false

@@ -94,6 +94,8 @@ jobs:
               base = (g['ling']*1.5 + g['po']*1.2 + g['qiao'] + g['ren']*0.8 + g['yun']*0.5)
               p = beast['personality']
               base += (p['courage'] + p['temper']) * 0.05
+              # 血脉之力(v0.8)：每解开一段血脉之谜 +1.5% 战力（上限5段=+7.5%）
+              base *= 1 + 0.015 * beast.get('bloodline', {}).get('unlocked', 0)
               if ELEM_BEATS.get(beast['element']) == opp['element']:
                   base *= 1.15
               elif ELEM_BEATS.get(opp['element']) == beast['element']:
@@ -210,6 +212,8 @@ jobs:
               "challenger_power": round(pa,1), "defender_power": round(pb,1),
               "seed": seed, "margin": round(margin,3),
               "spirit_delta": {"challenger": -30 if winner != C else -15, "defender": -30 if winner != D else -15},
+              # 血脉之力(v0.8)：胜场累计→解锁公式定新段数，bot 入账
+              "bloodline_wins": {C: 1 if winner == C else 0, D: 1 if winner == D else 0},
               "frames": frames,
               "hp_final": {"challenger": round(hp_a,1), "defender": round(hp_b,1)},
           }
@@ -344,7 +348,7 @@ jobs:
           git checkout -b battle-log/${{ github.event.issue.number }}
           WINNER=$(python3 -c "import json;print(json.load(open('battle_result.json'))['winner'])")
           python3 - <<EOF
-          import yaml
+          import yaml, json
           # 灵性结算: 胜-15 败-30, 每日+20由 explore/battle 触发时按日期惰性恢复(spirit_recovered_at)
           from datetime import date, datetime
           TODAY = date.today().isoformat()
@@ -366,6 +370,25 @@ jobs:
           d['exp'] = d.get('exp', 0) + 50
           yaml.safe_dump(d, open(p,'w',encoding='utf-8'), allow_unicode=True)
           print(f"胜方 ${WINNER} +30 灵石 +50 功力")
+          # 血脉之力(v0.8)：胜场累计 + 解锁公式重算（境界段数与 rebase.yml 天梯一致）
+          REALM_SEG = {"lianqi":0,"zhuji":1,"jindan":2,"yuanying":3,"huashen":4,"dujie":5,"dacheng":5}
+          blood_events = []
+          for owner in [r['winner'], r['loser']]:
+              p = f'monsters/{owner}/beast.yaml'
+              d = yaml.safe_load(open(p, encoding='utf-8'))
+              if owner == r['winner']:
+                  d['bloodline'] = d.get('bloodline', {'unlocked': 0, 'wins': 0})
+                  d['bloodline']['wins'] = d['bloodline'].get('wins', 0) + 1
+              else:
+                  d.setdefault('bloodline', {'unlocked': 0, 'wins': 0})
+              seg = REALM_SEG.get(d.get('realm', 'lianqi'), 0)
+              new_unlocked = min(5, seg + d['bloodline'].get('wins', 0) // 2)
+              if new_unlocked > d['bloodline'].get('unlocked', 0):
+                  d['bloodline']['unlocked'] = new_unlocked
+                  blood_events.append((owner, d['name'], new_unlocked))
+              yaml.safe_dump(d, open(p,'w',encoding='utf-8'), allow_unicode=True)
+              print(f"{owner}: 血脉 {d['bloodline'].get('unlocked',0)}段/{d['bloodline'].get('wins',0)}胜")
+          json.dump(blood_events, open('blood_events.json','w'), ensure_ascii=False)
           EOF
           git add monsters/ && git commit -m "斗法结算: issue#${{ github.event.issue.number }} 胜方+30灵石+50功力"
           # 入账链咽喉点：push/create/merge 失败必须显式红灯（禁 || true 吞错），见 ITERATION.md 打磨轮登记
@@ -374,6 +397,24 @@ jobs:
             -t "斗法奖励入账 #${{ github.event.issue.number }}" -b "bot 结算，自动合并"
           gh pr edit battle-log/${{ github.event.issue.number }} -R leonezhu/rebase --add-label "game/bot" || true
           gh pr merge battle-log/${{ github.event.issue.number }} --merge
+          # 血脉之力(v0.8)：有新解锁段时在战报 issue 贴解锁叙事（须在入账 PR 合并后，重读已入账数据）
+          BL=$(python3 -c "import json;print(len(json.load(open('blood_events.json'))))")
+          if [ "$BL" -gt 0 ]; then
+            sleep 3
+            BODY=$(python3 - <<'BLEOF'
+          import json
+          ev = json.load(open('blood_events.json'))
+          LINES = ["", "## 🩸 血脉之力 · 苏醒", "",
+                   "> 血脉之谜又被撕开一页。它想起的越多，就越强——", "",
+                   "*强度+1.5%/段，上限5段。境界攀升与斗法胜场，都会撕开新的页。*", ""]
+          for owner, name, n in ev:
+              LINES.append(f"**{name}**（@{owner}）血脉之谜解开第 **{n}** 段 —— 战力 +{round(n*1.5,1)}%")
+          LINES.append("")
+          print("\n".join(LINES))
+          BLEOF
+            )
+            gh issue comment ${{ github.event.issue.number }} -R leonezhu/rebase -b "$BODY"
+          fi
 
   # ===== 斗法收录终态：解说 PR 合并后，双方半场齐 → issue 打「斗法/已收录」 =====
   chronicle-seal:

@@ -117,3 +117,54 @@ jobs:
           subprocess.run(['gh', 'issue', 'comment', '${{ github.event.issue.number }}',
                           '-R', 'leonezhu/rebase', '-b', body], check=True)
           PYEOF
+
+      - name: 血脉之力入账（v0.8：境界段数上涨→解锁新段）
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE: ${{ github.event.issue.number }}
+        run: |
+          # 渡劫入账 PR 已合并，从 origin/main 重读权威状态
+          git fetch origin main --depth=1
+          git checkout origin/main -- monsters/
+          NEW=$(python3 - <<'PYEOF'
+          import yaml, json
+          SEG = {"lianqi":0,"zhuji":1,"jindan":2,"yuanying":3,"huashen":4,"dujie":5,"dacheng":5}
+          F = f"monsters/${{ github.event.comment.user.login }}/beast.yaml"
+          d = yaml.safe_load(open(F, encoding='utf-8'))
+          bl = d.get('bloodline', {'unlocked': 0, 'wins': 0})
+          new_unlocked = min(5, SEG[d['realm']] + bl.get('wins', 0) // 2)
+          if new_unlocked > bl.get('unlocked', 0):
+              bl['unlocked'] = new_unlocked
+              d['bloodline'] = bl
+              yaml.safe_dump(d, open(F, 'w', encoding='utf-8'), allow_unicode=True, sort_keys=False)
+              print(f"UNLOCKED:{new_unlocked}")
+          else:
+              print("NONE")
+          PYEOF
+          )
+          if [ "$NEW" = "NONE" ]; then
+            echo "血脉段数无变化，跳过入账"
+            exit 0
+          fi
+          N=$(echo "$NEW" | grep -oP '(?<=UNLOCKED:)\d+')
+          BRANCH="bloodline-log/$ISSUE"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -b "$BRANCH"
+          git add monsters/
+          git commit -m "血脉之力: issue#$ISSUE 解开第${N}段（境界段数上涨）"
+          # 入账链咽喉点：push/create/merge 失败必须显式红灯（禁 || true 吞错）
+          git push origin "$BRANCH"
+          gh pr create -R leonezhu/rebase --head "$BRANCH" --base main \
+            -t "🩸 血脉之力入账 #$ISSUE" -b "bot 结算，自动合并"
+          gh pr edit "$BRANCH" -R leonezhu/rebase --add-label "game/bot" || true
+          gh pr merge "$BRANCH" --merge
+          gh issue comment "$ISSUE" -R leonezhu/rebase \
+            -b '## 🩸 血脉之力 · 苏醒
+
+          > 渡劫的雷声里，它想起了一段更早的事。
+
+          **血脉之谜解开第 '"${N}"' 段 —— 战力 +'"$(python3 -c "print(round($N*1.5,1))")"'%**
+
+          *血脉之力：每解开一段血脉之谜 +1.5% 战力（上限5段）。境界攀升与斗法胜场，都会撕开新的页。*'
