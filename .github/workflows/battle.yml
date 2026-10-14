@@ -63,7 +63,10 @@ jobs:
           D="${{ steps.parse.outputs.defender }}"
           for OWNER in $C $D; do
             F="players/$OWNER.yaml"
-            [ -f "$F" ] || F="monsters/$OWNER/beast.yaml"
+            if [ ! -f "$F" ]; then
+              MATCH=$(ls players/"$OWNER"-*.yaml 2>/dev/null | head -1)
+              if [ -n "$MATCH" ]; then F="$MATCH"; else F="monsters/$OWNER/beast.yaml"; fi
+            fi
             if [ ! -f "$F" ]; then
               gh issue comment ${{ github.event.issue.number }} -R leonezhu/rebase \
                 -b "@${OWNER} 尚无灵籍入册（monsters/$OWNER/beast.yaml 不存在），无法斗法。"
@@ -91,9 +94,9 @@ jobs:
           pip install pyyaml --quiet
           python3 - <<'EOF'
           import yaml, hashlib, json, os
-          import yaml as _yaml, os as _os
+          import yaml as _yaml, os as _os, glob as _glob
           def load_beast(o):
-              for _c in (f'players/{o}.yaml', f'monsters/{o}/beast.yaml'):
+              for _c in ([f'players/{o}.yaml'] + sorted(_glob.glob(f'players/{o}-*.yaml')) + [f'monsters/{o}/beast.yaml']):
                   if _os.path.exists(_c):
                       _d = _yaml.safe_load(open(_c, encoding='utf-8'))
                       _d.setdefault('element', (_d.get('spirit_root') or {}).get('element'))
@@ -376,9 +379,10 @@ jobs:
         run: |
           python3 - <<'EOF'
           import yaml, json, glob
+          import glob
           import yaml as _yaml, os as _os
           def load_beast(o):
-              for _c in (f'players/{o}.yaml', f'monsters/{o}/beast.yaml'):
+              for _c in ([f'players/{o}.yaml'] + sorted(_glob.glob(f'players/{o}-*.yaml')) + [f'monsters/{o}/beast.yaml']):
                   if _os.path.exists(_c):
                       _d = _yaml.safe_load(open(_c, encoding='utf-8'))
                       _d.setdefault('element', (_d.get('spirit_root') or {}).get('element'))
@@ -398,7 +402,7 @@ jobs:
               stories = []
               if 'genes' in beast:
                   # 灵兽轨：chronicle/<owner>/ 半场解说（旧制，行为零变化）
-                  for f in sorted(glob.glob(f'chronicle/{o}/*.md'), reverse=True)[:2]:
+                  for f in sorted(_glob.glob(f'chronicle/{o}/*.md'), reverse=True)[:2]:
                       stories.append(open(f, encoding='utf-8').read()[:400])
               else:
                   # 人修轨：近事取 player.yaml 自身 chronicle 人生大事记末 2 条——
@@ -438,7 +442,7 @@ jobs:
           import json, subprocess, os
           import yaml as _yaml, os as _os
           def load_beast(o):
-              for _c in (f'players/{o}.yaml', f'monsters/{o}/beast.yaml'):
+              for _c in ([f'players/{o}.yaml'] + sorted(_glob.glob(f'players/{o}-*.yaml')) + [f'monsters/{o}/beast.yaml']):
                   if _os.path.exists(_c):
                       _d = _yaml.safe_load(open(_c, encoding='utf-8'))
                       _d.setdefault('element', (_d.get('spirit_root') or {}).get('element'))
@@ -606,12 +610,12 @@ jobs:
           TODAY = date.today().isoformat()
           r = __import__('json').load(open('battle_result.json'))
           def load_beast(o):
-              for _c in (f'players/{o}.yaml', f'monsters/{o}/beast.yaml'):
+              for _c in ([f'players/{o}.yaml'] + sorted(_glob.glob(f'players/{o}-*.yaml')) + [f'monsters/{o}/beast.yaml']):
                   if os.path.exists(_c):
                       return yaml.safe_load(open(_c, encoding='utf-8'))
               raise FileNotFoundError(o)
           for owner, delta in [(r['winner'], -15), (r['loser'], -30)]:
-              p = next(c for c in (f'players/{owner}.yaml', f'monsters/{owner}/beast.yaml') if os.path.exists(c))
+              p = next((c for c in ([f'players/{owner}.yaml'] + sorted(_glob.glob(f'players/{owner}-*.yaml')) + [f'monsters/{owner}/beast.yaml']) if os.path.exists(c)), None)
               d = yaml.safe_load(open(p, encoding='utf-8'))
               last = d.get('spirit_recovered_at')
               if last != TODAY:
@@ -621,9 +625,8 @@ jobs:
               yaml.safe_dump(d, open(p,'w',encoding='utf-8'), allow_unicode=True)
               print(f"{owner}: 灵性{delta:+d} → {d['spirit']}")
           # 奖励
-          p = f'players/${WINNER}.yaml'
-          import os as _os
-          if not _os.path.exists(p): p = f'monsters/${WINNER}/beast.yaml'
+          p = next((c for c in ([f'players/${{WINNER}}.yaml'] + sorted(_glob.glob(f'players/${{WINNER}}-*.yaml')) + [f'monsters/${{WINNER}}/beast.yaml']) if _os.path.exists(c)), None)
+          import os as _os, glob as _glob
           d = yaml.safe_load(open(p, encoding='utf-8'))
           # 境界差动收益(v0.12 反刷菜): 同级胜+30/+50, 越级挑战胜×2.5(冒险奖), 高打低×0.4(虐菜无味)
           RORD = {'lianqi': 0, 'zhuji': 1, 'jindan': 2, 'yuanying': 3, 'huashen': 4, 'dujie': 5, 'dacheng': 5}
@@ -659,8 +662,8 @@ jobs:
           yaml.safe_dump(d, open(p,'w',encoding='utf-8'), allow_unicode=True)
           print(f"胜方 ${WINNER} +{win_stones} 灵石 +{win_exp} 功力(境界差动×{mult})")
           # 败方代价(v0.13 有增有减): 疗伤/赔礼 -15灵石(保底0)——输一场真的变穷
-          lp = f"players/${LOSER}.yaml"
-          if not _os.path.exists(lp): lp = f"monsters/${LOSER}/beast.yaml"
+          import os as _os2, glob as _glob2
+          lp = next((c for c in ([f'players/${{LOSER}}.yaml'] + sorted(_glob2.glob(f'players/${{LOSER}}-*.yaml')) + [f'monsters/${{LOSER}}/beast.yaml']) if _os2.path.exists(c)), None)
           ld = yaml.safe_load(open(lp, encoding='utf-8'))
           lost = min(15, ld.get('spirit_stones', 0))
           ld['spirit_stones'] = ld.get('spirit_stones', 0) - lost
@@ -681,7 +684,7 @@ jobs:
           REALM_SEG = {"lianqi":0,"zhuji":1,"jindan":2,"yuanying":3,"huashen":4,"dujie":5,"dacheng":5}
           blood_events = []
           for owner in [r['winner'], r['loser']]:
-              p = next(c for c in (f'players/{owner}.yaml', f'monsters/{owner}/beast.yaml') if os.path.exists(c))
+              p = next((c for c in ([f'players/{owner}.yaml'] + sorted(_glob.glob(f'players/{owner}-*.yaml')) + [f'monsters/{owner}/beast.yaml']) if os.path.exists(c)), None)
               d = yaml.safe_load(open(p, encoding='utf-8'))
               if owner == r['winner']:
                   d['bloodline'] = d.get('bloodline', {'unlocked': 0, 'wins': 0})
@@ -718,7 +721,7 @@ jobs:
           talent_debut = []  # v0.18 天赋首觉(首次跨入Lv1)——授「天赋初醒」称号
           mg = r.get('mastery_gained', {})
           for owner in [r['winner'], r['loser']]:
-              p = next(c for c in (f'players/{owner}.yaml', f'monsters/{owner}/beast.yaml') if os.path.exists(c))
+              p = next((c for c in ([f'players/{owner}.yaml'] + sorted(_glob.glob(f'players/{owner}-*.yaml')) + [f'monsters/{owner}/beast.yaml']) if os.path.exists(c)), None)
               d = yaml.safe_load(open(p, encoding='utf-8'))
               if not d.get('talent'):
                   continue
@@ -810,9 +813,9 @@ jobs:
           fi
           # 威名授予播报(v0.19)：锋芒内敛——连胜≥3且心境未低落，同级的戏眼
           # （与🩸/✨/🎖️闭关复出同框，胜方多一条威名）
-          if python3 -c "import json,sys;import yaml as y,os as _os;r=json.load(open('battle_result.json'));owner=r.get('winner');p=next(c for c in (f'players/{owner}.yaml',f'monsters/{owner}/beast.yaml') if _os.path.exists(c));d=y.safe_load(open(p,encoding='utf-8'));ws=d.get('battle_history',{}).get('win_streak',0);mood=d.get('mood',{}).get('state','');sys.exit(0 if ws>=3 and mood!='低落' else 1)"; then
+          if python3 -c "import json,sys;import yaml as y,os as _os;r=json.load(open('battle_result.json'));owner=r.get('winner');p=next((c for c in ([f'players/{owner}.yaml']+sorted(__import__('glob').glob(f'players/{owner}-*.yaml'))+[f'monsters/{owner}/beast.yaml']) if os.path.exists(c)), None);d=y.safe_load(open(p,encoding='utf-8'));ws=d.get('battle_history',{}).get('win_streak',0);mood=d.get('mood',{}).get('state','');sys.exit(0 if ws>=3 and mood!='低落' else 1)"; then
             WINNER=$(python3 -c "import json;print(json.load(open('battle_result.json'))['winner'])")
-            WNAME=$(python3 -c "import yaml,os as _os;o='${WINNER}';p=next(c for c in (f'players/{o}.yaml',f'monsters/{o}/beast.yaml') if _os.path.exists(c));print(yaml.safe_load(open(p,encoding='utf-8'))['name'])")
+            WNAME=$(python3 -c "import yaml,os as _os;o='${WINNER}';p=next((c for c in ([f'players/{o}.yaml']+sorted(__import__('glob').glob(f'players/{o}-*.yaml'))+[f'monsters/{o}/beast.yaml']) if os.path.exists(c)), None);print(yaml.safe_load(open(p,encoding='utf-8'))['name'])")
             gh issue comment ${{ github.event.issue.number }} -R leonezhu/rebase --body-file - <<FCEOF
           ## 🎖️ 威名 · 铸成
 

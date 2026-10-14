@@ -30,7 +30,10 @@ jobs:
         run: |
           # 人修双轨(v2)：玩家档 players/<owner>.yaml 优先，旧灵兽 monsters/<owner>/beast.yaml 兜底
           F="players/$EXPLORER.yaml"
-          if [ ! -f "$F" ]; then F="monsters/$EXPLORER/beast.yaml"; fi
+          if [ ! -f "$F" ]; then
+            MATCH=$(ls players/"$EXPLORER"-*.yaml 2>/dev/null | head -1)
+            if [ -n "$MATCH" ]; then F="$MATCH"; else F="monsters/$EXPLORER/beast.yaml"; fi
+          fi
           if [ ! -f "$F" ]; then
             gh issue comment $ISSUE -R leonezhu/rebase \
               -b "@${EXPLORER} 你尚未缔约（monsters/$EXPLORER/beast.yaml 不存在），秘境之门不识你的气息。先去 README 缔约领养一只灵兽吧。"
@@ -65,8 +68,9 @@ jobs:
           seed = f"explore|{OWNER}|${{ github.event.comment.id }}|${{ steps.beast.outputs.today }}"
           rng = hashlib.sha256(seed.encode()).hexdigest()
 
-          p = Path(f'players/{OWNER}.yaml')
-          if not p.exists(): p = Path(f'monsters/{OWNER}/beast.yaml')
+          import glob as _g
+          _cands = [Path(f'players/{OWNER}.yaml')] + sorted(Path(x) for x in _g.glob(f'players/{OWNER}-*.yaml')) + [Path(f'monsters/{OWNER}/beast.yaml')]
+          p = next(c for c in _cands if c.exists())
           d = yaml.safe_load(p.read_text(encoding='utf-8'))
           # 人修双轨(v2)：玩家档灵根/根骨嵌在 spirit_root 下且无 personality——
           # 探索只依赖 element，从 spirit_root 取（旧灵兽顶层 element 也能兼容）
@@ -158,7 +162,7 @@ jobs:
           STONES=$(python3 -c "import json;d=json.load(open('explore_result.json'));v=d['stones'];print(('+' if v>0 else '')+str(v))")
           EXP=$(python3 -c "import json;d=json.load(open('explore_result.json'));print('+'+str(d['exp']) if d['exp'] else '0')")
           BAL=$(python3 -c "import json;print(json.load(open('explore_result.json'))['balance'])")
-          NAME=$(python3 -c "import yaml,os;o='${{ steps.beast.outputs.explorer }}';p=next(c for c in (f'players/{o}.yaml',f'monsters/{o}/beast.yaml') if os.path.exists(c));print(yaml.safe_load(open(p,encoding='utf-8'))['name'])")
+          NAME=$(python3 -c "import yaml,os;o='${{ steps.beast.outputs.explorer }}';p=next((c for c in ([f'players/{o}.yaml']+sorted(__import__('glob').glob(f'players/{o}-*.yaml'))+[f'monsters/{o}/beast.yaml']) if os.path.exists(c)), None);print(yaml.safe_load(open(p,encoding='utf-8'))['name'])")
           HEADER="秘境探索"
 
           gh issue comment $ISSUE -R leonezhu/rebase -b "## 🌫️ ${HEADER} · ${NAME}
