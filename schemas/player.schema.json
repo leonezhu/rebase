@@ -1,0 +1,42 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "player",
+  "description": "玩家档案（人修v2）：大变基迁跃的修士，第一人称视角",
+  "type": "object",
+  "required": ["owner", "name", "created_at", "realm", "stage", "spirit_root", "exp", "spirit_stones"],
+  "properties": {
+    "owner": { "type": "string", "description": "GitHub 用户名（系统标识）" },
+    "name": { "type": "string", "minLength": 1, "maxLength": 12, "description": "异界名讳（对外身份，战书/斗法志用）" },
+    "origin": { "type": "string", "description": "醒来场景（第一幕文本存档）" },
+    "created_at": { "type": "string" },
+    "realm": {
+      "type": "string",
+      "enum": ["lianqi", "zhuji", "jindan", "yuanying", "huashen", "dujie", "dacheng"]
+    },
+    "stage": { "type": "string", "enum": ["awakening", "cultivating"], "description": "awakening=刚醒来未感灵潮" },
+    "spirit_root": {
+      "type": "object",
+      "description": "灵根（Engine内部参数，永不直接展示数值）",
+      "properties": {
+        "element": { "type": "string", "enum": ["metal", "wood", "water", "fire", "earth"] },
+        "purity": { "type": "integer", "minimum": 1, "maximum": 100, "description": "纯度，越高修炼越快" },
+        "variant": { "type": "string", "enum": ["normal", "mixed", "pseudo", "heavenly"], "description": "normal纯根/mixed杂根/pseudo伪根/heavenly天根" }
+      },
+      "required": ["element", "purity", "variant"]
+    },
+    "constitution": { "type": "string", "description": "体质（普通留空；罕见圣体类极低概率）" },
+    "comprehension": { "type": "integer", "minimum": 1, "maximum": 100, "description": "悟性" },
+    "exp": { "type": "integer", "minimum": 0 },
+    "spirit_stones": { "type": "integer", "minimum": 0 },
+    "spirit": { "type": "integer", "minimum": 0, "maximum": 100 },
+    "mood": {
+      "type": "object",
+      "properties": {
+        "state": { "type": "string", "enum": ["昂扬", "平静", "低落"] },
+        "updated": { "type": "string" }
+      }
+    },
+    "titles": { "type": "array", "items": { "type": "string" }, "maxItems": 20 },
+    "memory_fragments": { "type": "integer", "minimum": 0, "maximum": 5, "description": "前世记忆碎片（血脉之谜线索）" }
+  }
+}

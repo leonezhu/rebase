@@ -1,0 +1,116 @@
+# 觉醒（人修 v2）：玩家 register/* 分支 PR → 校验 player.yaml → auto-merge
+# 玩家流程：Agent 指引下本地生成 player.yaml（名讳由玩家输入，灵根由 hash 派生）
+#   → PR 到 register/* → 此 workflow 校验 + merge
+# 名讳：对外身份（战书/斗法志/他者文本用）；灵根数值永不进评论（感灵夜以意象揭晓）
+name: Awaken (觉醒 · 人修v2)
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'players/*.yaml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+concurrency:
+  group: awaken-${{ github.event.pull_request.number || 'manual' }}
+  cancel-in-progress: false
+
+jobs:
+  awaken:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 觉醒校验 + 入册
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          ACTOR: ${{ github.actor }}
+        run: |
+          python3 - <<'PYEOF'
+          import yaml, json, glob, os, subprocess, hashlib
+
+          SCHEMA_OK = True
+          err = []
+
+          # 找 PR 中新增的 player.yaml（.players/ 目录）
+          base = os.environ.get('PR')
+          files = subprocess.run(['gh', 'pr', 'view', base, '--json', 'files', '-q',
+                                  '.files[].path'], capture_output=True, text=True).stdout.split()
+          new_files = [f for f in files if f.startswith('players/') and f.endswith('.yaml')]
+          if not new_files:
+              print("PR 中未发现 players/*.yaml，跳过（可能是其他文件变更）")
+              raise SystemExit(0)
+          if len(new_files) > 1:
+              err.append(f"一次觉醒只许一份 player.yaml，发现 {len(new_files)} 份")
+
+          f = new_files[0]
+          owner = os.path.basename(f).replace('.yaml', '')
+          d = yaml.safe_load(open(f, encoding='utf-8'))
+
+          # 硬校验
+          import json as J
+          try:
+              import jsonschema
+              jsonschema.validate(d, J.load(open('schemas/player.schema.json')))
+          except ImportError:
+              # 最小手检：关键字段
+              for k in ['owner', 'name', 'realm', 'stage', 'spirit_root', 'exp', 'spirit_stones']:
+                  if k not in d: err.append(f"缺字段: {k}")
+              if d.get('owner') != owner: err.append(f"owner({d.get('owner')}) 与文件名({owner}) 不一致")
+              sr = d.get('spirit_root', {})
+              if not all(k in sr for k in ('element', 'purity', 'variant')):
+                  err.append("spirit_root 缺 element/purity/variant")
+
+          # 防作弊：灵根参数必须由 hash(owner+created_at) 派生（不可自选天根）
+          seed_raw = f"{d['owner']}|{d.get('created_at','')}"
+          h = hashlib.sha256(seed_raw.encode()).hexdigest()
+          elements = ['metal', 'wood', 'water', 'fire', 'earth']
+          expect_elem = elements[int(h[:8], 16) % 5]
+          expect_purity = int(h[8:12], 16) % 88 + 6      # 6~93
+          variants = ['normal', 'normal', 'mixed', 'mixed', 'pseudo', 'heavenly']  # 天根1/6极稀有
+          expect_var = variants[int(h[12:20], 16) % 6]
+          got = d.get('spirit_root', {})
+          if got.get('element') != expect_elem or got.get('purity') != expect_purity or got.get('variant') != expect_var:
+              err.append(f"灵根与天道 hash 不符（命格不可自选：由 owner+created_at 派生）")
+
+          # 名讳查重
+          for p in glob.glob('players/*.yaml'):
+              if p == f: continue
+              other = yaml.safe_load(open(p, encoding='utf-8'))
+              if other and other.get('name') == d.get('name'):
+                  err.append(f"名讳「{d.get('name')}」已有人用（{other.get('owner')}），名讳须唯一")
+
+          if err:
+              print("校验失败：")
+              for e in err: print(f"- {e}")
+              raise SystemExit(1)
+
+          print(f"觉醒校验通过：{d['name']}（{owner}）")
+          print("灵根参数已锁定（意象将在感灵之夜由 Agent 揭晓）")
+          PYEOF
+
+      - name: 自动 merge（本人 PR）
+        if: env.ACTOR == 'leonezhu'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          ACTOR: ${{ github.actor }}
+        run: |
+          NAME=$(grep '^name:' "players/${ACTOR}.yaml" | head -1 | sed 's/name: *"\{0,1\}//;s/"\{0,1\}$//')
+          gh pr merge "$PR" --merge --subject "觉醒入世：${NAME}"
+
+      - name: 外人 PR → 打待审标签
+        if: env.ACTOR != 'leonezhu'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+        run: |
+          gh pr edit "$PR" --add-label "player/待审" || true
+          gh pr comment "$PR" --body "长老们觉得此人根骨尚可，但名讳需过目——待审。" || true
