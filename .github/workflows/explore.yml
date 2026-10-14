@@ -28,6 +28,7 @@ jobs:
           EXPLORER: ${{ github.event.comment.user.login }}
           ISSUE: ${{ github.event.issue.number }}
         run: |
+          # 人修双轨(v2)：玩家档 players/<owner>.yaml 优先，旧灵兽 monsters/<owner>/beast.yaml 兜底
           F="players/$EXPLORER.yaml"
           if [ ! -f "$F" ]; then F="monsters/$EXPLORER/beast.yaml"; fi
           if [ ! -f "$F" ]; then
@@ -67,10 +68,17 @@ jobs:
           p = Path(f'players/{OWNER}.yaml')
           if not p.exists(): p = Path(f'monsters/{OWNER}/beast.yaml')
           d = yaml.safe_load(p.read_text(encoding='utf-8'))
+          # 人修双轨(v2)：玩家档灵根/根骨嵌在 spirit_root 下且无 personality——
+          # 探索只依赖 element，从 spirit_root 取（旧灵兽顶层 element 也能兼容）
+          _root = d.get('spirit_root') or {}
+          _element = d.get('element') or _root.get('element')
+          if not _element:
+              print(f"::error::{p} 缺 element（spirit_root.element 亦无），无法结算遭遇")
+              sys.exit(1)
 
           # 遭遇表：权重不同的 8 种秘境事件（零术语，玄幻文本）
           el_map = {'metal': '金', 'wood': '木', 'earth': '土', 'water': '水', 'fire': '火'}
-          el_cn = el_map.get(d['element'], '?')
+          el_cn = el_map.get(_element, '?')
           ENCOUNTERS = [
               # (code, 权重, 灵石, 功力, 故事模板)
               ("herb",    20,  15,  10, "灵草丛生：{name} 拨开齐腰的银穗草，草根处一窝灵髓凝成的露珠滚落掌心。它以{el}行气息温养片刻，露珠化作灵石收入囊中。"),
@@ -162,7 +170,9 @@ jobs:
           from jsonschema import validate as _sv
           _TODAY = __import__('datetime').datetime.now(__import__('datetime').timezone(__import__('datetime').timedelta(hours=8))).strftime('%Y-%m-%d')
           social_result = None
-          if int(rng[8:12], 16) % 100 < 25:
+          # 人修双轨守卫：社交判定需要双方 personality——玩家档(player.schema)无此字段，
+          # 玩家探索时跳过同仓相遇（social 仍是灵兽世界的事件），不硬造性格数值
+          if int(rng[8:12], 16) % 100 < 25 and 'personality' in d:
               import glob as _glob
               candidates = []
               for mf in sorted(_glob.glob('monsters/*/beast.yaml')):
@@ -220,7 +230,7 @@ jobs:
                       if _bad_ph or _hit:
                           print(f"::error::社交文案池条目 {_tpl['id']} 校验不过(占位符{_bad_ph}/术语{_hit})——显式红灯,不静默降级")
                           sys.exit(1)
-                      el_cn_o = el_map.get(d['element'], '?')
+                      el_cn_o = el_map.get(_element, '?')
                       social_story = str(_tpl['story']).format(
                           name=d['name'], other=str(od['name']), el=el_cn_o)
                       # 数值入账：社交剧情替换本次普通遭遇的收益
@@ -301,6 +311,10 @@ jobs:
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          # 双轨补丁(2026-10-15)：$F 只在上一个 step 定义且不跨 step 传递——入账步必须自行解析
+          # 修 bot 层 add 空/错路径的隐性 bug（旧轨此前碰巧成立只是因为 git add monsters/ 兜住了）
+          F="players/$OWNER.yaml"
+          if [ ! -f "$F" ]; then F="monsters/$OWNER/beast.yaml"; fi
           BRANCH="explore-log/${OWNER}-${{ github.event.comment.id }}"
           git checkout -b "$BRANCH"
           git add "$F"
