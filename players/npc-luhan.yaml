@@ -1,52 +1,58 @@
-owner: npc-luhan
+artifacts:
+- grade: 上品法器
+  name: 无名断剑
+  obtained: '2026-09-14'
+  origin: 醒来时就握在手里，没人知道它跟了谁
+  power: 剑身残缺却锋锐不减，出鞘时万剑冢齐鸣——似在应和什么
+- grade: 中品法器
+  name: 惊鸿佩
+  obtained: '2026-10-01'
+  origin: 击败前代剑冢守碑人，对方笑着留下的
+  power: 短距离身法爆发，一步三丈，配「惊鸿一瞥」施展无迹
+battle_history:
+  lose_streak: 0
+bloodline:
+  unlocked: 2
+  wins: 1
+chronicle:
+- D1 · 醒于千剑冢，手中已有断剑——剑冢万剑齐鸣三日不绝
+- D5 · 第七碑前悟「惊鸿一瞥」，守碑人败于其手，笑赠惊鸿佩
+- D19 · 越级斩杀筑基后期挑衅者，得名「越级斩」
+comprehension: 88
+constitution: 剑心通明
+created_at: '2026-10-14T11:00:00+08:00'
+exp: 730
+gongfa:
+- element: metal
+  grade: 地阶下品
+  learned: '2026-09-18'
+  name: 惊鸿一瞥
+  origin: 千剑冢剑碑林第七碑，碑上剑痕看懂的一瞬它就"会"了——悟性88看懂的是别人毕生所求
+- element: metal
+  grade: 玄阶中品
+  learned: '2026-09-25'
+  name: 金锋洗髓
+  origin: 剑心通明体质自生的配套心法，无师自通
+memory_fragments: 3
+mood:
+  state: 昂扬
+  updated: '2026-10-14'
 name: 陆惊鸿
+open_loops:
+- hook: 万剑齐鸣——断剑在应和冢中某物，那东西还没找到
+  planted: '2026-09-14'
+  status: open
 origin: 大变基前是击剑运动员，醒来时在千剑冢的剑碑林里，手里已经握着一柄无名断剑
-created_at: "2026-10-14T11:00:00+08:00"
+owner: npc-luhan
 realm: jindan
-stage: cultivating
+spirit: 85
+spirit_recovered_at: '2026-10-14'
 spirit_root:
   element: metal
   purity: 91
   variant: normal
-constitution: 剑心通明
-comprehension: 88
-exp: 710
-spirit_stones: 290
-spirit: 100
-mood:
-  state: 昂扬
-  updated: "2026-10-14"
+spirit_stones: 302
+stage: cultivating
 titles:
-  - 越级斩
-  - 初鸣
-memory_fragments: 3
-gongfa:
-  - name: 惊鸿一瞥
-    grade: 地阶下品
-    element: metal
-    origin: 千剑冢剑碑林第七碑，碑上剑痕看懂的一瞬它就"会"了——悟性88看懂的是别人毕生所求
-    learned: "2026-09-18"
-  - name: 金锋洗髓
-    grade: 玄阶中品
-    element: metal
-    origin: 剑心通明体质自生的配套心法，无师自通
-    learned: "2026-09-25"
-artifacts:
-  - name: 无名断剑
-    grade: 上品法器
-    power: 剑身残缺却锋锐不减，出鞘时万剑冢齐鸣——似在应和什么
-    origin: 醒来时就握在手里，没人知道它跟了谁
-    obtained: "2026-09-14"
-  - name: 惊鸿佩
-    grade: 中品法器
-    power: 短距离身法爆发，一步三丈，配「惊鸿一瞥」施展无迹
-    origin: 击败前代剑冢守碑人，对方笑着留下的
-    obtained: "2026-10-01"
-chronicle:
-  - "D1 · 醒于千剑冢，手中已有断剑——剑冢万剑齐鸣三日不绝"
-  - "D5 · 第七碑前悟「惊鸿一瞥」，守碑人败于其手，笑赠惊鸿佩"
-  - "D19 · 越级斩杀筑基后期挑衅者，得名「越级斩」"
-open_loops:
-  - hook: 万剑齐鸣——断剑在应和冢中某物，那东西还没找到
-    planted: "2026-09-14"
-    status: open
+- 越级斩
+- 初鸣
