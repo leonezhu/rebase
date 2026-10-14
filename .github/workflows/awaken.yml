@@ -21,6 +21,7 @@ concurrency:
 
 jobs:
   awaken:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -102,7 +103,7 @@ jobs:
           PYEOF
 
       - name: 自动 merge（本人 PR）
-        if: env.ACTOR == 'leonezhu'
+        if: env.ACTOR == 'leonezhu' && env.IS_REGISTER == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           PR: ${{ github.event.pull_request.number }}
@@ -112,7 +113,7 @@ jobs:
           gh pr merge "$PR" --merge --subject "觉醒入世：${NAME}"
 
       - name: 外人 PR → 打待审标签
-        if: env.ACTOR != 'leonezhu'
+        if: env.ACTOR != 'leonezhu' && env.IS_REGISTER == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           PR: ${{ github.event.pull_request.number }}
