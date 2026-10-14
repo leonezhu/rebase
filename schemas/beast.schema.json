@@ -16,7 +16,7 @@
       "type": "string",
       "minLength": 1,
       "maxLength": 24,
-      "description": "怪兽名（玩家所见，玄幻风格）"
+      "description": "灵兽名（玩家所见，玄幻风格）"
     },
     "owner": {
       "type": "string",
@@ -181,13 +181,22 @@
             "burst",
             "shield",
             "drain",
-            "counter"
+            "counter",
+            "control",
+            "summon"
           ],
-          "description": "机制类型: burst爆发/shield护体/drain吸取/counter反击"
+          "description": "机制类型: burst爆发/shield护体/drain吸取/counter反击/control封招(命中则对方该回合力度减半)/summon召旧分支残影协战(+25固定伤)"
+        },
+        "mastery": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 999,
+          "default": 0,
+          "description": "天赋熟练度(bot独占写入,禁玩家PR改):战斗中天赋每触发一次+1。觉醒等级=mastery映射:0-2Lv0,3-7Lv1,8-14Lv2,15+Lv3;触发率30/35/40/45%,特效随级强化(见battle.yml AWAKEN表)"
         }
       },
       "additionalProperties": false,
-      "description": "天赋技能(战斗分镜中概率触发)"
+      "description": "天赋技能(战斗分镜中概率触发,觉醒等级由熟练度映射)"
     },
     "bloodline": {
       "type": "object",

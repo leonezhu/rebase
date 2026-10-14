@@ -118,6 +118,21 @@ jobs:
               fluct = int(rng_slice, 16) % 21 - 10
               return base * (1 + fluct/100)
 
+          # ===== 天赋觉醒等级(v0.10)：熟练度→等级→触发率/特效倍率 =====
+          def awaken(tal):
+              m = (tal or {}).get('mastery', 0)
+              if m >= 15: return 3
+              if m >= 8:  return 2
+              if m >= 3:  return 1
+              return 0
+          AWAKEN_RATE  = {0: 30, 1: 35, 2: 40, 3: 45}    # 每回合触发率%
+          AWAKEN_BURST = {0: 1.6, 1: 1.7, 2: 1.8, 3: 1.9} # burst 伤害倍率
+          AWAKEN_SHIELD= {0: 0.5, 1: 0.45, 2: 0.4, 3: 0.3}# shield 减伤系数(乘在dmg上)
+          AWAKEN_DRAIN = {0: 0.4, 1: 0.45, 2: 0.5, 3: 0.55}# drain 吸血系数
+          AWAKEN_COUNTER={0: 0.5, 1: 0.55, 2: 0.6, 3: 0.7} # counter 反弹系数
+          SUMMON_DMG   = 25   # summon 固定协战伤害
+          CONTROL_CUT  = 0.5  # control 封招：对方该回合力度减半
+
           # 灵性闭关检查: <30 当日不应战
           for beast, owner in [(a, C), (b, D)]:
               if beast.get('spirit', 100) < 30:
@@ -149,6 +164,7 @@ jobs:
               ("开场", rng[32:40]), ("中盘", rng[40:48]), ("决胜", rng[48:56])
           ]
           hp_a, hp_b = 100.0, 100.0
+          mastery_gained = {C: 0, D: 0}  # v0.10 天赋触发次数(入账段据此+熟练度)
           for i, (phase, rsl) in enumerate(turns):
               attacker, defender, A, B = (a, b, C, D) if i % 2 == 0 else (b, a, D, C)
               atk_name = attacker['name']; def_name = defender['name']
@@ -157,35 +173,64 @@ jobs:
               # 攻方伤害 & 守方减免
               atk_p = power(attacker, rng[(32+i*8):(36+i*8)], defender) * inten
               def_p = power(defender, rng[(36+i*8):(40+i*8)], attacker) * (1.4 - inten)
-              dmg = max(5, (atk_p - def_p * 0.9) / 3)
-              # 天赋触发: 每回合双方各30%概率(hash定,确定可复现)
+              # 天赋触发: 每回合双方各按觉醒等级概率(hash定,确定可复现)
               ts = rng[i*2:(i*2)+2] + rng[(i*2+8):(i*2+10)]  # 循环取窗,防越界
-              trig_atk = int(ts[0:2], 16) % 100 < 30
-              trig_def = int(ts[2:4], 16) % 100 < 30
+              # 触发判定(v0.10)：control 双侧有语义(封对方招); burst/drain/summon 仅攻方语义;
+              # shield/counter 仅守方语义。无语义侧的 roll 不消耗、不计数——触发必须可见于画面。
+              kind_a = (attacker.get('talent') or {}).get('kind')
+              kind_d = (defender.get('talent') or {}).get('kind')
+              roll_atk = int(ts[0:2], 16) % 100
+              roll_def = int(ts[2:4], 16) % 100
+              lv_a = awaken(attacker.get('talent')); lv_d = awaken(defender.get('talent'))
+              trig_atk = (kind_a == 'control' and roll_atk < AWAKEN_RATE[lv_a]) or \
+                         (kind_a in ('burst','drain','summon') and roll_atk < AWAKEN_RATE[lv_a])
+              trig_def = (kind_d == 'control' and roll_def < AWAKEN_RATE[lv_d]) or \
+                         (kind_d in ('shield','counter') and roll_def < AWAKEN_RATE[lv_d])
+              # v0.10 双事件槽：talent=攻方侧事件, talent_def=守方侧事件（一回合双方可各触发一次,互不覆盖）
               talent_event = None
+              talent_def_event = None
+              # control 封招(v0.10): 命中即把对方本回合力度砍半(须在伤害结算前生效)
+              if trig_atk and (attacker.get('talent') or {}).get('kind') == 'control':
+                  def_p *= CONTROL_CUT
+                  talent_event = {'side':'atk','kind':'control','lv':awaken(attacker.get('talent'))}
+              if trig_def and (defender.get('talent') or {}).get('kind') == 'control':
+                  atk_p *= CONTROL_CUT
+                  talent_def_event = {'side':'def','kind':'control','lv':awaken(defender.get('talent'))}
+              dmg = max(5, (atk_p - def_p * 0.9) / 3)
               if trig_def and defender.get('talent'):
                   kind = defender['talent'].get('kind', 'shield')
+                  lv = awaken(defender.get('talent'))
                   if kind == 'shield':
-                      dmg *= 0.5
-                      talent_event = {'side':'def','kind':kind}
+                      dmg *= AWAKEN_SHIELD[lv]
+                      talent_def_event = {'side':'def','kind':kind,'lv':lv}
                   elif kind == 'counter':
-                      reflect = dmg * 0.5
-                      talent_event = {'side':'def','kind':kind,'reflect':round(reflect,1)}
+                      reflect = dmg * AWAKEN_COUNTER[lv]
+                      talent_def_event = {'side':'def','kind':kind,'lv':lv,'reflect':round(reflect,1)}
               if trig_atk and attacker.get('talent'):
                   kind = attacker['talent'].get('kind', 'burst')
+                  lv = awaken(attacker.get('talent'))
                   if kind == 'burst':
-                      dmg *= 1.6
-                      talent_event = {'side':'atk','kind':kind}
+                      dmg *= AWAKEN_BURST[lv]
+                      talent_event = {'side':'atk','kind':kind,'lv':lv}
                   elif kind == 'drain':
-                      heal = dmg * 0.4
-                      talent_event = {'side':'atk','kind':kind,'heal':round(heal,1)}
+                      heal = dmg * AWAKEN_DRAIN[lv]
+                      talent_event = {'side':'atk','kind':kind,'lv':lv,'heal':round(heal,1)}
+                  elif kind == 'summon':
+                      dmg += SUMMON_DMG  # 旧分支残影协战: 固定追伤
+                      talent_event = {'side':'atk','kind':kind,'lv':lv,'summon':SUMMON_DMG}
+              # 熟练度结算(v0.10): 天赋每触发一次 +1（胜负无关）,触发方按归属记名,随 result 交入账段写灵籍
+              if trig_atk and attacker.get('talent'):
+                  mastery_gained[A] = mastery_gained.get(A, 0) + 1
+              if trig_def and defender.get('talent'):
+                  mastery_gained[B] = mastery_gained.get(B, 0) + 1
               dmg = min(dmg, 90)
               if attacker is a:
                   hp_b = max(0, hp_b - dmg)
-                  if talent_event and talent_event['kind'] == 'counter':
-                      hp_a = max(0, hp_a - talent_event['reflect'])
-                  if talent_event and talent_event['kind'] == 'drain':
-                      hp_a = min(100, hp_a + talent_event['heal'])
+                  for ev in (talent_event, talent_def_event):
+                      if ev and ev['kind'] == 'counter':
+                          hp_a = max(0, hp_a - ev['reflect'])
+                      if ev and ev['kind'] == 'drain':
+                          hp_a = min(100, hp_a + ev['heal'])
                   frames.append({
                       "n": i+1, "phase": phase,
                       "attacker": A, "defender": B,
@@ -195,14 +240,15 @@ jobs:
                       "adv": ELEM_BEATS.get(attacker['element']) == defender['element'],
                       "dmg": round(dmg, 1),
                       "hp_a": round(hp_a,1), "hp_b": round(hp_b,1),
-                      "talent": talent_event
+                      "talent": talent_event, "talent_def": talent_def_event
                   })
               else:
                   hp_a = max(0, hp_a - dmg)
-                  if talent_event and talent_event['kind'] == 'counter':
-                      hp_b = max(0, hp_b - talent_event['reflect'])
-                  if talent_event and talent_event['kind'] == 'drain':
-                      hp_b = min(100, hp_b + talent_event['heal'])
+                  for ev in (talent_event, talent_def_event):
+                      if ev and ev['kind'] == 'counter':
+                          hp_b = max(0, hp_b - ev['reflect'])
+                      if ev and ev['kind'] == 'drain':
+                          hp_b = min(100, hp_b + ev['heal'])
                   frames.append({
                       "n": i+1, "phase": phase,
                       "attacker": A, "defender": B,
@@ -212,7 +258,7 @@ jobs:
                       "adv": ELEM_BEATS.get(attacker['element']) == defender['element'],
                       "dmg": round(dmg, 1),
                       "hp_a": round(hp_a,1), "hp_b": round(hp_b,1),
-                      "talent": talent_event
+                      "talent": talent_event, "talent_def": talent_def_event
                   })
 
           # 胜负由三回合 HP 推演定（画面即判定）
@@ -228,6 +274,8 @@ jobs:
               "bloodline_wins": {C: 1 if winner == C else 0, D: 1 if winner == D else 0},
               "frames": frames,
               "hp_final": {"challenger": round(hp_a,1), "defender": round(hp_b,1)},
+              # 天赋熟练度(v0.10)：本场各触发次数，bot 入账 +1/次
+              "mastery_gained": mastery_gained,
           }
           # 境界压制：高 2 境以上直接碾压
           realms = ["lianqi","zhuji","jindan","yuanying","huashen","dujie","dacheng"]
@@ -309,10 +357,11 @@ jobs:
           for f in r['frames']:
               atk = NAMES[f['attacker']]; dfn = NAMES[f['defender']]
               adv = "（相克）" if f['adv'] else ""
-              te = f.get('talent'); tl = ""
-              if te:
-                  t = (a if f['attacker'] == C else b).get('talent', {}) if te['side']=='atk' else (b if f['attacker'] == C else a).get('talent', {})
-                  if t: tl = f" ✨【{t['name']}】"
+              te = f.get('talent'); td = f.get('talent_def'); tl = ""
+              for ev in (te, td):
+                  if ev:
+                      t = (a if f['attacker'] == C else b) if ev['side'] == 'atk' else (b if f['attacker'] == C else a)
+                      if t.get('talent'): tl += f" ✨【{t['talent']['name']}】"
               # hp_a/hp_b 在 sim 里恒为挑战方/守方累计血量，与该回合谁出手无关——直接取用，勿按 attacker 翻转（R2/R3 会错位）
               ha = f['hp_a']
               hb = f['hp_b']
@@ -401,6 +450,25 @@ jobs:
               yaml.safe_dump(d, open(p,'w',encoding='utf-8'), allow_unicode=True)
               print(f"{owner}: 血脉 {d['bloodline'].get('unlocked',0)}段/{d['bloodline'].get('wins',0)}胜")
           json.dump(blood_events, open('blood_events.json','w'), ensure_ascii=False)
+          # 天赋熟练度(v0.10)：每触发一次 +1（胜负无关，触发即修炼），旧灵籍无字段则补 0 起步。
+          # 觉醒播报只在新等级 > 旧等级时贴一次（升级瞬间，非每场刷屏）。
+          AWAKEN_NAME = {0: '初醒', 1: '渐悟', 2: '大成', 3: '圆满'}
+          awaken_events = []
+          mg = r.get('mastery_gained', {})
+          for owner in [r['winner'], r['loser']]:
+              p = f'monsters/{owner}/beast.yaml'
+              d = yaml.safe_load(open(p, encoding='utf-8'))
+              if not d.get('talent'):
+                  continue
+              d['talent'].setdefault('mastery', 0)
+              old_lv = (3 if d['talent']['mastery'] >= 15 else 2 if d['talent']['mastery'] >= 8 else 1 if d['talent']['mastery'] >= 3 else 0)
+              d['talent']['mastery'] += mg.get(owner, 0)
+              new_lv = (3 if d['talent']['mastery'] >= 15 else 2 if d['talent']['mastery'] >= 8 else 1 if d['talent']['mastery'] >= 3 else 0)
+              yaml.safe_dump(d, open(p,'w',encoding='utf-8'), allow_unicode=True)
+              print(f"{owner}: 天赋熟练度 +{mg.get(owner,0)} → {d['talent']['mastery']} (Lv{new_lv})")
+              if new_lv > old_lv:
+                  awaken_events.append((owner, d['name'], new_lv, d['talent']['name']))
+          json.dump(awaken_events, open('awaken_events.json','w'), ensure_ascii=False)
           EOF
           git add monsters/ && git commit -m "斗法结算: issue#${{ github.event.issue.number }} 胜方+30灵石+50功力"
           # 入账链咽喉点：create/merge 失败必须显式红灯（禁 || true 吞错）。
@@ -433,6 +501,25 @@ jobs:
           LINES.append("")
           print("\n".join(LINES))
           BLEOF
+            )
+            gh issue comment ${{ github.event.issue.number }} -R leonezhu/rebase -b "$BODY"
+          fi
+          # 天赋觉醒(v0.10)：熟练度升级瞬间贴觉醒播报（✨事件，与血脉🩸同级的最优戏眼）
+          AW=$(python3 -c "import json;print(len(json.load(open('awaken_events.json'))))")
+          if [ "$AW" -gt 0 ]; then
+            sleep 3
+            BODY=$(python3 - <<'AWEOF'
+          import json
+          ev = json.load(open('awaken_events.json'))
+          NAME = {1: '渐悟', 2: '大成', 3: '圆满'}
+          RATE = {1: 35, 2: 40, 3: 45}
+          LINES = ["", "## ✨ 天赋 · 觉醒", "",
+                   "> 同一门天赋用得越久，就越像它自己的东西。熟练度每触发一次+1，觉醒后出手更频繁、招式更狠——", ""]
+          for owner, name, lv, tal in ev:
+              LINES.append(f"**{name}**（@{owner}）天赋【{tal}】领悟「**{NAME[lv]}**」—— 触发率 → {RATE[lv]}%")
+          LINES.append("")
+          print("\n".join(LINES))
+          AWEOF
             )
             gh issue comment ${{ github.event.issue.number }} -R leonezhu/rebase -b "$BODY"
           fi
