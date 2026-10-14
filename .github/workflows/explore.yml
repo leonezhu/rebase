@@ -142,8 +142,9 @@ jobs:
           git checkout -b "$BRANCH"
           git add "monsters/$OWNER/beast.yaml"
           git commit -m "秘境探索($CODE): $OWNER ${STONES:+灵石$STONES}${EXP:+功力$EXP}"
-          git push origin "$BRANCH" || true
+          # 入账链咽喉点：push/create/merge 失败必须显式红灯（禁 || true 吞错），见 ITERATION.md 打磨轮登记
+          git push origin "$BRANCH"
           gh pr create -R leonezhu/rebase --head "$BRANCH" --base main \
-            -t "秘境探索入账 · $OWNER (#${{ github.event.issue.number }})" -b "bot 结算，自动合并" || true
+            -t "秘境探索入账 · $OWNER (#${{ github.event.issue.number }})" -b "bot 结算，自动合并"
           gh pr edit "$BRANCH" -R leonezhu/rebase --add-label "game/bot" || true
-          gh pr merge "$BRANCH" --merge || true
+          gh pr merge "$BRANCH" --merge
