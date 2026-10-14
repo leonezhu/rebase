@@ -96,7 +96,7 @@ jobs:
           D = "${{ steps.parse.outputs.defender }}"
 
           def load(owner):
-              d = yaml.safe_load(open(f'monsters/{owner}/beast.yaml', encoding='utf-8'))
+              d = load_beast(owner)
               return d
 
           a, b = load(C), load(D)
@@ -332,7 +332,7 @@ jobs:
           C = "${{ steps.parse.outputs.challenger }}"
           D = "${{ steps.parse.outputs.defender }}"
           def load(o):
-              return yaml.safe_load(open(f'monsters/{o}/beast.yaml', encoding='utf-8'))
+              return load_beast(o)
           def dossier(o, beast):
               stories = []
               for f in sorted(glob.glob(f'chronicle/{o}/*.md'), reverse=True)[:2]:
@@ -374,7 +374,7 @@ jobs:
 
           def load(owner):
               import yaml
-              return yaml.safe_load(open(f'monsters/{owner}/beast.yaml', encoding='utf-8'))
+              return load_beast(owner)
           a, b = load(C), load(D)
           NAMES = {C: a['name'], D: b['name']}
           ELEM = {'metal':'金','wood':'木','earth':'土','water':'水','fire':'火'}
@@ -525,7 +525,7 @@ jobs:
           TODAY = date.today().isoformat()
           r = __import__('json').load(open('battle_result.json'))
           for owner, delta in [(r['winner'], -15), (r['loser'], -30)]:
-              p = f'monsters/{owner}/beast.yaml'
+              p = next(c for c in (f'players/{owner}.yaml', f'monsters/{owner}/beast.yaml') if os.path.exists(c))
               d = yaml.safe_load(open(p, encoding='utf-8'))
               last = d.get('spirit_recovered_at')
               if last != TODAY:
@@ -541,8 +541,8 @@ jobs:
           d = yaml.safe_load(open(p, encoding='utf-8'))
           # 境界差动收益(v0.12 反刷菜): 同级胜+30/+50, 越级挑战胜×2.5(冒险奖), 高打低×0.4(虐菜无味)
           RORD = {'lianqi': 0, 'zhuji': 1, 'jindan': 2, 'yuanying': 3, 'huashen': 4, 'dujie': 5, 'dacheng': 5}
-          wr = RORD.get(yaml.safe_load(open(f"monsters/{r['winner']}/beast.yaml", encoding='utf-8')).get('realm', 'lianqi'), 0)
-          lr = RORD.get(yaml.safe_load(open(f"monsters/{r['loser']}/beast.yaml", encoding='utf-8')).get('realm', 'lianqi'), 0)
+          wr = RORD.get(load_beast(r['winner']).get('realm', 'lianqi'), 0)
+          lr = RORD.get(load_beast(r['loser']).get('realm', 'lianqi'), 0)
           mult = 2.5 if wr < lr else (0.4 if wr > lr else 1.0)
           win_stones = int(30 * mult); win_exp = int(50 * mult)
           d['spirit_stones'] = d.get('spirit_stones', 100) + win_stones
@@ -580,7 +580,7 @@ jobs:
           REALM_SEG = {"lianqi":0,"zhuji":1,"jindan":2,"yuanying":3,"huashen":4,"dujie":5,"dacheng":5}
           blood_events = []
           for owner in [r['winner'], r['loser']]:
-              p = f'monsters/{owner}/beast.yaml'
+              p = next(c for c in (f'players/{owner}.yaml', f'monsters/{owner}/beast.yaml') if os.path.exists(c))
               d = yaml.safe_load(open(p, encoding='utf-8'))
               if owner == r['winner']:
                   d['bloodline'] = d.get('bloodline', {'unlocked': 0, 'wins': 0})
@@ -615,7 +615,7 @@ jobs:
           talent_debut = []  # v0.18 天赋首觉(首次跨入Lv1)——授「天赋初醒」称号
           mg = r.get('mastery_gained', {})
           for owner in [r['winner'], r['loser']]:
-              p = f'monsters/{owner}/beast.yaml'
+              p = next(c for c in (f'players/{owner}.yaml', f'monsters/{owner}/beast.yaml') if os.path.exists(c))
               d = yaml.safe_load(open(p, encoding='utf-8'))
               if not d.get('talent'):
                   continue
@@ -636,7 +636,7 @@ jobs:
                   awaken_events.append((owner, d['name'], new_lv, d['talent']['name']))
           json.dump(awaken_events, open('awaken_events.json','w'), ensure_ascii=False)
           EOF
-          git add monsters/ && git commit -m "斗法结算: issue#${{ github.event.issue.number }} 胜方+30灵石+50功力"
+          git add players/ monsters/ && git commit -m "斗法结算: issue#${{ github.event.issue.number }} 胜方+30灵石+50功力"
           # 入账链咽喉点：create/merge 失败必须显式红灯（禁 || true 吞错）。
           # push 唯一例外：双触发竞态下另一 run 已推同名分支 → 本 run 重复结算，良性退出
           # （锁检查有 TOCTOU 窗口，push rejected 即互斥锁的最后裁决，谁 push 成功谁入账）。
