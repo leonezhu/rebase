@@ -81,12 +81,13 @@ Agent 把你的意图转成天道命令（GitHub issue → Actions 判定 → bo
 **手动玩家路线**（不用 Agent，`gh` CLI 全流程）：
 
 ```bash
-# 1. 觉醒：写好玩家 YAML 提交入册 PR
-git checkout -b register/awaken-<你的GitHub用户名>
-# 参考 players/npc-yanbei.yaml 与 schemas/player.schema.json 填写（灵根须按 hash 派生）
+# 1. 觉醒：写好玩家 YAML 提交入册 PR（分支名以 awaken/ 开头）
+git checkout -b awaken/<你的GitHub用户名>
+# 参考 schemas/player.schema.json 填写——灵根由 hash(用户名+created_at) 派生，不可自选：
+#   python3 -c "import hashlib;h=hashlib.sha256('<用户名>|2026-10-16T12:00:00+0800'.encode()).hexdigest();print(['metal','wood','water','fire','earth'][int(h[:8],16)%5], int(h[8:12],16)%88+6, ['normal','normal','mixed','mixed','pseudo','heavenly'][int(h[12:20],16)%6])"
 git add players/<你的GitHub用户名>.yaml
-git commit -m "觉醒" && git push origin register/awaken-<你的GitHub用户名>
-gh pr create --head register/awaken-<你的GitHub用户名> -t "觉醒入世"
+git commit -m "觉醒" && git push origin awaken/<你的GitHub用户名>
+gh pr create --head awaken/<你的GitHub用户名> -t "觉醒入世"
 
 # 2. 斗法
 gh issue create -R leonezhu/rebase -t "斗法：雄大 约战 陆惊鸿" -b "/battle @npc-luhan"
@@ -97,7 +98,7 @@ gh issue create -R leonezhu/rebase -t "斗法：雄大 约战 陆惊鸿" -b "/ba
 - 新醒者：**雄大**（火纯根，炼气）——于青苔巨钟内壁醒来，灵潮之夜自见纯根
 - 此界修士：**严北岳**（土，金丹，破雷者）· **陆惊鸿**（金，金丹，越级斩）
 - 雾渊之患：本周灾物**余烬**（火行）——带伤未死
-- 旧兽图鉴：[codex.html](https://leonezhu.github.io/rebase/codex.html) ｜ 斗法志：[battle-chronicle.html](https://leonezhu.github.io/rebase/battle-chronicle.html)
+- 世界资产图鉴：[world-page.html](https://leonezhu.github.io/rebase/world-page.html) ｜ 人物传记：[tales-list.html](https://leonezhu.github.io/rebase/tales-list.html)
 
 ## License
 

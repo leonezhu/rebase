@@ -161,17 +161,17 @@ jobs:
         run: |
           gh pr merge "$PR" --merge --subject "修行记录收录"
 
-      # ===== player 通道：止步待审 =====
-      - name: 打待审标签 + 长老喊话（仅玩家通道）
+      # ===== player 通道：校验通过即自动收录（对所有人开放）=====
+      - name: 玩家修行自动收录 + 欢迎
         if: github.event.action != 'closed' && steps.track.outputs.track == 'player'
         env:
           GH_TOKEN: ${{ github.token }}
           PR: ${{ github.event.pull_request.number }}
           SENDER: ${{ github.actor }}
         run: |
-          gh pr edit "$PR" -R leonezhu/rebase --add-label "player/待审"
           gh pr comment "$PR" -R leonezhu/rebase \
-            -b "✨ 修行记录校验通过（append-only ✓ 限额 ✓ 灵石余额 ✓）。@${SENDER} 的修行已记录在案，等待缔约者长老过目归档。"
+            -b "✨ 修行记录校验通过（append-only ✓ 限额 ✓ 灵石余额 ✓）。@${SENDER} 功不唐捐。" 
+          gh pr merge "$PR" --merge --subject "修行记录收录"
 
       # ===== bot 幂等结算：功力+灵石入账 =====
       - name: bot 结算入账（增量幂等）

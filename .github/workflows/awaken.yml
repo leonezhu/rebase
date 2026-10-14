@@ -106,8 +106,8 @@ jobs:
           print("灵根参数已锁定（意象将在感灵之夜由 Agent 揭晓）")
           PYEOF
 
-      - name: 自动 merge（本人 PR）
-        if: env.ACTOR == 'leonezhu' && env.IS_REGISTER == 'true'
+      - name: 自动 merge（校验通过即入世——对所有人开放，防作弊闸已在前置校验）
+        if: env.IS_REGISTER == 'true' && env.ACTOR != 'github-actions[bot]' && env.ACTOR != 'dependabot[bot]'
         env:
           GH_TOKEN: ${{ github.token }}
           PR: ${{ github.event.pull_request.number }}
@@ -116,11 +116,10 @@ jobs:
           NAME=$(grep '^name:' "players/${ACTOR}.yaml" | head -1 | sed 's/name: *"\{0,1\}//;s/"\{0,1\}$//')
           gh pr merge "$PR" --merge --subject "觉醒入世：${NAME}"
 
-      - name: 外人 PR → 打待审标签
+      - name: 外人觉醒 → 欢迎入世
         if: env.ACTOR != 'leonezhu' && env.IS_REGISTER == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           PR: ${{ github.event.pull_request.number }}
         run: |
-          gh pr edit "$PR" --add-label "player/待审" || true
-          gh pr comment "$PR" --body "长老们觉得此人根骨尚可，但名讳需过目——待审。" || true
+          gh pr comment "$PR" --body "一位新的旅者在大变基中醒来。欢迎入世。" || true
