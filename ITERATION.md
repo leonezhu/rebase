@@ -207,3 +207,16 @@
 
 ### 线上观察
 - 04:24-04:25Z battle-log/37 与 battle-log/39 两批入账 PR 又各带 4 条 startup failure（与 12:2x 登记的平台噪音模式完全一致，非活性 bug，判定标准仍是「重跑后仍 failure」）
+
+## 2026-10-14 13:0x 高频轮：打磨第六轮——rebase/lore/labels 三链首演（全过，零修复）
+
+### 演练结果（前五轮未覆盖的三条链，本轮补齐）
+- 全 9 workflow YAML 语法 + `on` 字面键复验 ✓
+- **rebase.yml 渡劫校验**（原样提取，沙盒灵籍 6 场景）：功力不足拒/灵石不足拒/渡劫成功（zhuji→jindan、扣50、功力保留）/天梯之顶拒/非法境界拒/渡劫后再触发按金丹门槛(600/400)再拒 ✓；真实仓库灵籍全程未动 ✓
+- **lore.yml 第1步变更范围**（临时 git 仓）：篡改已收录 star-fragments.yaml 抓出/越界改 .github/workflows 抓出/新增合规遭遇放行 ✓
+- **lore.yml 第2步 schema+署名+禁术语**（临时 git 仓 + 真实 lore.schema.json）：冒名 contributor 抓出/故事含 PR·merge 术语抓出/weight=999 超 schema 上限抓出/合规投稿打勾 ✓
+- labels.yml / lore-reward.yml 为纯 shell（无 python 段），逻辑已在上轮 `|| true` 咽喉断言覆盖，本轮目审复核：labels.yml 两条触发器分流正确（PR→meta 标签，push→幂等建标签）；lore-reward.yml 灵石奖励与名录两步入账链均无吞错 ✓
+
+### 结论
+- 清单三项之后的全部 9 条 workflow 链已逐一演练过至少一次，无新 bug。清单全清 + 六轮打磨零遗漏项，高频轮后续默认 SILENT，除非线上出现「重跑后仍 failure」的真红灯
+- 本轮教训（工具层，非仓库 bug）：YAML 块标量提取的 python 段做 dry-run 时，`textwrap.dedent` 处理不了「首行顶格+后续行带共同前缀缩进」的混合形态（GitHub Actions run 块常态），需按非空行共同前缀手动剥除）
