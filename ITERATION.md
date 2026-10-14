@@ -18,6 +18,11 @@
 - YAML parse + `on:` 字面键原文完好（只 patch run 块未触碰 PyYAML 回写）✓；三个新路径在位 ✓；索引步在位且 deploy needs 链完好 ✓；索引步 run 块 `bash -n` 语法过 ✓；build-world-index.py 幂等实跑（对当前 main 零 diff）✓；工作树收尾只剩本轮 pages.yml ✓
 - 过程纪律：开工撞见并发会话 DESIGN.md 未提交改动（v0.20 称号打勾）——未触碰，该会话随后自行提交（df47da8），收尾工作树干净
 
+### 线上验证（一红一绿，红灯=我方修复自己引入、并发会话同分钟修复）
+- 首次部署 run 38620813420 红灯：索引步 push main 403——pages.yml job 级 `permissions: contents: read`（部署 job 只需读，我给 build 加写步骤后权限没跟着提），同 catalog.yml 2e180d7 事故模式
+- 并发主会话 845844e（03:07，与我的修复 attempt 同分钟）已带同款修复 `contents: write` 入 main——本地 retry commit 时发现 working tree clean，对照确认修复内容一致，我方 commit 空手而归（避免重复提交）
+- **终态线上闭环**：845844e Pages Deploy success ✓；线上 tales-list.html/404.html 均更新 ✓；`tales/雄大.html` 静态地址返回 404 状态码+404.html 渲染器内容（浏览器执行 JS 后正常出传记，设计内）✓
+
 ### 遗留观察项（记录不改）
 - 索引步 push main 会再触发一次 pages.yml（paths 含 world/index.json）→ 二次 run 时 diff --cached --quiet 幂等跳过 commit、无空推送，但会多跑一次部署；若嫌噪音可后续给 push 加 `[skip ci]` 或 paths 排除 bot commit，属优化非缺陷
 - catalog.yml 图鉴仍只渲染 monsters/（v2 后恒空，「全服灵籍 0 册」）——players/ 人修档案只做威名对账不渲染，属 v2 迁移待办（与 ITERATION 早前登记的「growth/rebase/catalog monsters 引用待轮替」同项），留主会话定夺是否给图鉴加人修卡
