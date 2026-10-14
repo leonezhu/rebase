@@ -101,9 +101,17 @@ jobs:
           C = "${{ steps.parse.outputs.challenger }}"
           D = "${{ steps.parse.outputs.defender }}"
 
-          def load(owner):
-              d = load_beast(owner)
+          def norm_player(d):
+              # 人修v2双轨归一：players档案 element 在 spirit_root 下，战斗字段缺省补齐（只动内存副本，不落盘）
+              if 'element' not in d:
+                  d['element'] = (d.get('spirit_root') or {}).get('element')
+              if not d.get('element'):
+                  raise SystemExit(f"NOROOT:{d.get('name','?')}:灵籍缺五行，无法入战")
+              # 注意：不得补空 genes/personality——power() 以 'genes' in beast 分流人修/灵兽公式
               return d
+
+          def load(owner):
+              return norm_player(load_beast(owner))
 
           a, b = load(C), load(D)
           # 种子：issue id + 触发事件 id + 双方名 → 双方都不可控（comment.id 在 issues 事件下为空，故用 event.id）
@@ -360,8 +368,14 @@ jobs:
               raise FileNotFoundError(o)
           C = "${{ steps.parse.outputs.challenger }}"
           D = "${{ steps.parse.outputs.defender }}"
+          def norm_player(d):
+              # 人修v2双轨归一：players档案 element 在 spirit_root 下（只动内存副本，不落盘）
+              if 'element' not in d:
+                  d['element'] = (d.get('spirit_root') or {}).get('element')
+              return d
+
           def load(o):
-              return load_beast(o)
+              return norm_player(load_beast(o))
           def dossier(o, beast):
               stories = []
               for f in sorted(glob.glob(f'chronicle/{o}/*.md'), reverse=True)[:2]:
@@ -407,9 +421,14 @@ jobs:
           ISSUE = "${{ github.event.issue.number }}"
           C, D = "${{ steps.parse.outputs.challenger }}", "${{ steps.parse.outputs.defender }}"
 
+          def norm_player(d):
+              # 人修v2双轨归一：players档案 element 在 spirit_root 下（只动内存副本，不落盘）
+              if 'element' not in d:
+                  d['element'] = (d.get('spirit_root') or {}).get('element')
+              return d
+
           def load(owner):
-              import yaml
-              return load_beast(owner)
+              return norm_player(load_beast(owner))
           a, b = load(C), load(D)
           NAMES = {C: a['name'], D: b['name']}
           ELEM = {'metal':'金','wood':'木','earth':'土','water':'水','fire':'火'}
@@ -554,11 +573,16 @@ jobs:
           WINNER=$(python3 -c "import json;print(json.load(open('battle_result.json'))['winner'])")
           LOSER=$(python3 -c "import json;r=json.load(open('battle_result.json'));print(r['loser'])")
           python3 - <<EOF
-          import yaml, json
+          import yaml, json, os
           # 灵性结算: 胜-15 败-30, 每日+20由 explore/battle 触发时按日期惰性恢复(spirit_recovered_at)
           from datetime import date, datetime
           TODAY = date.today().isoformat()
           r = __import__('json').load(open('battle_result.json'))
+          def load_beast(o):
+              for _c in (f'players/{o}.yaml', f'monsters/{o}/beast.yaml'):
+                  if os.path.exists(_c):
+                      return yaml.safe_load(open(_c, encoding='utf-8'))
+              raise FileNotFoundError(o)
           for owner, delta in [(r['winner'], -15), (r['loser'], -30)]:
               p = next(c for c in (f'players/{owner}.yaml', f'monsters/{owner}/beast.yaml') if os.path.exists(c))
               d = yaml.safe_load(open(p, encoding='utf-8'))
