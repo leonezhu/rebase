@@ -77,6 +77,17 @@ jobs:
               ("cave",    10,   0,  40, "前辈洞府：山腹中一座洞府，蒲团上只余一枚早已圆寂的舍利。{name} 恭敬叩首，殿中残存的道韵涌入它的{el}行根骨——前辈传功，不问来者。"),
               ("spring",   5,  20,  20, "灵泉洗髓：一汪灵泉藏于石缝之后，泉水分七色流转。{name} 沉入泉底，鳞羽尽洗，出泉时通身{el}光湛然，灵石碎屑沉在泉底也被它顺手捞了上来。"),
           ]
+          # 共创遭遇动态并入: lore/encounters/*.yaml(story/stones/exp/weight)——投稿收录即全服生效(v0.7闭环)
+          import glob
+          for f in sorted(glob.glob('lore/encounters/*.yaml')):
+              try:
+                  ed = yaml.safe_load(open(f, encoding='utf-8'))
+                  if not ed or 'story' not in ed: continue
+                  ENCOUNTERS.append((Path(f).stem, int(ed.get('weight', 5)),
+                                     int(ed.get('stones', 10)), int(ed.get('exp', 10)),
+                                     str(ed['story']).replace('{name}', '{name}').replace('{el}', '{el}')))
+              except Exception as ex:
+                  print(f'遭遇投稿 {f} 加载失败(跳过不阻塞): {ex}')
           total = sum(e[1] for e in ENCOUNTERS)
           roll = int(rng[:8], 16) % total
           acc, picked = 0, ENCOUNTERS[0]

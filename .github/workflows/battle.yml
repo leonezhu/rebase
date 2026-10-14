@@ -126,8 +126,9 @@ jobs:
               sp = beast.get('spirit', 100)
               if sp >= 90: base *= 1.05
               elif sp < 50: base *= 0.9
-              # 心情系统: 今日有投喂(愉悦) ×1.03, 沮丧按spirit衰减日的低心情 -3%(简化: 只认愉悦加成)
-              if beast.get('mood', {}).get('state') == '愉悦':
+              # 心情系统: 当日投喂(愉悦)才 ×1.03——mood.updated 非今日则过期视为平静(常驻buff封堵)
+              m = beast.get('mood', {})
+              if m.get('state') == '愉悦' and m.get('updated') == TODAY:
                   base *= 1.03
               fluct = int(rng_slice, 16) % 21 - 10
               return base * (1 + fluct/100)
