@@ -125,7 +125,7 @@
       "maxLength": 2000,
       "description": "降世故事（缔约时的来历经历，biography 起点）"
     },
-    "mood": {"type": "object", "required": ["state", "updated"], "properties": {"state": {"enum": ["愉悦", "平静", "沮丧"], "description": "心情: 投喂遗物→愉悦(战力+3%)"}, "updated": {"type": "string"}}, "additionalProperties": false, "description": "心情系统"},
+    "mood": {"type": "object", "required": ["state", "updated"], "properties": {"state": {"enum": ["昂扬", "平静", "低落"], "description": "心境(生存式): 同梦/胜仗→昂扬(+3%), 败仗/迷路→低落(-3%), 由当日经历涨落"}, "updated": {"type": "string"}}, "additionalProperties": false, "description": "心情系统"},
   "mystery": {
       "type": "string",
       "maxLength": 500,

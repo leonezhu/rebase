@@ -1,6 +1,6 @@
 name: Growth (修行入账)
 # 触发：growth/<owner>/* 分支的 PR（玩家 Agent 把本地 journal 的修行记录汇总提上来）
-# 校验（DESIGN.md「每日喂养」行：当日限额/灵石余额/append-only）：
+# 校验（DESIGN.md「生存日常」行：当日限额/append-only；生存式修行不耗灵石）：
 #   ① 产权过滤：只许改 growth/<分支owner>/ 下的文件
 #   ② append-only：已存在的 journal 只许追加行，不许删改（base 内容必须是 head 内容的前缀）
 #   ③ 事件计量：一条以 "- " 开头的追加行 = 一次修行事件
@@ -21,12 +21,12 @@ permissions:
   issues: write
 
 env:
-  COST_PER_EVENT: 10   # 每次修行耗灵石
-  EXP_PER_EVENT: 5     # 每次修行得功力
+  COST_PER_EVENT: 0    # 生存式: 修行不耗灵石(功力是它自己练的, 不是买来的)——灵石纯靠探索/斗法谋生
+  EXP_PER_EVENT: 5     # 每次同梦修行得功力
   DAILY_LIMIT: 3       # 每兽每日修行上限
-  # 投喂遗物 → 性格漂移(每次+2, 三轴 courage勇/temper燥/calm静——喂什么长什么性子)
-  # 事件行格式: "- [照片] ...叙事..." / "- [磁带] ..." / "- [车票] ..."(无标记默认修行+5功力无漂移)
-  # 车票有 1/3 概率触发记忆闪回(结算叙事提示 Agent 补碎片小段)
+  # 修行事件行格式: "- 同梦：...叙事..."(基础) / "- [拾遗·照片] ..."等(拾得旧世界记忆凝成的物件→性格漂移+2)
+  # 拾遗三型: 照片→courage勇 / 磁带→calm静 / 车票→temper燥; [拾遗]事件由 Agent 代灵兽叙事"它捡到了什么, 想起了什么"
+  # 拾遗有 1/3 概率触发记忆闪回(结算 FLASHBACK 钩子→Agent 补碎片小段)
 
 jobs:
   growth:
@@ -97,7 +97,7 @@ jobs:
                   if not new.startswith(old):
                       refuse(f"🚫 修行记录不可篡改：{f} 存在删改（append-only）。往事已刻入石壁，只能续写新篇。")
 
-          # ③ 事件计量：一条以 "- " 开头的追加行 = 一次修行事件；带[遗物]标记的触发性格漂移
+          # ③ 事件计量：一条以 "- " 开头的追加行 = 一次修行事件；带[拾遗·]标记的触发性格漂移(兼容旧[照片]式)
           added_events = 0
           drift = {"照片": 0, "磁带": 0, "车票": 0}
           ticket_events = 0
@@ -108,7 +108,7 @@ jobs:
                       continue
                   added_events += 1
                   for k in drift:
-                      if f"[{k}]" in l:
+                      if f"[{k}]" in l or f"[拾遗·{k}]" in l:
                           drift[k] += 1
                           if k == "车票":
                               ticket_events += 1
@@ -139,9 +139,7 @@ jobs:
               refuse(f"🏝️ 找不到灵籍 monsters/{owner}/beast.yaml——先缔约，再修行。")
           d = yaml.safe_load(bf.read_text(encoding="utf-8"))
           balance = d.get("spirit_stones", 100)
-          cost = added_events * COST
-          if balance < cost:
-              refuse(f"💰 灵石不足：{added_events} 次修行需 {cost} 灵石，灵兽囊中仅余 {balance}。先去秘境探索（评论 /explore）攒些灵石吧。")
+          cost = added_events * COST  # 生存式恒为 0——修行是它自己的功课, 不收费
 
           print(f"delta={added_events}")
           print(f"结算增量：{added_events} 次修行，耗灵石 {cost}，得功力 {added_events * EXP}")
@@ -194,7 +192,7 @@ jobs:
           d = yaml.safe_load(p.read_text(encoding="utf-8"))
           d["spirit_stones"] = max(0, d.get("spirit_stones", 100) - cost)
           d["exp"] = d.get("exp", 0) + exp
-          # 投喂遗物 → 性格漂移(每次+2): 照片→courage勇 / 磁带→calm静 / 车票→temper燥(旅途风尘)
+          # 拾遗(它自己捡到旧世界记忆凝成的物件) → 性格漂移(每次+2): 照片→勇 / 磁带→静 / 车票→燥
           if photo or tape or ticket:
               pers = d.get("personality", {})
               if pers:
@@ -202,15 +200,14 @@ jobs:
                   if pers.get("calm") is not None: pers["calm"] = min(100, pers["calm"] + 2 * tape)
                   if pers.get("temper") is not None: pers["temper"] = min(100, pers["temper"] + 2 * ticket)
                   d["personality"] = pers
-          # 心情系统: 今日投喂≥1 → mood=愉悦(战力+3%); 连续无投喂由battle/explore侧按日期衰减(此处只记今日)
-          fed = (photo + tape + ticket) > 0
-          d["mood"] = {"state": "愉悦" if fed else "平静", "updated": __import__("subprocess").run(
+          # 心境系统(生存式): 同梦在场(今日有修行)→心境昂扬; 由经历涨落, 战斗/探索侧也写此字段
+          d["mood"] = {"state": "昂扬" if delta > 0 else "平静", "updated": __import__("subprocess").run(
               ["git", "log", "-1", "--format=%cd", "--date=format-local:%Y-%m-%d"],
               capture_output=True, text=True).stdout.strip()}
           p.write_text(yaml.safe_dump(d, allow_unicode=True, sort_keys=False), encoding="utf-8")
           if tickets:
-              print(f"FLASHBACK:{tickets}")  # 车票记忆闪回钩子→结算评论里提示 Agent 补碎片
-          print(f"{d['name']}：功力 +{exp}，灵石 -{cost}，余额 {d['spirit_stones']}")
+              print(f"FLASHBACK:{tickets}")  # 拾遗记忆闪回钩子→结算评论里提示 Agent 补碎片
+          print(f"{d['name']}：同梦修行功力 +{exp}（灵石自谋，不入不出）")
           EOF
 
           git config user.name "github-actions[bot]"
