@@ -137,6 +137,17 @@ jobs:
           if new_unlocked > bl.get('unlocked', 0):
               bl['unlocked'] = new_unlocked
               d['bloodline'] = bl
+              # T2-1 记忆碎片同步：unlocked 段数上涨 → 封印段揭示（本段文本暂以【待补·段N】入册，Agent 在解说 PR 中补全叙事）
+              mf = d.get('memory_fragments', {'total':5,'unlocked':0,'fragments':['【封印】']*5})
+              old_mf = mf.get('unlocked', 0)
+              if new_unlocked > old_mf:
+                  mf['unlocked'] = new_unlocked
+                  frags = mf.get('fragments', ['【封印】']*5)
+                  for i in range(old_mf, new_unlocked):
+                      if i < len(frags) and frags[i] == '【封印】':
+                          frags[i] = f'【待补·第{i+1}段——渡劫天雷中闪回的碎片，由驯兽师 Agent 编排后入册】'
+                  mf['fragments'] = frags
+                  d['memory_fragments'] = mf
               yaml.safe_dump(d, open(F, 'w', encoding='utf-8'), allow_unicode=True, sort_keys=False)
               print(f"UNLOCKED:{new_unlocked}")
           else:
@@ -148,6 +159,11 @@ jobs:
             exit 0
           fi
           N=$(echo "$NEW" | grep -oP '(?<=UNLOCKED:)\d+')
+          # 觉醒判定：集齐5段 → 觉醒剧情触发标记
+          AWAKEN=$(python3 -c "
+          import yaml
+          d = yaml.safe_load(open(f\"monsters/\${{ github.event.comment.user.login }}/beast.yaml\", encoding='utf-8'))
+          print('AWAKEN' if d.get('memory_fragments',{}).get('unlocked',0) >= 5 else 'NO')" 2>/dev/null || echo NO)
           BRANCH="bloodline-log/$ISSUE"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"

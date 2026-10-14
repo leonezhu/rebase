@@ -191,7 +191,7 @@
     },
     "bloodline": {
       "type": "object",
-      "description": "血脉之力(v0.8)：血脉之谜解开段数→被动战力加成，bot独占",
+      "description": "解锁公式：unlocked = min(5, 境界段数(炼气0/筑基1/金丹2/元婴3/化神4/渡劫5/大乘5) + wins//2)",
       "required": [
         "unlocked",
         "wins"
@@ -209,8 +209,37 @@
           "minimum": 0,
           "description": "斗法胜场累计(仅bot可改)：每2胜解锁1段"
         }
+      }
+    },
+    "memory_fragments": {
+      "type": "object",
+      "required": [
+        "total",
+        "unlocked",
+        "fragments"
+      ],
+      "properties": {
+        "total": {
+          "type": "integer",
+          "const": 5,
+          "description": "碎片总数恒5"
+        },
+        "unlocked": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 5,
+          "description": "已解锁段数(与血脉之力加成共用此计数)"
+        },
+        "fragments": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "5段记忆文本,按解锁顺序排列;未解锁段用【封印】占位"
+        }
       },
-      "description": "解锁公式：unlocked = min(5, 境界段数(炼气0/筑基1/金丹2/元婴3/化神4/渡劫5/大乘5) + wins//2)"
+      "additionalProperties": false,
+      "description": "记忆碎片系统(T2-1):血脉之谜拆5段,境界节点+特殊事件逐段解锁,集齐触发觉醒剧情"
     }
   },
   "additionalProperties": false
