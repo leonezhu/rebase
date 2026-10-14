@@ -143,6 +143,7 @@ jobs:
           el_map = {'metal': '金', 'wood': '木', 'earth': '土', 'water': '水', 'fire': '火'}
 
           body = "## 缔约成立\n\n"
+          body += "> *大变基之后，万灵沉睡。守仓人引你入仓，你叫醒了它——但它还不记得自己是谁。*\n\n"
           body += f"**{data['name']}** 已入灵籍，成为 @{data['owner']} 的本命灵兽。\n\n"
           body += "### 降世故事\n\n"
           body += data['origin'].strip() + "\n"
