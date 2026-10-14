@@ -59,7 +59,7 @@ jobs:
           PR: ${{ github.event.pull_request.number }}
           GH_TOKEN: ${{ github.token }}
         run: |
-          OWNER="${GITHUB_HEAD_REF#growth/}"
+          OWNER="${GITHUB_HEAD_REF#growth/}"; OWNER="${OWNER%%/*}"
           BASE="${{ github.event.pull_request.base.sha }}"
           HEAD="${{ github.event.pull_request.head.sha }}"
           echo "owner=$OWNER" >> $GITHUB_OUTPUT
