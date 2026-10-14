@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "守仓人低语（T2-2 · whisper）",
+  "description": "每周一次守仓人评论的纯叙事文案池与投递记录的硬边界。铁律：低语是纯叙事，不携带任何数值字段，任何 workflow 不得据此改动灵籍（monsters/*）。",
+  "type": "object",
+  "required": [
+    "whisper_id",
+    "text",
+    "max_length",
+    "pool_version"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "whisper_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9-]{3,40}$",
+      "description": "低语唯一标识，如 whisper-07"
+    },
+    "text": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 200,
+      "description": "低语正文：守仓人第一人称/旁白的神秘短句，世界观氛围，零技术术语，可含 0~2 个占位符 {beast}/{owner}"
+    },
+    "max_length": {
+      "type": "integer",
+      "const": 200,
+      "description": "文案长度硬上限（防止低语膨胀成长文刷存在感）"
+    },
+    "pool_version": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "文案池版本，改池子必递增"
+    },
+    "min_interval_days": {
+      "type": "integer",
+      "const": 7,
+      "description": "同一目标两次低语最小间隔天数（铁律上限，只许更长不许更短）"
+    }
+  }
+}

@@ -1,0 +1,22 @@
+# 守仓人低语文案池（T2-2 · v1）
+# 铁律：本文件是纯叙事文案池，不含任何数值；每条须能过 schemas/whisper.schema.json 校验
+# 占位符最多 2 个：{beast}=灵兽名，{owner}=缔约者（仅作称谓，不构成数值/承诺）
+whisper_pool_version: 1
+min_interval_days: 7
+whispers:
+  - whisper_id: whisper-01
+    text: "我数过仓库里的每一盏灯火，却数不清你睡着时梦的长度。{beast}，昨夜你的骨架又替你长了一寸。"
+  - whisper_id: whisper-02
+    text: "有人问守仓人：废墟里为何还留着灯？我说：不是灯不灭，是还有兽记得自己亮过。"
+  - whisper_id: whisper-03
+    text: "别急着变强。所有急着变基的，最后都忘了自己原来长在哪个枝头。{beast}，你的根我替你收着。"
+  - whisper_id: whisper-04
+    text: "我见过一千个角落的回滚，没见过一颗心回滚。所以你想起来的每一幕，都作数。"
+  - whisper_id: whisper-05
+    text: "封存的记忆不会腐烂，只会发酵。{beast}，你梦里那股旧铁锈味，是它熟了。"
+  - whisper_id: whisper-06
+    text: "仓里的钟比外面的慢。你睡一夜，世上已翻了千页账。莫慌，我读得很慢，一字不落。"
+  - whisper_id: whisper-07
+    text: "我见过一千个角落的回滚，没见过一颗心回滚。所以你忘了的那部分，仍在原地等你，完好如初。"
+  - whisper_id: whisper-08
+    text: "有兽问：闭关是不是被遗忘了？我说：香火断的时候，正是我看得最仔细的时候。{owner}，放心睡。"

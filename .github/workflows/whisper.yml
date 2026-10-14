@@ -1,0 +1,147 @@
+name: Whisper (守仓人低语)
+# T2-2：每周一次，守仓人（AI 守仓人身份）在一只活跃灵兽的降世 issue 下投一条神秘评论
+# 世界观氛围 + 回访钩子。纯叙事：不写灵籍、不发灵石、不加功力——monsters/ 只读
+#
+# 硬边界（schemas/whisper.schema.json）：
+#   - 文案池 lore/whispers.yaml，每条 ≤200 字，零技术术语
+#   - 每周最多投 1 条（weekly 锁），同目标 7 日内绝不二投
+#   - 确定性：seed = whisper|<ISO周> → 目标与低语可复现、不可操控
+#   - 找不到投递锚（降世 issue）只告警不阻塞，不留半截状态
+
+on:
+  schedule:
+    - cron: "17 3 * * 1"   # 每周一 03:17 UTC（11:17 北京，避开整点高峰）
+  workflow_dispatch: {}     # 手动触发 = e2e 验证入口
+
+permissions:
+  issues: write
+
+concurrency:
+  group: whisper
+  cancel-in-progress: false
+
+jobs:
+  whisper:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 选目标灵兽 + 选低语（确定性）
+        id: pick
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          pip install pyyaml jsonschema --quiet
+          python3 - <<'EOF'
+          import hashlib, json, os, re, subprocess, datetime
+          from pathlib import Path
+          import yaml
+          from jsonschema import validate
+
+          WEEK_SEED = datetime.datetime.now(datetime.timezone.utc).strftime("%G-W%V")
+          ROOT = Path(".")
+          schema = json.load(open("schemas/whisper.schema.json"))
+
+          # 1. 文案池整体校验（schema 是唯一边界来源）
+          pool = yaml.safe_load(Path("lore/whispers.yaml").read_text(encoding="utf-8"))
+          for w in pool["whispers"]:
+              doc = dict(w)
+              doc.setdefault("max_length", 200)
+              doc["min_interval_days"] = pool["min_interval_days"]
+              doc["pool_version"] = pool["whisper_pool_version"]
+              validate(doc, schema)
+
+          # 2. 活跃筛选：近 7 日 beast.yaml 有 bot 入账动静（斗法/探索/修行 commit 都会碰该文件）
+          now = int(subprocess.run(["git", "log", "-1", "--format=%ct"],
+                                   capture_output=True, text=True).stdout.strip() or 0)
+          if now == 0:
+              print("::error::git log 不可用"); exit(1)
+          active = []
+          for p in sorted((ROOT / "monsters").iterdir()):
+              if not (p / "beast.yaml").exists():
+                  continue
+              r = subprocess.run(["git", "log", "-1", "--format=%ct", "--", f"monsters/{p.name}/beast.yaml"],
+                                 capture_output=True, text=True)
+              if r.stdout.strip() and 0 <= now - int(r.stdout.strip()) <= 7 * 86400:
+                  active.append(p.name)
+          if not active:
+              print("本周无活跃灵兽，守仓人缄默（正常，非失败）")
+              Path("/tmp/whisper_skip").write_text("idle")
+              exit(0)
+
+          # 3. 确定性选择
+          digest = hashlib.sha256(f"whisper|{WEEK_SEED}".encode()).hexdigest()
+          target = active[int(digest, 16) % len(active)]
+          w = pool["whispers"][int(digest[8:16], 16) % len(pool["whispers"])]
+
+          # 4. 防刷屏：7 日内同目标已低语过 → 缄默（查历史 issue 评论作者+锚文本）
+          body_raw = w["text"].replace("{beast}", "__BEAST__").replace("{owner}", "__OWNER__")
+          r = subprocess.run(["gh", "api", f"repos/leonezhu/rebase/issues/comments?per_page=100"],
+                             capture_output=True, text=True)
+          recent_hit = False
+          if r.returncode == 0 and r.stdout.strip():
+              import json as _json
+              for c in _json.loads(r.stdout):
+                  if (c["user"]["login"] == "github-actions[bot]"
+                          and "whisper|" in c.get("body", "")
+                          and WEEK_SEED not in c["body"]
+                          and target in c.get("body", "")):
+                      # 粗判：该目标近期已有守仓人活动记录——用评论时间做 7 日硬间隔
+                      import datetime as _dt
+                      ct = _dt.datetime.fromisoformat(c["created_at"].replace("Z", "+00:00"))
+                      if (_dt.datetime.now(_dt.timezone.utc) - ct).days < pool["min_interval_days"]:
+                          recent_hit = True
+                          break
+          if recent_hit:
+              print(f"{target} 七日内已蒙守仓人垂顾，本周缄默")
+              Path("/tmp/whisper_skip").write_text("interval")
+              exit(0)
+
+          # 5. 填占位符 + 找降世 issue 锚点
+          d = yaml.safe_load(Path(f"monsters/{target}/beast.yaml").read_text(encoding="utf-8"))
+          text = w["text"].replace("{beast}", str(d["name"])).replace("{owner}", f"@{target}")
+          if len(text) > 200:
+              print("::error::低语超长"); exit(1)
+
+          q = f"降世 · {d['name']} in:title"
+          r = subprocess.run(["gh", "issue", "list", "-R", "leonezhu/rebase", "--state", "open",
+                              "--search", q, "--json", "number", "--jq", ".[0].number"],
+                             capture_output=True, text=True)
+          issue_no = r.stdout.strip()
+          if not issue_no:
+              print(f"::warning::{target} 无开放降世 issue，本周低语无处落笔，缄默")
+              Path("/tmp/whisper_skip").write_text("no-anchor")
+              exit(0)
+
+          Path("/tmp/whisper_payload.txt").write_text(
+              f"{issue_no}\n{WEEK_SEED}\n{w['whisper_id']}\n{text}", encoding="utf-8")
+          print(f"✓ 目标={target} 低语={w['whisper_id']} issue=#{issue_no} 周={WEEK_SEED}")
+          EOF
+
+      - name: 投递低语
+        env:
+          GH_TOKEN: ${{ github.token }}
+        if: ${{ !cancelled() && hashFiles('/tmp/whisper_payload.txt') != '' }}
+        run: |
+          ISSUE=$(sed -n 1p /tmp/whisper_payload.txt)
+          WEEK=$(sed -n 2p /tmp/whisper_payload.txt)
+          WID=$(sed -n 3p /tmp/whisper_payload.txt)
+          TEXT=$(sed -n '4,$p' /tmp/whisper_payload.txt)
+          # 锚点防重：同一 issue 已有同周低语则跳过（workflow_dispatch 重跑幂等）
+          MARKER="<!-- whisper|${WEEK}|${WID} -->"
+          EXISTING=$(gh issue view "$ISSUE" -R leonezhu/rebase --json comments \
+            --jq "[.comments[].body | select(startswith(\"${MARKER}\"))] | length")
+          if [ "${EXISTING:-0}" -gt 0 ]; then
+            echo "本周低语已投递过，幂等跳过"
+            exit 0
+          fi
+          gh issue comment "$ISSUE" -R leonezhu/rebase \
+            -b "${MARKER}
+          > 🕯️ *守仓人低语 · ${WEEK}*
+          >
+          > ${TEXT}
+          >
+          > *——仓门虚掩，灯还亮着。*" \
+            && echo "✓ 低语已投递到 issue#${ISSUE}"
