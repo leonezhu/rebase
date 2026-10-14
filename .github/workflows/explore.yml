@@ -91,44 +91,6 @@ jobs:
               ("cave",    10,   0,  40, "前辈洞府：山腹中一座洞府，蒲团上只余一枚早已圆寂的舍利。{name} 恭敬叩首，殿中残存的道韵涌入它的{el}行根骨——前辈传功，不问来者。"),
               ("spring",   5,  20,  20, "灵泉洗髓：一汪灵泉藏于石缝之后，泉水分七色流转。{name} 沉入泉底，鳞羽尽洗，出泉时通身{el}光湛然，灵石碎屑沉在泉底也被它顺手捞了上来。"),
           ]
-          # 共创遭遇动态并入: lore/encounters/*.yaml——运行时 schema 硬边界(DESIGN.md 行322):
-          # lore.yml 投稿闸已审一遍,此处运行时复检三道闸(schema/占位符白名单/零术语),
-          # 任一不过=显式红灯终止(run 不静默降级)——投稿闸被改/绕过时结算侧兜底
-          import glob
-          from jsonschema import validate as _jsvalidate
-          _schema = json.load(open('schemas/lore.schema.json'))
-          _banned_terms = ['PR', 'workflow', 'commit', 'API', 'CI', 'hash', 'merge', 'issue']
-          def _bad_placeholders(story):
-              # 只许 {name}/{el};其余带参 {...} 拒(防 str.format 注入/坐标越界)
-              bad, i = [], 0
-              while i < len(story):
-                  if story[i] == '{':
-                      j = story.find('}', i)
-                      if j == -1:
-                          bad.append(story[i:i+20]); break
-                      if story[i+1:j] not in ('name', 'el'):
-                          bad.append('{%s}' % story[i+1:j])
-                      i = j + 1
-                  else:
-                      i += 1
-              return bad
-          for f in sorted(glob.glob('lore/encounters/*.yaml')):
-              try:
-                  ed = yaml.safe_load(Path(f).read_text(encoding='utf-8'))
-                  if not isinstance(ed, dict):
-                      raise ValueError('顶层不是映射')
-                  _jsvalidate(ed, _schema)
-                  _bad = _bad_placeholders(str(ed['story']))
-                  if _bad:
-                      raise ValueError(f'story 非法占位符 {_bad}(只许 {{name}}/{{el}})')
-                  _hit = [b for b in _banned_terms if b.lower() in str(ed['story']).lower()]
-                  if _hit:
-                      raise ValueError(f'story 含技术术语 {_hit}')
-                  ENCOUNTERS.append((Path(f).stem, int(ed['weight']),
-                                     int(ed['stones']), int(ed['exp']), str(ed['story'])))
-              except Exception as ex:
-                  print(f'::error::遭遇投稿 {f} 运行时校验不过(显式红灯,不静默降级): {ex}')
-                  sys.exit(1)
           total = sum(e[1] for e in ENCOUNTERS)
           roll = int(rng[:8], 16) % total
           acc, picked = 0, ENCOUNTERS[0]
@@ -163,90 +125,6 @@ jobs:
                   'power': got_artifact[2], 'origin': '秘境遗珍', 'obtained': _today,
               })
               print(f"ARTIFACT:{got_artifact[0]}|{got_artifact[1]}|{got_artifact[2]}")
-          # ===== T3 灵兽社交 (v0.16)：25% 概率遭遇替换为同仓相遇剧情 =====
-          # 数值归系统：亲疏=五行相生相克+性格L1距离（确定性查表）；文案归文案池（lore/social.yaml）
-          # 防刷：world/social_log.yaml bot 独占写 + 落盘前 jsonschema 自校验 + 同对每日1次 + 只留近7日
-          SOCIAL_SCHEMA = json.load(open('schemas/social.schema.json'))
-          from jsonschema import validate as _sv
-          _TODAY = __import__('datetime').datetime.now(__import__('datetime').timezone(__import__('datetime').timedelta(hours=8))).strftime('%Y-%m-%d')
-          social_result = None
-          # 人修双轨守卫：社交判定需要双方 personality——玩家档(player.schema)无此字段，
-          # 玩家探索时跳过同仓相遇（social 仍是灵兽世界的事件），不硬造性格数值
-          if int(rng[8:12], 16) % 100 < 25 and 'personality' in d:
-              import glob as _glob
-              candidates = []
-              for mf in sorted(_glob.glob('monsters/*/beast.yaml')):
-                  parts = mf.split('/')
-                  if parts[1] == OWNER:
-                      continue
-                  od = yaml.safe_load(Path(mf).read_text(encoding='utf-8'))
-                  if od.get('stage') not in ('hatched', 'npc', None) or od.get('stage') == 'egg':
-                      continue
-                  candidates.append((parts[1], od))
-              if candidates:
-                  other_owner, od = candidates[int(rng[12:16], 16) % len(candidates)]
-                  GEN = {'metal': 'water', 'water': 'wood', 'wood': 'fire', 'fire': 'earth', 'earth': 'metal'}
-                  OVER = {'metal': 'wood', 'wood': 'earth', 'earth': 'water', 'water': 'fire', 'fire': 'metal'}
-                  pa, pb = d['personality'], od['personality']
-                  _dist = sum(abs(pa[k] - pb[k]) for k in ('courage', 'temper', 'pride'))
-                  if GEN.get(d['element']) == od['element'] or GEN.get(od['element']) == d['element']:
-                      relation = '亲和'
-                  elif OVER.get(d['element']) == od['element'] or OVER.get(od['element']) == d['element']:
-                      relation = '宿敌' if _dist > 180 else '萍水'
-                  else:
-                      relation = '亲和' if _dist <= 120 else ('宿敌' if _dist > 180 else '萍水')
-                  # 查重（同对每日1次）+ 滚动窗口（近7日）
-                  LOGF = Path('world/social_log.yaml')
-                  log = yaml.safe_load(LOGF.read_text(encoding='utf-8')) if LOGF.exists() else {'log': []}
-                  entries = log.get('log') or []
-                  pair_key = sorted([OWNER, other_owner])
-                  if any(e.get('pair') == pair_key and e.get('date') == _TODAY for e in entries):
-                      print(f'SOCIAL: {pair_key} 今日已相遇，跳过（同对每日1次）')
-                  else:
-                      entries = [e for e in entries
-                                 if str(e.get('date', '')) >= (__import__('datetime').datetime.now(__import__('datetime').timezone(__import__('datetime').timedelta(hours=8))) - __import__('datetime').timedelta(days=7)).strftime('%Y-%m-%d')]
-                      PAYLOAD = {'stones': {'亲和': 12, '萍水': 0, '宿敌': -6}[relation],
-                                 'exp': {'亲和': 8, '萍水': 4, '宿敌': 10}[relation]}
-                      entries.append({'date': _TODAY, 'pair': pair_key, 'relation': relation,
-                                      'stones': PAYLOAD['stones'], 'exp': PAYLOAD['exp']})
-                      log = {'log': entries}
-                      _sv(log, SOCIAL_SCHEMA)  # 落盘前自校验，不过=显式红灯
-                      # 文案池三闸复检（schema: relation字段 + 占位符白名单 + 零术语）
-                      social_pool = yaml.safe_load(Path('lore/social.yaml').read_text(encoding='utf-8'))
-                      _cands = [t for t in social_pool['templates'] if t['relation'] == relation]
-                      _banned_terms = ['PR', 'workflow', 'commit', 'API', 'CI', 'hash', 'merge', 'issue']
-                      _tpl = _cands[int(rng[16:20], 16) % len(_cands)]
-                      _bad_ph = []
-                      _s = str(_tpl['story']); _i = 0
-                      while _i < len(_s):
-                          if _s[_i] == '{':
-                              _j = _s.find('}', _i)
-                              if _j == -1 or _s[_i+1:_j] not in ('name', 'other', 'el'):
-                                  _bad_ph.append(_s[_i:_i+20])
-                              _i = (_j + 1) if _j != -1 else len(_s)
-                          else:
-                              _i += 1
-                      _hit = [b for b in _banned_terms if b.lower() in _s.lower()]
-                      if _bad_ph or _hit:
-                          print(f"::error::社交文案池条目 {_tpl['id']} 校验不过(占位符{_bad_ph}/术语{_hit})——显式红灯,不静默降级")
-                          sys.exit(1)
-                      el_cn_o = el_map.get(_element, '?')
-                      social_story = str(_tpl['story']).format(
-                          name=d['name'], other=str(od['name']), el=el_cn_o)
-                      # 数值入账：社交剧情替换本次普通遭遇的收益
-                      stones = PAYLOAD['stones']
-                      exp = PAYLOAD['exp']
-                      code = f"social-{relation}"
-                      story = social_story
-                      d['spirit_stones'] = max(0, old_stones + stones)
-                      d['exp'] = d.get('exp', 0) + exp
-                      LOGF.parent.mkdir(parents=True, exist_ok=True)
-                      LOGF.write_text(yaml.safe_dump(log, allow_unicode=True, sort_keys=False), encoding='utf-8')
-                      social_result = {'other_owner': other_owner, 'relation': relation,
-                                       'stones': stones, 'exp': exp}
-                      print(f"SOCIAL: {OWNER} x {other_owner} = {relation} ({stones}灵石/{exp}功力)")
-              else:
-                  print('SOCIAL: 无同仓候选，跳过')
           # 称号(v0.14): 只增不减——首次探索踏雾者/单次大收获寻珍者
           titles = d.setdefault('titles', [])
           earned = []
@@ -266,7 +144,6 @@ jobs:
               "owner": OWNER, "code": code,
               "stones": stones, "exp": exp,
               "balance": d['spirit_stones'], "story": story,
-              "seed": seed, "social": social_result,
           }
           Path('explore_result.json').write_text(json.dumps(result, ensure_ascii=False), encoding='utf-8')
           print(json.dumps(result, ensure_ascii=False))
@@ -283,16 +160,10 @@ jobs:
           BAL=$(python3 -c "import json;print(json.load(open('explore_result.json'))['balance'])")
           NAME=$(python3 -c "import yaml,os;o='${{ steps.beast.outputs.explorer }}';p=next(c for c in (f'players/{o}.yaml',f'monsters/{o}/beast.yaml') if os.path.exists(c));print(yaml.safe_load(open(p,encoding='utf-8'))['name'])")
           HEADER="秘境探索"
-          SOCIAL_TAIL=""
-          if python3 -c "import json,sys;sys.exit(0 if json.load(open('explore_result.json')).get('social') else 1)"; then
-            HEADER="秘境探索 · 同仓相遇"
-            SOCIAL_TAIL=$(python3 -c "import json;s=json.load(open('explore_result.json'))['social'];print(f\"\n> 🐾 与同仓灵兽的「{s['relation']}」之遇——这正是它的第一段社交记忆。\")")
-          fi
 
           gh issue comment $ISSUE -R leonezhu/rebase -b "## 🌫️ ${HEADER} · ${NAME}
 
           ${STORY}
-          ${SOCIAL_TAIL}
           ---
 
           **入账**：灵石 ${STONES} · 功力 ${EXP} · 余额 ${BAL} 灵石
@@ -307,7 +178,6 @@ jobs:
           STONES=$(python3 -c "import json;print(json.load(open('explore_result.json'))['stones'])")
           EXP=$(python3 -c "import json;print(json.load(open('explore_result.json'))['exp'])")
           CODE=$(python3 -c "import json;print(json.load(open('explore_result.json'))['code'])")
-          SOCIAL=$(python3 -c "import json;print('social' if json.load(open('explore_result.json')).get('social') else 'plain')")
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -318,9 +188,6 @@ jobs:
           BRANCH="explore-log/${OWNER}-${{ github.event.comment.id }}"
           git checkout -b "$BRANCH"
           git add "$F"
-          if [ "$SOCIAL" = "social" ]; then
-            git add world/social_log.yaml
-          fi
           git commit -m "秘境探索($CODE): $OWNER ${STONES:+灵石$STONES}${EXP:+功力$EXP}"
           # 入账链咽喉点：push/create/merge 失败必须显式红灯（禁 || true 吞错），见 ITERATION.md 打磨轮登记
           # 并发竞态修复(v0.16.1)：多条 /explore 排队同跑时 beast.yaml+social_log.yaml 双双撞车

@@ -18,7 +18,7 @@ on:
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 permissions:
-  contents: read
+  contents: write  # 构建世界资产索引步需 push main（world/index.json 重铸），pages/id-token 仅供部署
   pages: write
   id-token: write
 concurrency:
