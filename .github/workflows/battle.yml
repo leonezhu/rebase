@@ -684,26 +684,22 @@ jobs:
             )
             gh issue comment ${{ github.event.issue.number }} -R leonezhu/rebase -b "$BODY"
           fi
-          # 威名授予播报(v0.18 称号收口)：闭关复出/天赋初醒——🎖️ 与 🩸/✨ 同级的戏眼
-          # （heredoc 加引号防 bash 展开，issue 号经环境变量传入——引号内 ${{ }} 不展开）
-          export TCISSUE=${{ github.event.issue.number }}
-          python3 - <<'TCEOF'
-          import json, subprocess, os
-          r = json.load(open('battle_result.json'))
-          ev = []
-          if r['winner'] in r.get('comeback', []):
-              ev.append((r['winner'], '闭关复出'))
-          if not ev:
-              print("无威名授予，跳过播报")
-          else:
-              lines = ["", "## 🎖️ 威名 · 铸成", "",
-                       "> 威名不是谁赏的，是自己一场一场挣来的——", ""]
-              for owner, title in ev:
-                  lines.append(f"**@{owner}** 获授「**{title}**」——从闭关中被放出关来，还赢了这一场。")
-              lines.append("")
-              subprocess.run(['gh', 'issue', 'comment', os.environ['TCISSUE'],
-                              '-R', 'leonezhu/rebase', '-b', "\n".join(lines)], check=True)
-          TCEOF
+          # 威名授予播报(v0.18 称号收口)：闭关复出——🎖️ 与 🩸/✨ 同级的戏眼
+          # 修复注：旧实现用 python heredoc(<<'TCEOF')构造，令 GitHub workflow 解析器整体拒收
+          # 本文件（PyYAML/psych 可解析但 GH 一律 startup_failure，issue/评论事件不再起 run——
+          # 2026-10-15 e2e 实锤并二分定位到该块）。改纯 bash + stdin heredoc。
+          if python3 -c "import json,sys;r=json.load(open('battle_result.json'));sys.exit(0 if r.get('winner') in r.get('comeback',[]) else 1)"; then
+            WINNER=$(python3 -c "import json;print(json.load(open('battle_result.json'))['winner'])")
+            gh issue comment ${{ github.event.issue.number }} -R leonezhu/rebase --body-file - <<BCEOF
+          ## 🎖️ 威名 · 铸成
+
+          > 威名不是谁赏的，是自己一场一场挣来的——
+
+          **@$WINNER** 获授「**闭关复出**」——从闭关中被放出关来，还赢了这一场。
+          BCEOF
+          else
+            echo "无威名授予，跳过播报"
+          fi
 
   # ===== 斗法收录终态：解说 PR 合并后，双方半场齐 → issue 打「斗法/已收录」 =====
   chronicle-seal:
