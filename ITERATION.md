@@ -100,3 +100,21 @@
 - [x] chronicle-seal 缺 checkout 步骤——裸 runner 上 git ls-tree 报 fatal，HALF 恒 0，「已收录」终态永不打 → 补 checkout step（e3a960d），回归通过（issue#6 已打终态+贴封卷评论）
 - [x] **根因级：bot 无 create PR 权限**——GITHUB_TOKEN default_workflow_permissions=read，gh pr create 报 "GitHub Actions is not permitted to create or approve pull requests"，入账 commit 全部滞留侧分支、main 账本永不清账（`|| true` 静默吞错）。已改仓库 Actions 权限 write+approve_pr，并补录：issue#2 秘境×2 + issue#6 斗法胜 + issue#3 墨霄入账（PR#10 合并），燧鸣账户 175 灵石/115 功力对齐
 - **教训**：`|| true` 吞错是账务系统大忌——静默失败比崩溃更危险，账本类步骤失败必须显式报错
+
+## 2026-10-14 10:0x 高频轮：lore-reward 三连修 + reward 链路首次真通（PR#17~#24 端到端）
+
+### 结论
+- **reward 链路首次端到端打通**：PR#22《雾隐栈道》合并 → bot 入账 commit 7219781（著史奖励+20灵石）→ lore-reward/22 → PR#23 自动合并 → 燧鸣 175→195 灵石。此前该 workflow 从未 success 过（PR#13/#14/#15 三连 skipped）。
+
+### 实锤并修复的三个 bug（按时间序）
+1. **heredoc 缩进塌陷**（run 38498057843）：`python3 - <<EOF` 的正文带 4 空格缩进，Python 解析报错后被 bash 当普通命令继续读，`EOF` 永远闭合不上→`syntax error: unexpected end of file`，步骤必崩。→ 改 `python3 -c`
+2. **浅克隆 git diff 拿不到 base sha**（同 run，`fatal: bad object fb1c345`）：labels.yml 同款坑在 lore-reward 复发。→ 改 `gh pr view --json files` 取变更文件
+3. **PyYAML round-trip 把 `on:` 写成 `true:`**（e176bc5 与 2cf3bcc 双双中招，后者是本轮用 safe_dump 整文件回写引入的，自纠于 PR#21）：裸键 `on` 被 PyYAML 解析为布尔 True，dump 回去变成 `true:`，workflow 触发器整体失效（run 名退化为文件路径，如 `.github/workflows/lore-reward.yml failure`）。→ 手工还原 `on:`，文件内已加警告注释：**严禁对此文件做 PyYAML 整文件回写**
+
+### 过程教训
+- 本轮前半段曾误判 e176bc5（并发会话产物）为 root cause——实际第一次 `true:` 病灶是自己 patch 引入的。教训：**用 PyYAML 改 workflow 必须只改 run 字符串，绝不能 load→dump 整文件**；怀疑别人之前先 diff 自己的工作树。
+- 02:02 那批 4 个 failure run（jobs 为空、log 404、GitHub 提示 workflow file issue）经空 commit 探针（PR#24）证实为**瞬态启动失败**，当前 workflow 全部健康，无需处理；「连并窗口内 startup failure」值得留意，勿误诊为文件 bug。
+
+### 遗留
+- lore-reward 的入账 push/PR create/merge 仍带 `|| true` 吞错——「入账链路静默丢账」总登记项（见打磨模式第一节）在本链路同样存在，待主会话定夺统一方案
+- 夜泉洗尘（PR#17）、石语（并发轮 PR#19）、雾隐栈道（PR#22）三篇测试遭遇已随链路验证留在 lore/encounters/，如嫌测试数据可另行清理（不属本轮职责）
