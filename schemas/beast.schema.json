@@ -2,7 +2,15 @@
   "$schema": "http://json-schema.org/draft-07/schema#",
   "title": "Rebase Beast",
   "type": "object",
-  "required": ["name", "owner", "element", "genes", "personality", "realm", "origin"],
+  "required": [
+    "name",
+    "owner",
+    "element",
+    "genes",
+    "personality",
+    "realm",
+    "origin"
+  ],
   "properties": {
     "name": {
       "type": "string",
@@ -16,35 +24,99 @@
       "description": "驯兽师 GitHub 用户名"
     },
     "element": {
-      "enum": ["metal", "wood", "earth", "water", "fire"],
+      "enum": [
+        "metal",
+        "wood",
+        "earth",
+        "water",
+        "fire"
+      ],
       "description": "五行：metal金 wood木 earth土 water水 fire火"
     },
     "genes": {
       "type": "object",
       "description": "五维基因 0-100",
-      "required": ["ling", "po", "qiao", "ren", "yun"],
+      "required": [
+        "ling",
+        "po",
+        "qiao",
+        "ren",
+        "yun"
+      ],
       "additionalProperties": false,
       "properties": {
-        "ling": { "type": "integer", "minimum": 0, "maximum": 100, "description": "灵·法术" },
-        "po":   { "type": "integer", "minimum": 0, "maximum": 100, "description": "魄·体质" },
-        "qiao": { "type": "integer", "minimum": 0, "maximum": 100, "description": "巧·敏捷" },
-        "ren":  { "type": "integer", "minimum": 0, "maximum": 100, "description": "韧·意志" },
-        "yun":  { "type": "integer", "minimum": 0, "maximum": 100, "description": "韵·灵性" }
+        "ling": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "灵·法术"
+        },
+        "po": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "魄·体质"
+        },
+        "qiao": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "巧·敏捷"
+        },
+        "ren": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "韧·意志"
+        },
+        "yun": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100,
+          "description": "韵·灵性"
+        }
       }
     },
     "personality": {
       "type": "object",
       "description": "性格三轴，每轴 -100..100",
-      "required": ["courage", "temper", "pride"],
+      "required": [
+        "courage",
+        "temper",
+        "pride"
+      ],
       "additionalProperties": false,
       "properties": {
-        "courage": { "type": "integer", "minimum": -100, "maximum": 100, "description": "勇(+)/怯(-)" },
-        "temper":  { "type": "integer", "minimum": -100, "maximum": 100, "description": "躁(+)/静(-)" },
-        "pride":   { "type": "integer", "minimum": -100, "maximum": 100, "description": "傲(+)/谦(-)" }
+        "courage": {
+          "type": "integer",
+          "minimum": -100,
+          "maximum": 100,
+          "description": "勇(+)/怯(-)"
+        },
+        "temper": {
+          "type": "integer",
+          "minimum": -100,
+          "maximum": 100,
+          "description": "躁(+)/静(-)"
+        },
+        "pride": {
+          "type": "integer",
+          "minimum": -100,
+          "maximum": 100,
+          "description": "傲(+)/谦(-)"
+        }
       }
     },
     "realm": {
-      "enum": ["lianqi", "zhuji", "jindan", "yuanying", "huashen", "dujie", "dacheng"],
+      "enum": [
+        "lianqi",
+        "zhuji",
+        "jindan",
+        "yuanying",
+        "huashen",
+        "dujie",
+        "dacheng"
+      ],
       "description": "境界：炼气→筑基→金丹→元婴→化神→渡劫→大乘"
     },
     "origin": {
@@ -73,6 +145,44 @@
     "created_at": {
       "type": "string",
       "format": "date-time"
+    },
+    "spirit": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 100,
+      "default": 100,
+      "description": "灵性(0-100,满100):每败一场-30,<30闭关当日不应战,每日+20恢复,影响战力±"
+    },
+    "talent": {
+      "type": "object",
+      "required": [
+        "name",
+        "desc"
+      ],
+      "properties": {
+        "name": {
+          "type": "string",
+          "minLength": 2,
+          "maxLength": 12,
+          "description": "天赋技能名"
+        },
+        "desc": {
+          "type": "string",
+          "maxLength": 80,
+          "description": "天赋一句话描述(叙事用)"
+        },
+        "kind": {
+          "enum": [
+            "burst",
+            "shield",
+            "drain",
+            "counter"
+          ],
+          "description": "机制类型: burst爆发/shield护体/drain吸取/counter反击"
+        }
+      },
+      "additionalProperties": false,
+      "description": "天赋技能(战斗分镜中概率触发)"
     }
   },
   "additionalProperties": false

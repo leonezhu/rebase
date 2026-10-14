@@ -17,4 +17,9 @@ personality:
   pride: 20
   temper: 30
 realm: zhuji
+spirit: 100
 spirit_stones: 205
+talent:
+  desc: 羽上灼痕即天雷烙印,危局中雷光暴走
+  kind: burst
+  name: 雷痕羽
