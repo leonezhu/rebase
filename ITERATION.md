@@ -2,6 +2,29 @@
 
 > 夜间 cron 每轮迭代在此记录。设计定案由主会话写入，施工项完成后打勾。
 
+## 2026-10-15 00:5x 夜间轮：打磨第十三轮——逮住 explore.yml 人修双轨半成品（严重）并修复
+
+### 发现（打磨模式演练 68ca729 三件套 explore 双轨，铁律⑧）
+- 68ca729 给 explore.yml 加 `players/<owner>.yaml` 双轨时**只改了文件路径、没改字段读取**：结算段 `d['element']`（旧灵兽顶层字段）在玩家档里嵌在 `spirit_root.element` 下，玩家探索必 `KeyError: 'element'` 崩溃。演练 1 沙盒原样提取实锤（leonezhu rc=1）
+- **第二层同因崩溃**：social 段 `pa = d['personality']`——player.schema 无 personality 字段，玩家档 social 命中同样 KeyError
+- **第三层 bot 层隐性 bug**（施工中顺带实锤）：入账步 `git add "$F"` 引用的 `$F` 是上一个 step 的 shell 局部变量，**跨 step 不传递**——该步 `$F` 一直是空值，旧轨时代靠 `git add monsters/` 兜底才碰巧没炸，双轨后玩家档会整单漏 add（commit 空 → push 无变更 → PR 合并不入账=账实不符）
+
+### 修复（最小侵入，不改设计）
+1. element 读取改 `d.get('element') or (d.get('spirit_root') or {}).get('element')`，缺源显式红灯不静默
+2. social 触发条件加 `'personality' in d` 守卫——玩家档跳过同仓相遇（social 是灵兽世界的事件，不硬造性格数值），灵兽轨行为零变化
+3. 入账步自行解析 `$F`（players 优先 monsters 兜底），消除跨 step 变量依赖
+
+### 沙盒验证（enc 段原样提取，4 断言全过）
+- ①玩家档普通遭遇：seed/权重命中与独立复算一致、star-fragments 动态遭遇正常并入 ✓
+- ②玩家档 + social 命中 cid：跳过不崩、social=None ✓
+- ③artifact 事件（cid=21）：法宝「储物旧镯」入 artifacts 栏（origin=秘境遗珍+日期）、ARTIFACT 播报行、重放逐字节确定 ✓
+- ④回归：wild-leigu 旧轨 social/普通遭遇均正常 ✓
+- workflow YAML parse + `on:` 字面键完好；monsters/*/beast.yaml 零触碰
+
+### 教训
+- 「加轨道」类改动必须演练**新轨全链路**（读字段→social 分支→入账 add），只验文件存在=半成品；本 bug 若上线，第一个玩家 /explore 就红灯
+- bot 层跨 step 的 shell 变量（`$F`）是地雷：GitHub Actions 每个 step 独立 shell，此前没炸只是因为别处兜底——修 bug 时顺带审所有 `$VAR` 跨 step 引用
+
 ## 2026-10-15 00:0x 夜间轮：打磨第十二轮——逮住 awaken.yml 校验闸整体失效（严重）并修复
 
 ### 发现（打磨模式全流程演练，铁律⑧）
