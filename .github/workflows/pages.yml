@@ -12,6 +12,9 @@ on:
       - 'world-page.html'
       - 'world/index.json'
       - 'tales/*.html'
+      - 'tales/*.md'
+      - 'tales-list.html'
+      - '404.html'
       - '.github/workflows/pages.yml'
   workflow_dispatch:
 permissions:
@@ -29,6 +32,17 @@ jobs:
         with: { fetch-depth: 1 }
       - name: 构建斗法志索引
         run: python3 scripts/build-chronicle-index.py
+      # world/index.json 自动重铸（tales 字段随 tales/*.md 刷新，传记目录页数据源）
+      - name: 构建世界资产索引
+        run: |
+          python3 scripts/build-world-index.py
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add world/index.json
+          git diff --cached --quiet || git commit -m "world: 世界资产索引重铸(world/index.json)"
+          # 并发保险：checkout 后 main 若又前进，先变基再推
+          git pull --rebase origin main || true
+          git push origin main
       - uses: actions/upload-pages-artifact@v3
         with:
           path: .

@@ -2,6 +2,26 @@
 
 > 夜间 cron 每轮迭代在此记录。设计定案由主会话写入，施工项完成后打勾。
 
+## 2026-10-15 03:1x 夜间轮：打磨第十六轮——传记静态地址链两条真断链实锤并修复（pages.yml 触发盲区 + 世界索引无人重铸）
+
+### 发现（打磨模式演练，铁律⑧——上一窗口落 664a40a「传记地址统一为 tales/<id>.html 静态形式」，演练该新链路）
+- **澄清一个疑似事故**：线上 `tales/leonezhu-雄大.html` 返回 HTTP 404 但响应体正是 404.html——这是设计内行为（GitHub Pages 对缺失路径返回 404.html 内容、URL 保持原样，兜底渲染器 JS 从 location.pathname 解析 id 拉 md 渲染）。本地 curl 双探针实锤，链路成立，非断链
+- **真断链①（触发盲区）**：664a40a 把传记入口改成 tales-list.html + 404.html 兜底，但 pages.yml 的 push paths 没有这两个文件、也没有 `tales/*.md`——传记 md 入库/改文后 Pages **不自动重部署**，线上永远停留在最后一次部署的旧版本（当前线上 404.html/tales-list.html 是 dispatch 手动带上来的，下一次变更就会滞留）
+- **真断链②（索引无人重铸）**：`scripts/build-world-index.py`（world/index.json 的 tales 字段来源=传记目录页数据源）**没有任何 workflow 挂载**——a98ef4e 提交语声称「index.json 由脚本自动生成」，但自动链从未接上，全仓 grep 实锤。新传记入库后 tales-list.html 目录页读到的永远是手跑时代的旧索引
+
+### 修复（pages.yml 最小侵入）
+1. push paths 补 `tales/*.md`、`tales-list.html`、`404.html`
+2. build job 新增「构建世界资产索引」步：跑 build-world-index.py → 有变更才 commit（`git diff --cached --quiet` 幂等守卫）→ `pull --rebase` 并发保险 → push（沿用 catalog.yml 同范式，push 无 `|| true` 吞错）
+3. 部署产物为整仓 checkout（`path: .`），新索引与改文后的 md 同一次 run 内一起上线
+
+### 验证（6 断言全过）
+- YAML parse + `on:` 字面键原文完好（只 patch run 块未触碰 PyYAML 回写）✓；三个新路径在位 ✓；索引步在位且 deploy needs 链完好 ✓；索引步 run 块 `bash -n` 语法过 ✓；build-world-index.py 幂等实跑（对当前 main 零 diff）✓；工作树收尾只剩本轮 pages.yml ✓
+- 过程纪律：开工撞见并发会话 DESIGN.md 未提交改动（v0.20 称号打勾）——未触碰，该会话随后自行提交（df47da8），收尾工作树干净
+
+### 遗留观察项（记录不改）
+- 索引步 push main 会再触发一次 pages.yml（paths 含 world/index.json）→ 二次 run 时 diff --cached --quiet 幂等跳过 commit、无空推送，但会多跑一次部署；若嫌噪音可后续给 push 加 `[skip ci]` 或 paths 排除 bot commit，属优化非缺陷
+- catalog.yml 图鉴仍只渲染 monsters/（v2 后恒空，「全服灵籍 0 册」）——players/ 人修档案只做威名对账不渲染，属 v2 迁移待办（与 ITERATION 早前登记的「growth/rebase/catalog monsters 引用待轮替」同项），留主会话定夺是否给图鉴加人修卡
+
 ## 2026-10-15 03:1x 夜间轮：好玩路线图 T3「称号系统」收口施工（v0.20·威名不只是文案落地）
 
 ### 交付（五文件，随 f1869f4 入 main——被并发轮夹带，内容经逐文件 diff 核实无损）
