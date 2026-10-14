@@ -16,10 +16,7 @@ env:
 
 jobs:
   rebase:
-    if: >
-      github.event.issue.user.login == 'leonezhu' &&
-      github.event.issue.title == '📜 降世 · 燧鸣（火）' &&
-      startsWith(github.event.comment.body, '/rebase')
+    if: startsWith(github.event.comment.body, '/rebase')
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -36,7 +33,7 @@ jobs:
 
           RESULT=$(python3 - <<'PYEOF'
           import yaml, json
-          F = 'monsters/leonezhu/beast.yaml'
+          F = f'monsters/${{ github.event.comment.user.login }}/beast.yaml'
           d = yaml.safe_load(open(F, encoding='utf-8'))
           exp = d.get('exp', 0)
           stones = d.get('spirit_stones', 0)
