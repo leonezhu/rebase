@@ -90,6 +90,20 @@
 - 现象 2（过程记录）：本轮与另一并发轮次（e3a960d 至 PR#9，修 chronicle-seal 缺 checkout）在同一工作目录施工，发生 checkout 切分支、工作树覆盖、unresolved 冲突短暂共存的踩踏；本轮修复改在独立 git worktree 完成。建议：高频轮开工前先 `git worktree add` 隔离操作，收尾 worktree remove，主 clone 目录只留给入账/主会话。
 - 线上正面回归：issue#6 全链路已走通——6732a9b 修复后的斗法 run success、战报单贴、battle-log/6 分支生成、双方半场 PR(#7/#8) 合并、chronicle-seal（e3a960d 修复后）成功打上「斗法/已收录」终态加封卷评论；并发轮 d37b603 已把滞留侧分支的入账补录对齐。
 
+## 2026-10-14 21:4x 夜间轮：真红灯实锤并修复——斗法重赛守卫 exit 1 假故障（PR#41）
+
+### 线上巡检发现（判定标准「重跑后仍 failure」首次抓到真目标）
+- issue#37 run 38511165509（04:23:50Z）battle 斗法 failure。上下文：run#47 已正常结算 success 并打「斗法/已判」，~7 秒后 run#48 到达——**`/battle` 双触发**（issue body 与补充评论均含 `/battle`，正是玩家 skill「已知坑」两步触发法的直接后果），run#48 进入 replay-guard，正确贴出拒战评论后 `exit 1` → run 标红，重跑仍 failure（守卫每次都会撞上）
+- 守卫行为正确（拒战评论已贴、账本无损），但把「重复指令」上报为故障：每次双触发必产红灯，污染真故障判定
+
+### 修复（14faca2，PR#41 已合并）
+- battle.yml replay-guard 分支 `exit 1` → `exit 0`（附注释：守卫已履职，非故障）
+- YAML 语法 + `on` 字面键校验过；未触碰 PyYAML 整文件回写
+
+### 顺带观察
+- 04:24/04:25 battle-log/37、battle-log/39 两批各带 4 条 startup failure，与 12:2x 登记的平台噪音模式一致（主 run 全 success），非活性 bug
+- 本轮红灯为线上巡检（「重跑后仍 failure」）抓到的**第一个真目标**——该判定标准有效，后续巡检节奏保持
+
 ## 卡住登记
 
 （暂无）
