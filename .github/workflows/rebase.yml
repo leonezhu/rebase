@@ -1,0 +1,122 @@
+name: Rebase 进化（变基/渡劫）
+# 触发：怪兽自己 issue 下评论 /rebase
+# 校验：功力门槛(筑基=100) + 灵石天劫费(50) → 渡劫动画 + 境界+1 + 血脉之谜下一段
+
+on:
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+env:
+  REGEX: '^\s*/rebase\s*$'
+
+jobs:
+  rebase:
+    if: >
+      github.event.issue.user.login == 'leonezhu' &&
+      github.event.issue.title == '📜 降世 · 燧鸣（火）' &&
+      startsWith(github.event.comment.body, '/rebase')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 校验材料（功力门槛 + 灵石天劫费）+ 渡劫
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE: ${{ github.event.issue.number }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          RESULT=$(python3 - <<'PYEOF'
+          import yaml, json
+          F = 'monsters/leonezhu/beast.yaml'
+          d = yaml.safe_load(open(F, encoding='utf-8'))
+          exp = d.get('exp', 0)
+          stones = d.get('spirit_stones', 0)
+          realm = d.get('realm', 'lianqi')
+
+          # 境界阶梯与门槛（炼气→筑基→金丹→元婴→化神）
+          LADDER = [
+              ('lianqi', None,  None),   # 新孵
+              ('zhuji',  100,  50),      # 筑基：功力100 + 天劫费50灵石
+              ('jindan', 300,  150),     # 金丹
+              ('yuanying', 600, 400),    # 元婴
+              ('huashen', 1000, 800),    # 化神
+          ]
+          idx = [i for i, (r, _, _) in enumerate(LADDER) if r == realm]
+          if not idx:
+              print(json.dumps({'ok': False, 'msg': '灵籍境界异常，天道拒绝推演'})); raise SystemExit
+          idx = idx[0]
+          if idx >= len(LADDER) - 1:
+              print(json.dumps({'ok': False, 'msg': '已达当前天梯之顶（化神之上是渡劫大劫，另设）'})); raise SystemExit
+
+          next_realm, need_exp, need_stones = LADDER[idx + 1]
+          if exp < need_exp:
+              lack = need_exp - exp
+              print(json.dumps({'ok': False, 'msg': f'渡劫需功力 {need_exp}，{d["name"]} 仅有 {exp}，还差 {lack}。继续修行吧。'})); raise SystemExit
+          if stones < need_stones:
+              lack = need_stones - stones
+              print(json.dumps({'ok': False, 'msg': f'天劫需灵石 {need_stones} 护体，囊中仅 {stones}，还差 {lack}。去秘境多走走。'})); raise SystemExit
+
+          # 渡劫成功：境界+1，扣灵石
+          d['realm'] = next_realm
+          d['spirit_stones'] = stones - need_stones
+          yaml.safe_dump(d, open(F, 'w', encoding='utf-8'), allow_unicode=True, sort_keys=False)
+          print(json.dumps({'ok': True, 'name': d['name'], 'from': realm, 'to': next_realm,
+                            'cost': need_stones, 'balance': d['spirit_stones']}))
+          PYEOF
+          )
+          echo "$RESULT" > rebase_result.json
+          OK=$(python3 -c "import json;print(json.load(open('rebase_result.json'))['ok'])")
+          if [ "$OK" != "True" ]; then
+            MSG=$(python3 -c "import json;print(json.load(open('rebase_result.json'))['msg'])")
+            gh issue comment $ISSUE -R leonezhu/rebase -b "⚡ 渡劫未成：$MSG"
+            exit 1
+          fi
+
+          BRANCH="rebase-log/$ISSUE"
+          git checkout -b "$BRANCH"
+          git add monsters/
+          git commit -m "渡劫成功: issue#$ISSUE 燧鸣变基$(python3 -c "import json;d=json.load(open('rebase_result.json'));print(d['from']+'→'+d['to'])")"
+          git push origin "$BRANCH"
+          gh pr create -R leonezhu/rebase --head "$BRANCH" --base main \
+            -t "⚡ 渡劫入账 #$ISSUE" -b "bot 结算，自动合并" --label "game/bot" || true
+          sleep 2
+          gh pr merge "$BRANCH" --merge || true
+
+      - name: 渡劫动画（bot 贴出）
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE: ${{ github.event.issue.number }}
+        run: |
+          python3 - <<'PYEOF'
+          import json, subprocess
+          d = json.load(open('rebase_result.json'))
+          NAMES = {'lianqi': '炼气', 'zhuji': '筑基', 'jindan': '金丹', 'yuanying': '元婴', 'huashen': '化神'}
+          fr, to = NAMES[d['from']], NAMES[d['to']]
+          body = f"""## ⚡ 天劫落下——变基之时
+
+          > {d['name']} 仰首而立。雷云不是从天上来的——是从这个仓库所有被丢弃的提交里升起来的。
+
+          **第一道雷：所有曾被视为失败的重试，劈落。** 它没有躲。
+          **第二道雷：那些半途而废的分支，劈落。** 羽翼上的灼痕纹路亮了。
+          **第三道雷：** 雷停了。云散了。世界像被谁 `git rebase` 过一遍，干干净净。
+
+          ## 🏆 {d['name']} 变基成功：{fr} → **{to}**
+
+          灵石护体耗 {d['cost']}，余额 {d['balance']}。
+
+          ---
+          *天道公告：自此刻起，万灵图鉴上它的名字换了颜色。*
+          *血脉之谜的下一页，在雷声停止的方向。*"""
+          subprocess.run(['gh', 'issue', 'comment', '${{ github.event.issue.number }}',
+                          '-R', 'leonezhu/rebase', '-b', body], check=True)
+          PYEOF
