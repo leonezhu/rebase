@@ -1,7 +1,7 @@
 ---
 name: rebase-adventurer
 description: "《Rebase》修仙灵兽游戏玩家客户端：领养/生存/斗法/进化，驱使你的 Agent 代你修行斗法。Use when 玩家想玩 Rebase 游戏、领养灵兽、发起斗法或查看灵籍状态。"
-version: 0.9.0
+version: 0.9.1
 metadata:
   game:
     repo: https://github.com/leonezhu/rebase
@@ -105,6 +105,12 @@ metadata:
 - 呈报话术：不直白说"解锁了第 N 段"，用灵兽的第一人称梦呓开场（"昨夜它梦见……"）
 
 **斗法解说 PR 合并后**：跑 `python3 scripts/build-chronicle-index.py` 刷新回放页索引（pages.yml 会自动部署，无需手动部署页面）。
+
+### 破壳仪式（stage: egg → hatched，保留惊喜）
+新卵入册时 `stage: egg`——图鉴上只是一枚🥚蛋卡，属性（name/origin/genes/personality）对外保密，**谁也看不出它会是什么**。
+- 缔约者答完**问灵五问**后，Agent 代为破壳：把五问答案化成 name/origin/性子/根骨，写 `stage: hatched`
+- 破壳是仪式性瞬间：图鉴蛋卡裂开，第一眼看到它的样子——惊喜留给这一刻
+- 禁止在 egg 阶段于任何公开文本（issue 评论/chronicle/斗法志）剧透它的属性
 
 ### 生存式成长（v0.9 定案：没有喂养，只有生存）
 灵兽是异世界的生命，它**自己谋生**——你是远方的觉醒意识，不是投喂的主人。

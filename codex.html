@@ -75,15 +75,36 @@ function parseYAML(txt, owner){
   return g;
 }
 function render(){
-  document.getElementById('grid').innerHTML = BEASTS.map((b,i)=>`
+  document.getElementById('grid').innerHTML = BEASTS.map((b,i)=>{
+    if (b.stage === 'egg') return `
+    <div class="card" onclick="show(${i})">
+      <div class="nm">🥚 灵兽之卵</div>
+      <div class="el">未破壳 · 待问灵</div>
+      <div class="rl">一枚刚降临灵界的卵——它的样子、性子与根骨，都还藏着。缔约者答完问灵五问，方能相见。</div>
+    </div>`;
+    return `
     <div class="card" onclick="show(${i})">
       <div class="nm">${b.name||b.owner}</div>
       <div class="el">${EL[b.element]||b.element}行 · ${REALM[b.realm]||b.realm||'?'}</div>
       <div class="rl">${(b.origin||'').slice(0,40)}…</div>
-    </div>`).join('');
+    </div>`;}).join('');
 }
 function show(i){
   const b = BEASTS[i];
+  if (b.stage === 'egg') {
+    document.getElementById('detail').innerHTML = `
+      <h2>🥚 灵兽之卵 <small style="color:var(--dim);font-size:.8rem">未破壳</small></h2>
+      <div><span class="k">状态</span>：孕育中——问灵五问的答案，正与它融合成形</div>
+      <div class="sec"><span class="k">五维根骨</span>：？？？ ｜ <span class="k">性子</span>：？？？</div>
+      <div class="sec"><span class="k">血脉之谜</span>：？？？</div>
+      <div class="sec" style="color:var(--dim)">破壳之前，谁也不知道它会是什么样子。惊喜要等缔约之后。</div>`;
+    document.getElementById('detail').style.display='block';
+    document.querySelector('.back').style.display='block';
+    document.getElementById('grid').style.display='none';
+    document.querySelector('.sub').textContent = '灵兽之卵 · 未破壳';
+    window.scrollTo(0,0);
+    return;
+  }
   const genes = b.genes ? Object.entries(b.genes).map(([k,v])=>`${k}${v}`).join(' · ') : '';
   document.getElementById('detail').innerHTML = `
     <h2>${b.name||b.owner} <small style="color:var(--dim);font-size:.8rem">${EL[b.element]||''}行 · ${REALM[b.realm]||''}</small></h2>

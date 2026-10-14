@@ -119,14 +119,42 @@
       ],
       "description": "境界：炼气→筑基→金丹→元婴→化神→渡劫→大乘"
     },
+    "stage": {
+      "enum": [
+        "egg",
+        "hatched"
+      ],
+      "description": "egg=未破壳(属性保密,图鉴渲染蛋卡保留惊喜); hatched=已破壳(属性公开)。新卵默认egg, 问灵五问答完破壳仪式转hatched"
+    },
     "origin": {
       "type": "string",
       "minLength": 10,
       "maxLength": 2000,
       "description": "降世故事（缔约时的来历经历，biography 起点）"
     },
-    "mood": {"type": "object", "required": ["state", "updated"], "properties": {"state": {"enum": ["昂扬", "平静", "低落"], "description": "心境(生存式): 同梦/胜仗→昂扬(+3%), 败仗/迷路→低落(-3%), 由当日经历涨落"}, "updated": {"type": "string"}}, "additionalProperties": false, "description": "心情系统"},
-  "mystery": {
+    "mood": {
+      "type": "object",
+      "required": [
+        "state",
+        "updated"
+      ],
+      "properties": {
+        "state": {
+          "enum": [
+            "昂扬",
+            "平静",
+            "低落"
+          ],
+          "description": "心境(生存式): 同梦/胜仗→昂扬(+3%), 败仗/迷路→低落(-3%), 由当日经历涨落"
+        },
+        "updated": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": false,
+      "description": "心情系统"
+    },
+    "mystery": {
       "type": "string",
       "maxLength": 500,
       "description": "血脉之谜（隐藏身世线索，随境界解锁）"
