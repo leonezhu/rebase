@@ -40,12 +40,14 @@ jobs:
           realm = d.get('realm', 'lianqi')
 
           # 境界阶梯与门槛（炼气→筑基→金丹→元婴→化神）
+          # v0.12 节奏修正(用户反馈'升级太快没体验'): 门槛指数化, 每个境界待出故事来
           LADDER = [
               ('lianqi', None,  None),   # 新孵
-              ('zhuji',  100,  50),      # 筑基：功力100 + 天劫费50灵石
-              ('jindan', 300,  150),     # 金丹
-              ('yuanying', 600, 400),    # 元婴
-              ('huashen', 1000, 800),    # 化神
+              ('zhuji',  150,  80),      # 筑基：功力150 + 天劫费80灵石
+              ('jindan', 500,  260),     # 金丹
+              ('yuanying', 1500, 700),   # 元婴
+              ('huashen', 4000, 1500),   # 化神
+              ('dujie', 10000, 4000),    # 渡劫大劫
           ]
           idx = [i for i, (r, _, _) in enumerate(LADDER) if r == realm]
           if not idx:
@@ -55,6 +57,9 @@ jobs:
               print(json.dumps({'ok': False, 'msg': '已达当前天梯之顶（化神之上是渡劫大劫，另设）'})); raise SystemExit
 
           next_realm, need_exp, need_stones = LADDER[idx + 1]
+          # 心境门槛(v0.12): 心境低落=心魔缠身, 雷劫必劈——渡劫前先安顿它的心
+          if d.get('mood', {}).get('state') == '低落':
+              print(json.dumps({'ok': False, 'msg': f"心魔未平：{d['name']} 心境低落，此刻渡劫雷劫必劈心魔。先陪它同梦修行，等心境平复再来。"})); raise SystemExit
           if exp < need_exp:
               lack = need_exp - exp
               print(json.dumps({'ok': False, 'msg': f'渡劫需功力 {need_exp}，{d["name"]} 仅有 {exp}，还差 {lack}。继续修行吧。'})); raise SystemExit

@@ -445,10 +445,16 @@ jobs:
           # 奖励
           p = f'monsters/${WINNER}/beast.yaml'
           d = yaml.safe_load(open(p, encoding='utf-8'))
-          d['spirit_stones'] = d.get('spirit_stones', 100) + 30
-          d['exp'] = d.get('exp', 0) + 50
+          # 境界差动收益(v0.12 反刷菜): 同级胜+30/+50, 越级挑战胜×2.5(冒险奖), 高打低×0.4(虐菜无味)
+          RORD = {'lianqi': 0, 'zhuji': 1, 'jindan': 2, 'yuanying': 3, 'huashen': 4, 'dujie': 5, 'dacheng': 5}
+          wr = RORD.get(yaml.safe_load(open(f"monsters/{r['winner']}/beast.yaml", encoding='utf-8')).get('realm', 'lianqi'), 0)
+          lr = RORD.get(yaml.safe_load(open(f"monsters/{r['loser']}/beast.yaml", encoding='utf-8')).get('realm', 'lianqi'), 0)
+          mult = 2.5 if wr < lr else (0.4 if wr > lr else 1.0)
+          win_stones = int(30 * mult); win_exp = int(50 * mult)
+          d['spirit_stones'] = d.get('spirit_stones', 100) + win_stones
+          d['exp'] = d.get('exp', 0) + win_exp
           yaml.safe_dump(d, open(p,'w',encoding='utf-8'), allow_unicode=True)
-          print(f"胜方 ${WINNER} +30 灵石 +50 功力")
+          print(f"胜方 ${WINNER} +{win_stones} 灵石 +{win_exp} 功力(境界差动×{mult})")
           # 血脉之力(v0.8)：胜场累计 + 解锁公式重算（境界段数与 rebase.yml 天梯一致）
           REALM_SEG = {"lianqi":0,"zhuji":1,"jindan":2,"yuanying":3,"huashen":4,"dujie":5,"dacheng":5}
           blood_events = []
