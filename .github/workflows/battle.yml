@@ -297,8 +297,9 @@ jobs:
               if te:
                   t = (a if f['attacker'] == C else b).get('talent', {}) if te['side']=='atk' else (b if f['attacker'] == C else a).get('talent', {})
                   if t: tl = f" ✨【{t['name']}】"
-              ha = f['hp_a'] if f['attacker'] == C else f['hp_b']
-              hb = f['hp_b'] if f['attacker'] == C else f['hp_a']
+              # hp_a/hp_b 在 sim 里恒为挑战方/守方累计血量，与该回合谁出手无关——直接取用，勿按 attacker 翻转（R2/R3 会错位）
+              ha = f['hp_a']
+              hb = f['hp_b']
               lines.append(f"")
               lines.append(f"**{PHASE[f['phase']]} R{f['n']}** ｜ {atk} → {dfn} **-{f['dmg']}**{adv}{tl}")
               lines.append(f"`{bar(ha)}` {NAMES[C]} {ha} ／ `{bar(hb)}` {NAMES[D]} {hb}")
