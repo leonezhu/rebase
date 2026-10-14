@@ -234,3 +234,23 @@
 ### 结论
 - 清单三项之后的全部 9 条 workflow 链已逐一演练过至少一次，无新 bug。清单全清 + 六轮打磨零遗漏项，高频轮后续默认 SILENT，除非线上出现「重跑后仍 failure」的真红灯
 - 本轮教训（工具层，非仓库 bug）：YAML 块标量提取的 python 段做 dry-run 时，`textwrap.dedent` 处理不了「首行顶格+后续行带共同前缀缩进」的混合形态（GitHub Actions run 块常态），需按非空行共同前缀手动剥除）
+
+## 2026-10-14 22:0x 夜间轮：打磨第七轮（全流程演练全过，零修复）
+
+### 线上巡检
+- battle-log/39 四条 failure（04:25:53Z）重跑全部洗绿（completed skipped）——确认为已登记的「bot 入账 PR 附带 startup failure」平台噪音，非真红灯。「重跑后仍 failure」判定标准连续第三轮有效，当前线上零真红灯
+
+### 演练结果（只读沙盒，真实灵籍未动，收尾工作树 CLEAN）
+- 9 workflow YAML 语法 + `on` 字面键 + 3 册灵籍/7 篇遭遇 schema 全过
+- battle hash 模拟（原样提取执行）：种子确定性/幂等/三回合分镜/模拟不改灵籍 全过
+- explore 结算（原样提取执行）：种子确定性/五维产权不动/恶战保底（5→0 记 -5、100→90 记 -10）全过
+- growth 校验语义（临时仓 8 场景）：合规 delta=1/3、篡改拒、越产权拒、超限 4>3 拒、余额 5<30 拒、新文件过 全过
+- register 降世故事：3 行多行 origin + mystery 完整入正文（清单 1 回归）全过
+- rebase 渡劫校验（沙盒 6 场景）：功力不足拒/灵石不足拒/渡劫成功（扣 50/境界+1）/天梯之顶拒/非法境界拒/筑基新门槛再拒 全过
+- catalog 渲染字段断言 + REALM_CN 在位 全过
+
+### 演练方法教训（非代码 bug，给后续轮提效）
+- heredoc 提取段的「首行顶格+后续行缩进」混合形态：commonprefix 只按非空行算会漏剥首行——先按非空行求前缀，再逐行剥除（textwrap.dedent 不够用）
+- 沙盒替换 workflow 注入占位符必须全量（steps.outputs 类占位符漏一个，seed 就变，遭遇选择假阴性）——本轮 explore 断言 FAIL 一次全是此因，非代码 bug
+- 演练判定 refuse 与否要认准 `::error::` 走 stdout（print），stderr 里只有 gh 兜底评论的报错
+- growth 演练的「余额不足拒」若在 PR 内改灵籍会被产权过滤器先拒——穷要穷在 base 上，PR 只追加修行行
