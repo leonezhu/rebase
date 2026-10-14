@@ -95,7 +95,9 @@ jobs:
           def load_beast(o):
               for _c in (f'players/{o}.yaml', f'monsters/{o}/beast.yaml'):
                   if _os.path.exists(_c):
-                      return _yaml.safe_load(open(_c, encoding='utf-8'))
+                      _d = _yaml.safe_load(open(_c, encoding='utf-8'))
+                      _d.setdefault('element', (_d.get('spirit_root') or {}).get('element'))
+                      return _d
               raise FileNotFoundError(o)
 
           C = "${{ steps.parse.outputs.challenger }}"
@@ -364,7 +366,9 @@ jobs:
           def load_beast(o):
               for _c in (f'players/{o}.yaml', f'monsters/{o}/beast.yaml'):
                   if _os.path.exists(_c):
-                      return _yaml.safe_load(open(_c, encoding='utf-8'))
+                      _d = _yaml.safe_load(open(_c, encoding='utf-8'))
+                      _d.setdefault('element', (_d.get('spirit_root') or {}).get('element'))
+                      return _d
               raise FileNotFoundError(o)
           C = "${{ steps.parse.outputs.challenger }}"
           D = "${{ steps.parse.outputs.defender }}"
@@ -415,7 +419,9 @@ jobs:
           def load_beast(o):
               for _c in (f'players/{o}.yaml', f'monsters/{o}/beast.yaml'):
                   if _os.path.exists(_c):
-                      return _yaml.safe_load(open(_c, encoding='utf-8'))
+                      _d = _yaml.safe_load(open(_c, encoding='utf-8'))
+                      _d.setdefault('element', (_d.get('spirit_root') or {}).get('element'))
+                      return _d
               raise FileNotFoundError(o)
           r = json.load(open('battle_result.json'))
           ISSUE = "${{ github.event.issue.number }}"
@@ -655,7 +661,9 @@ jobs:
                   # 胜场解锁同样揭示封印段为【待补】占位，与 rebase.yml 渡劫链逻辑一致——
                   # 否则斗法赢出来的段永远封印，集齐 5 段的觉醒剧情经胜场路线无法触发。
                   mf = d.get('memory_fragments', {'total':5,'unlocked':0,'fragments':['【封印】']*5})
-                  old_mf = mf.get('unlocked', 0)
+                  # 人修v2 players档案的 memory_fragments 是 int 计数（player.schema）——非 dict 不做碎片揭示
+                  mf = mf if isinstance(mf, dict) else None
+                  old_mf = mf.get('unlocked', 0) if mf else new_unlocked
                   if new_unlocked > old_mf:
                       mf['unlocked'] = new_unlocked
                       frags = mf.get('fragments', ['【封印】']*5)
