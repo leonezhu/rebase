@@ -15,6 +15,7 @@
 
 - [x] issue body 里的 `/battle` 不触发 issue_comment 事件——✅ 2026-10-14 修复：battle.yml 增加 `issues: [opened]` 触发，job if 双事件分流，CMD_BODY/CHALLENGER 用 `comment.x || issue.x` 兜底统一取值；模拟种子改用 `github.event.id`（comment.id 在 issues 事件下为空，会导致 issues 入口的种子后缀恒空，属顺带修掉的隐性 bug）。本地断言+模拟脚本注入双事件变量独立执行通过
 - [x] 降世 issue 正文漏 YAML 原文（issue#2 已手动修复正文；workflow 根因在清单第 1 项一并修）
+- [x] schema 缺 `spirit_recovered_at` 字段——battle.yml 灵性惰性恢复机制（ad69861 实装）会向灵籍写入该字段，但 schema `additionalProperties: False` 未声明，导致任何带此字段的灵籍过不了校验 PR。✅ 2026-10-14 修复：schema 补录该字段（type: string, format: date），3 册真实灵籍本地校验全过
 
 ## 设计定案 v0.6（2026-10-14，主会话）
 
