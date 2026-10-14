@@ -207,7 +207,7 @@ jobs:
           REALM_CN = {'lianqi':'炼气','zhuji':'筑基','jindan':'金丹','yuanying':'元婴','huashen':'化神','dujie':'渡劫','dacheng':'大乘'}
           bar = lambda hp: '🟩' * int(hp//10) + ('🟨' if hp % 10 >= 5 else '') + '⬜' * (10 - int(hp//10) - (1 if hp % 10 >= 5 else 0))
 
-          lines = ["## ⚔️ 斗法 · 天道推演", "", f"**{NAMES[C]}**（{ELEM[a['element']]}·{REALM_CN.get(a['realm'], a['realm'])}） ⚡ vs ⚡ **{NAMES[D]}**（{ELEM[b['element']]}·{b['realm']}）", ""]
+          lines = ["## ⚔️ 斗法 · 天道推演", "", f"**{NAMES[C]}**（{ELEM[a['element']]}·{REALM_CN.get(a['realm'], a['realm'])}） ⚡ vs ⚡ **{NAMES[D]}**（{ELEM[b['element']]}·{REALM_CN.get(b['realm'], b['realm'])}）", ""]
           PHASE = {"开场":"☽ 开场","中盘":"⚔️ 中盘","决胜":"🔥 决胜"}
           for f in r['frames']:
               atk = NAMES[f['attacker']]; dfn = NAMES[f['defender']]
