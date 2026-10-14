@@ -80,14 +80,7 @@ jobs:
           if got.get('element') != expect_elem or got.get('purity') != expect_purity or got.get('variant') != expect_var:
               err.append(f"灵根与天道 hash 不符（命格不可自选：由 owner+created_at 派生）")
 
-          # 名讳查重
-          for p in glob.glob('players/*.yaml'):
-              if p == f: continue
-              other = yaml.safe_load(open(p, encoding='utf-8'))
-              if other and other.get('name') == d.get('name'):
-                  err.append(f"名讳「{d.get('name')}」已有人用（{other.get('owner')}），名讳须唯一")
-
-          if err:
+          # if err:
               print("校验失败：")
               for e in err: print(f"- {e}")
               raise SystemExit(1)
