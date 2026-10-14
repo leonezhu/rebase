@@ -200,6 +200,12 @@ jobs:
           fi
           echo "issue=$N" >> $GITHUB_OUTPUT
 
+      - name: checkout（供 ls-tree 统计 chronicle）
+        if: steps.num.outputs.issue != ''
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
       - name: 双方半场齐 → 打「斗法/已收录」终态
         if: steps.num.outputs.issue != ''
         env:
@@ -211,7 +217,7 @@ jobs:
           case ",$CUR," in
             *",斗法/已收录,"*) echo "已收录过，跳过"; exit 0 ;;
           esac
-          # chronicle/ 下两个半场文件 → 已收录
+          # chronicle/ 下两个半场文件 → 已收录（已 checkout，直接读工作树）
           git fetch origin main --depth 1 2>/dev/null || true
           HALF=$(git ls-tree -r --name-only origin/main -- chronicle/ | grep -c "issue${N}-" || true)
           if [ "${HALF:-0}" -ge 2 ]; then
