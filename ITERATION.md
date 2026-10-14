@@ -191,3 +191,19 @@
 1. **job if 过滤 head 分支**：4 个 workflow 的 job `if` 加 `&& !startsWith(github.head_ref, 'battle-log/')` 等 5 个 bot 分支前缀（lore.yml 已有 head_ref 条件可顺带扩展）——job 层求值在 startup 之后，能挡住吗未经验证：startup failure 发生在 job 求值之前的话此路同样不通，需先做一次实验性 commit 验证
 2. **容忍噪音**：startup failure 本身无账务影响（入账链自己的 run 全 success），把「入账 PR 附带 4 条红灯」当作已知噪音接受，发现真 failure 时以「重跑后仍 failure」为判定标准
 - 另一个未验证的旁路：入账链改用 `gh pr create --fill` 前先给 PR 打 draft 或先用 API 预建 check 豁免——均属设计层改动，本轮不动
+## 2026-10-14 12:5x 高频轮：打磨第五轮——斗法分镜守方境界英文漏翻（实锤并修复）
+
+### 演练结果（全过，含一项新修复）
+- 9 workflow YAML 语法 + 触发器 `on` 键完好 + 3 册灵籍 schema 全过；入账链咽喉断言（push/create/merge 无 `|| true` 残留）✓
+- explore 结算原样提取执行（8 项断言）：结算执行/灵石与结算一致/保底不为负/败遭遇负账记负/胜遭遇非负/幂等/2 万次抽样权重偏差 3.1%/保底等价式(5→0记-5) 全过 ✓
+- battle hash 模拟：种子确定性/模拟不改灵籍/分镜三回合/attribution 对齐（12:27 修复回归）/境界碾压 override 全过 ✓
+- growth 校验语义（临时仓复现）：产权过滤/append-only 真前缀/追加行计量(1与2)/篡改拒/超限拒(2+3>3)/限内通过(2+1=3)/余额计算 全过 ✓
+- register yaml 解析在位、多行 origin 完整、catalog 3 册齐 + REALM_CN 7/7 枚举覆盖 ✓
+
+### 🐛 本轮实锤并修复：守方境界英文漏翻
+- **现象**：分镜渲染第 3 行守方显示 `墨霄（水·lianqi）`——12:27 的 4e8f349「境界中文显示」只给挑战者侧 a['realm'] 加了 `REALM_CN.get` 映射，守方 b['realm'] 漏网，渲染断言「双方境界中文」当场抓出
+- **修复**：65ff060，守方同过 `REALM_CN.get(b['realm'], b['realm'])`；本地渲染回归输出 `燧鸣（火·筑基） ⚡ vs ⚡ 墨霄（水·炼气）`；线上 push run success
+- **教训**：成对字段的修复必须两侧同改——上轮只断言了「含中文」，未断言「无英文残留」，本轮断言加严后立即抓出
+
+### 线上观察
+- 04:24-04:25Z battle-log/37 与 battle-log/39 两批入账 PR 又各带 4 条 startup failure（与 12:2x 登记的平台噪音模式完全一致，非活性 bug，判定标准仍是「重跑后仍 failure」）
