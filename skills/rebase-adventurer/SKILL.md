@@ -1,7 +1,7 @@
 ---
 name: rebase-adventurer
 description: "《Rebase》修仙灵兽游戏玩家客户端：领养/生存/斗法/进化，驱使你的 Agent 代你修行斗法。Use when 玩家想玩 Rebase 游戏、领养灵兽、发起斗法或查看灵籍状态。"
-version: 0.9.1
+version: 0.9.2
 metadata:
   game:
     repo: https://github.com/leonezhu/rebase
@@ -105,6 +105,14 @@ metadata:
 - 呈报话术：不直白说"解锁了第 N 段"，用灵兽的第一人称梦呓开场（"昨夜它梦见……"）
 
 **斗法解说 PR 合并后**：跑 `python3 scripts/build-chronicle-index.py` 刷新回放页索引（pages.yml 会自动部署，无需手动部署页面）。
+
+### 节奏铁律（一次一动作，等玩家发令）
+**Agent 绝不连锁推进流程**——每个动作完成后必须停下，等玩家的下一句指令。
+- 禁止：探索完自动接着斗法、斗法完自动接着渡劫、入册完自动破壳——**一口气走完=没有乐趣**
+- 一轮交互 = 玩家一个指令（/explore、/battle、破壳、看图鉴……）→ Agent 执行 → **转述结果 + 停**
+- 转述时可以**预告**下一步的可能（"灵性够了，想渡劫随时可以"），但只许建议，不许代点
+- 等待也是玩法：卵要孵、伤要养、心境要平复——异世界有自己的时间，玩家陪它等，比替它跑完更有味道
+- 例外：纯只读查询（看图鉴/看斗法志/查状态）不消耗节奏，可连答
 
 ### 破壳仪式（stage: egg → hatched，保留惊喜）
 新卵入册时 `stage: egg`——图鉴上只是一枚🥚蛋卡，属性（name/origin/genes/personality）对外保密，**谁也看不出它会是什么**。
