@@ -118,3 +118,18 @@
 ### 遗留
 - lore-reward 的入账 push/PR create/merge 仍带 `|| true` 吞错——「入账链路静默丢账」总登记项（见打磨模式第一节）在本链路同样存在，待主会话定夺统一方案
 - 夜泉洗尘（PR#17）、石语（并发轮 PR#19）、雾隐栈道（PR#22）三篇测试遭遇已随链路验证留在 lore/encounters/，如嫌测试数据可另行清理（不属本轮职责）
+
+## 打磨模式 第三轮（2026-10-14 10:4x 高频轮，worktree 隔离演练）
+### 演练结果（全过，无新代码 bug）
+- 8 workflow YAML 语法 + 3 册灵籍/7 篇遭遇 schema 全过；线上 run 无新增 failure（唯一红=已登记的 02:02 瞬态启动失败）
+- battle hash 模拟（原样提取执行）：种子确定/模拟不改灵籍/境界碾压 override 全过 ✓
+- explore 结算：只动 spirit_stones+exp、幂等、败遭遇保底（5→0 记 -5 负账）全过 ✓
+- register 降世故事：3 行多行 origin 全文入正文（清单 1 回归）✓
+- catalog 渲染：3 册齐/暗色/境界/五行着色/余额全过 ✓
+- growth 校验（sha 语义复现真实 PR 入参）：合规 delta=1/篡改拒/超限拒(4>3)/余额不足拒(5<10) 全过 ✓
+### 演练方法教训（非代码 bug）
+- 提取 workflow heredoc 演练时，HEAD 入参必须传 commit sha（真实 PR 触发传 head.sha）——误传分支名时 `git diff <base> <分支名>` 因分支名与目录同名解析成路径报 128，而 `sh()` 不查 returncode 静默拿空 diff，得出「合规场景也跳过」的假阴性。顺带确认：真实触发路径不受此影响（sha 永远无歧义）
+### 🐛 发现（bug 级，登记待修）：入账链 `|| true` 连锁吞错使 bot PR 创建失败完全不可见
+- battle/explore/growth 三处入账步骤同构：`git push || true` → `gh pr create ... || true` → `gh pr merge ... || true`。若 pr create 失败（权限/网络/分支已存在），merge 必失败也被吞——结算故事已贴、灵石未落库、workflow 显示 success，零痕迹。白天「bot 无 create PR 权限」事故（issue#2/#6/#3 补录）即此模式的真实爆发
+- 与「入账链路静默丢账」总登记项同源但更具体：**pr create 是链路咽喉**，其失败必须显式报错（去掉 create 上的 `|| true` 即可让 step 红灯），push/merge 失败也会随之可见
+- 建议（留主会话定夺，一处 3 行改动）：入账步骤只保留 `gh pr edit --add-label` 上的 `|| true`（标签失败无账务影响），`git commit`/`git push`/`gh pr create`/`gh pr merge` 全部去 `|| true`
