@@ -93,7 +93,7 @@ jobs:
           d['spirit_stones'] = max(0, old_stones + stones)
           d['exp'] = d.get('exp', 0) + exp
           if stones < 0:
-              stones = old_stones - d['spirit_stones']  # 实际损失（保底后）
+              stones = d['spirit_stones'] - old_stones  # 实际损失（保底后，保持负号——丢灵石不可记成正入账）
 
           p.write_text(yaml.safe_dump(d, allow_unicode=True, sort_keys=False), encoding='utf-8')
           result = {
@@ -112,7 +112,7 @@ jobs:
           ISSUE: ${{ github.event.issue.number }}
         run: |
           STORY=$(python3 -c "import json;print(json.load(open('explore_result.json'))['story'])")
-          STONES=$(python3 -c "import json;d=json.load(open('explore_result.json'));print(('+' if d['stones']>=0 else '')+str(d['stones']))")
+          STONES=$(python3 -c "import json;d=json.load(open('explore_result.json'));v=d['stones'];print(('+' if v>0 else '')+str(v))")
           EXP=$(python3 -c "import json;d=json.load(open('explore_result.json'));print('+'+str(d['exp']) if d['exp'] else '0')")
           BAL=$(python3 -c "import json;print(json.load(open('explore_result.json'))['balance'])")
           NAME=$(python3 -c "import yaml;print(yaml.safe_load(open('monsters/${{ steps.beast.outputs.explorer }}/beast.yaml', encoding='utf-8'))['name'])")
