@@ -11,12 +11,10 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
+  contents: write
 
 concurrency:
-  group: "pages"
+  group: catalog
   cancel-in-progress: false
 
 jobs:
@@ -151,4 +149,6 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add docs/catalog.html || true
           git diff --cached --quiet || git commit -m "catalog: 图鉴静态页重铸(docs/catalog.html,不部署)"
+          # 并发保险：checkout 后若 main 又前进，先变基再推，避免 non-FF 拒绝
+          git pull --rebase origin main || true
           git push origin main
