@@ -1,20 +1,20 @@
-name: 墨霄
-owner: npc-moxiao
+created_at: '2026-10-14T01:00:00+08:00'
 element: water
+exp: 50
 genes:
   ling: 78
   po: 62
   qiao: 55
   ren: 80
   yun: 85
-personality:
-  courage: -20
-  temper: -60
-  pride: 10
+mystery: 【血脉之谜】它的鳞片残影里有一帧画面无人认领：某个从未存在过的版本里，燧鸣与它并肩作战。
+name: 墨霄
 origin: 非缔约而生——从主仓库早期某次 force-push 丢弃的旧提交里渗出的水汽凝成。墨霄记得那些被覆盖的历史，因此做事谋定后动：先看清所有分支，再选主干。它是灵界派驻的
   NPC，陪新驯兽师磨刀。
-mystery: 【血脉之谜】它的鳞片残影里有一帧画面无人认领：某个从未存在过的版本里，燧鸣与它并肩作战。
+owner: npc-moxiao
+personality:
+  courage: -20
+  pride: 10
+  temper: -60
 realm: lianqi
-spirit_stones: 100
-exp: 0
-created_at: '2026-10-14T01:00:00+08:00'
+spirit_stones: 130
