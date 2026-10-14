@@ -1,0 +1,44 @@
+[
+ {
+  "owner": "leonezhu",
+  "name": "燧鸣",
+  "code": "relic",
+  "story": "燧鸣 在浅滩的石缝里抠出一小片温热的东西——像一段谁的记忆凝成的屑。它愣了愣，把它收进了身上最深的绒毛里，打算献给缔约者。",
+  "flashback": false
+ },
+ {
+  "owner": "npc-luling",
+  "name": "鲁灵",
+  "code": "wander",
+  "story": "鲁灵 沿着旧山道走到尽头，那里有一棵烧焦的老树。它围着树走了三圈，把一棵新发的绿芽用爪子拢了拢土，走了。",
+  "flashback": false
+ },
+ {
+  "owner": "npc-moxiao",
+  "name": "墨霄",
+  "code": "forage",
+  "story": "溪水退去的滩涂上留着小鱼灵的残鳞，墨霄 捡食了半晌，又用湿泥把鳞片埋好——它说不清为什么要这么做。",
+  "flashback": false
+ },
+ {
+  "owner": "wild-chenzhou",
+  "name": "尘舟",
+  "code": "relic",
+  "story": "暮色里它刨开一座小土丘，得到一枚冰凉的圆痕。它盯着看了一炷香，忽然觉得心口很静——像想起了什么好事。",
+  "flashback": true
+ },
+ {
+  "owner": "wild-leigu",
+  "name": "雷骨",
+  "code": "relic",
+  "story": "暮色里它刨开一座小土丘，得到一枚冰凉的圆痕。它盯着看了一炷香，忽然觉得心口很静——像想起了什么好事。",
+  "flashback": true
+ },
+ {
+  "owner": "wild-yanhui",
+  "name": "砚灰",
+  "code": "relic",
+  "story": "砚灰 在浅滩的石缝里抠出一小片温热的东西——像一段谁的记忆凝成的屑。它愣了愣，把它收进了身上最深的绒毛里，打算献给缔约者。",
+  "flashback": true
+ }
+]
