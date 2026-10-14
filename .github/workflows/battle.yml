@@ -91,6 +91,12 @@ jobs:
           pip install pyyaml --quiet
           python3 - <<'EOF'
           import yaml, hashlib, json, os
+          import yaml as _yaml, os as _os
+          def load_beast(o):
+              for _c in (f'players/{o}.yaml', f'monsters/{o}/beast.yaml'):
+                  if _os.path.exists(_c):
+                      return _yaml.safe_load(open(_c, encoding='utf-8'))
+              raise FileNotFoundError(o)
 
           C = "${{ steps.parse.outputs.challenger }}"
           D = "${{ steps.parse.outputs.defender }}"
@@ -329,6 +335,12 @@ jobs:
         run: |
           python3 - <<'EOF'
           import yaml, json, glob
+          import yaml as _yaml, os as _os
+          def load_beast(o):
+              for _c in (f'players/{o}.yaml', f'monsters/{o}/beast.yaml'):
+                  if _os.path.exists(_c):
+                      return _yaml.safe_load(open(_c, encoding='utf-8'))
+              raise FileNotFoundError(o)
           C = "${{ steps.parse.outputs.challenger }}"
           D = "${{ steps.parse.outputs.defender }}"
           def load(o):
@@ -368,6 +380,12 @@ jobs:
 
           python3 - <<'PYEOF'
           import json, subprocess, os
+          import yaml as _yaml, os as _os
+          def load_beast(o):
+              for _c in (f'players/{o}.yaml', f'monsters/{o}/beast.yaml'):
+                  if _os.path.exists(_c):
+                      return _yaml.safe_load(open(_c, encoding='utf-8'))
+              raise FileNotFoundError(o)
           r = json.load(open('battle_result.json'))
           ISSUE = "${{ github.event.issue.number }}"
           C, D = "${{ steps.parse.outputs.challenger }}", "${{ steps.parse.outputs.defender }}"
