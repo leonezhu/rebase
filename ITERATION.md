@@ -149,3 +149,25 @@
 ### 遗留
 - 修复后入账失败会体现为 workflow 红灯（正是目的），但尚无「失败后 edit 已贴评论告知玩家重试」的补偿动作——本次只做可见化，补偿留主会话定夺
 - 下一轮观察点：一次真实 explore/battle 触发验证新入账链线上跑通（去吞错后的正确路径与此前行为一致，理论上零行为变化）
+
+## 打磨模式 第四轮（2026-10-14 11:4x 高频轮，worktree 隔离演练）
+### 演练结果
+- 9 workflow YAML 语法 + 触发器 `on` 键完好 + 3 册灵籍/7 篇遭遇 schema 全过
+- battle dry-run（原样提取执行）：种子确定性/模拟不改灵籍/境界碾压 override（lianqi 临时提 jindan→碾压生效→当场还原）✓
+- explore 结算：种子确定性/五维产权不动/保底负账等价式 ✓
+- growth 校验 sha 语义（临时仓 8 场景）：合规 delta=2/篡改拒/前插行拒/越产权拒/超限拒(4>3)/余额不足拒(5<10) 全过 ✓
+- register：降世故事 python yaml 解析在位、无 awk 残留（清单 1 回归）✓
+- catalog：3 册渲染齐（炼气期/灵石/暗色），REALM_CN 映射与 schema realm 枚举 7/7 一致 ✓
+- 入账链咽喉断言：battle/explore/growth/lore-reward 四文件 push/create/merge 无 `|| true` 残留 ✓
+
+### 🐛 本轮实锤并修复：rebase.yml（并发轮新增）入账链 merge 吞错漏网
+- **现象**：并发轮新增的进化 workflow 入账链 `gh pr merge "$BRANCH" --merge || true`——push/create 已红灯可见，但 merge 失败被吞：账滞留侧分支、main 未清账、step 仍 success，动画照贴（「余额 X」承诺与账本不符）。与上轮四链路去吞错标准不一致，属同构修复漏网
+- **修复**：去掉 `|| true`（PR#27 → 合并 bbe37f2，本地 YAML + 触发器校验过）
+
+### 发现（记录不改设计，留主会话定夺）
+- rebase.yml job if **硬编码单兽**：`issue.title == '📜 降世 · 燧鸣（火）'` 且灵籍路径写死 `monsters/leonezhu/beast.yaml`——当前只有燧鸣一只可进化，其他兽评 `/rebase` 会被静默跳过（无任何反馈评论）。建议改为「评论者自己的降世 issue + 评论者灵籍」通用路由，并对不满足条件的评论给一句拒绝回应
+- rebase.yml 顶部定义了 `REGEX` env 但从未使用（死配置）；触发判定实际用 `startsWith(comment.body, '/rebase')`，`/rebase 加参数`（如 `/rebase force`）也会通过——建议二选一清理
+- rebase.yml 渡劫动画步 `sleep 2` 后 merge：PR create 到 merge 间无合并就绪等待，若 runner 慢可能偶发 merge 404（当前被 `|| true` 掩盖，去吞错后可能暴露为红灯）——观察点
+
+### 演练方法教训
+- 并发施工窗口：开工 `git pull` 后 5 分钟内远端又进新 commit（rebase.yml），本轮演练以 pull 后 HEAD 为准做了一次、修复时重新对齐远端——worktree 隔离 + 收尾 `git pull --ff-only` 复核可兜住，但「演练基线可能过期」应成为高频轮默认假设
