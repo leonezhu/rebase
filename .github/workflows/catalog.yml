@@ -1,5 +1,5 @@
 name: Catalog (灵籍图鉴)
-# 触发：main push → 扫描 monsters/*/beast.yaml → 生成玄幻暗色静态 HTML → 部署 GitHub Pages
+# 触发：main push → 扫描 monsters/*/beast.yaml → 生成图鉴静态页存 docs/catalog.html（不部署 Pages——线上页面统一由 pages.yml 管理，2026-10-14 修复主页覆盖事故）
 # 图鉴 = 玩家可见的全服灵籍总览（主页 index.html）
 
 on:
@@ -140,15 +140,15 @@ jobs:
           <footer>图鉴随 main 分支自动重铸 · 最近更新 {now:%Y-%m-%d %H:%M}（北京时间）</footer>
           </body>
           </html>"""
-          out = pathlib.Path('_pages'); out.mkdir(exist_ok=True)
-          (out / 'index.html').write_text(page, encoding='utf-8')
-          print(f"✓ 图鉴生成：{len(beasts)} 册灵籍")
+          out = pathlib.Path('docs'); out.mkdir(exist_ok=True)
+          (out / 'catalog.html').write_text(page, encoding='utf-8')
+          print(f"✓ 图鉴生成：{len(beasts)} 册灵籍(存docs/不部署——Pages统一由pages.yml管理,防止覆盖主页)")
           EOF
 
-      - name: 上传 Pages 产物
-        uses: actions/upload-pages-artifact@v3
-        with:
-          path: _pages
-
-      - name: 部署 GitHub Pages
-        uses: actions/deploy-pages@v4
+      - name: 提交图鉴静态页到 docs/
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/catalog.html || true
+          git diff --cached --quiet || git commit -m "catalog: 图鉴静态页重铸(docs/catalog.html,不部署)"
+          git push origin main
