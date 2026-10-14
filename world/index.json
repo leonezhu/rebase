@@ -297,11 +297,12 @@
   ],
   "tales": [
     {
-      "id": "leonezhu",
-      "name": "leonezhu传",
+      "id": "leonezhu-雄大",
+      "owner": "leonezhu",
+      "name": "雄大",
       "entries": 6,
-      "status": "连载中",
-      "last_update": "大变基第十日"
+      "desc": "雄大的修行录。大变基第九日醒来，第十日正式入道。",
+      "status": "连载中"
     }
   ]
 }

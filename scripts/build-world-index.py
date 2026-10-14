@@ -2,12 +2,14 @@
 """
 自动生成 world/index.json 元数据清单
 扫描 world/ 下各子目录的 yaml 文件，输出为统一的 index.json
+tales/ 特殊：扫描 tales/*-*.md 文件，命名约定 owner-名字.md
 """
-import yaml, json, os, sys
+import yaml, json, os, sys, re
 from pathlib import Path
 
-BASE = Path('/Users/xiong/Documents/GitHub/rebase/world')
-OUTPUT = BASE / 'index.json'
+BASE = Path(__file__).resolve().parent.parent
+OUTDIR = BASE / 'world'
+OUTPUT = OUTDIR / 'index.json'
 
 def load_yaml(path):
     with open(path, encoding='utf-8') as f:
@@ -23,24 +25,46 @@ def scan_dir(dirpath, kind):
             print(f'[WARN] {p.name}: {e}', file=sys.stderr)
     return records
 
+def scan_tales(dirpath):
+    """传记：命名约定 owner-角色名.md，一人可有多条记录"""
+    records = []
+    for p in sorted(dirpath.glob('*.md')):
+        m = re.match(r'^(.+?)-(.+)\.md$', p.name)
+        if not m:
+            print(f'[WARN] tales/{p.name}: 不符合 owner-名字.md 命名约定，跳过', file=sys.stderr)
+            continue
+        owner, name = m.group(1), m.group(2)
+        text = p.read_text(encoding='utf-8')
+        # 统计回目（## 第X回）
+        entries = len(re.findall(r'^##\s+', text, re.M))
+        # 取第一段引用块做简介
+        desc_m = re.search(r'^>\s+(.+)$', text, re.M)
+        records.append({
+            'id': p.stem,           # leonezhu-雄大
+            'owner': owner,          # leonezhu
+            'name': name,            # 雄大
+            'entries': entries,
+            'desc': desc_m.group(1) if desc_m else '',
+            'status': '连载中',
+        })
+    return records
+
 def main():
     out = {}
     kinds = {
-        'gongfa': BASE/'gongfa',
-        'artifacts': BASE/'artifacts',
-        'locations': BASE/'locations',
-        'npcs': BASE/'npcs',
-        'events': BASE/'events',
-        'tales': BASE.parent/'tales',  # tales/ at repo root
+        'gongfa': OUTDIR/'gongfa',
+        'artifacts': OUTDIR/'artifacts',
+        'locations': OUTDIR/'locations',
+        'npcs': OUTDIR/'npcs',
+        'events': OUTDIR/'events',
     }
     for kind, dirp in kinds.items():
-        if dirp.exists():
-            out[kind] = scan_dir(dirp, kind)
-        else:
-            out[kind] = []
+        out[kind] = scan_dir(dirp, kind) if dirp.exists() else []
+    out['tales'] = scan_tales(BASE/'tales')
     with open(OUTPUT, 'w', encoding='utf-8') as f:
         json.dump(out, f, ensure_ascii=False, indent=2)
-    print(f'[OK] {OUTPUT} written — {sum(len(v) for v in out.values())} total assets')
+    total = sum(len(v) for v in out.values())
+    print(f'[OK] {OUTPUT} written — {total} total assets')
 
 if __name__ == '__main__':
     main()

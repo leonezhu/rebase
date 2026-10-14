@@ -35,7 +35,7 @@ footer a{color:var(--accent2);text-decoration:none}
 </head>
 <body>
 <div class="wrap">
-<a class="back" href="tales-list.html">← 返回传记目录</a>
+<a class="back" href="../tales-list.html">← 返回传记目录</a>
 <div id="app">
 <div class="loading">正在加载故事…</div>
 </div>
@@ -44,8 +44,9 @@ footer a{color:var(--accent2);text-decoration:none}
 <script type="module">
 import marked from 'https://cdn.jsdelivr.net/npm/marked@14/+esm';
 
-const OWNER = new URLSearchParams(location.search).get('owner') || 'leonezhu';
-const MD_URL = `tales/${OWNER}.md`;
+const OWNER = new URLSearchParams(location.search).get('owner') || 'leonezhu-雄大';
+// 本页位于 tales/ 目录内，MD 与页面同目录
+const MD_URL = `./${OWNER}.md`;
 const APP = document.getElementById('app');
 
 async function load() {
@@ -56,7 +57,7 @@ async function load() {
     const html = marked.parse(md);
     // Extract title from first h1
     const titleMatch = md.match(/^#\s+(.+)$/m);
-    const title = titleMatch ? titleMatch[1].trim() : OWNER + '传';
+    const title = titleMatch ? titleMatch[1].trim() : OWNER;
     APP.innerHTML = `
       <header>
         <div class="kicker">万灵变基录 · 人物专题</div>
@@ -65,12 +66,12 @@ async function load() {
       <article style="padding:1.5rem 0">${html}</article>
       <footer>
         《万灵变基录》· ${title}<br>
-        <a href="tales-list.html">← 返回传记目录</a>
+        <a href="../tales-list.html">← 返回传记目录</a>
       </footer>
     `;
   } catch(e) {
     APP.innerHTML = `<div class="error">${e.message}</div>
-      <footer><a href="tales-list.html">← 返回传记目录</a></footer>`;
+      <footer><a href="../tales-list.html">← 返回传记目录</a></footer>`;
   }
 }
 load();
