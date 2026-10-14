@@ -36,7 +36,7 @@ jobs:
           fi
           if [ ! -f "$F" ]; then
             gh issue comment $ISSUE -R leonezhu/rebase \
-              -b "@${EXPLORER} 你尚未缔约（monsters/$EXPLORER/beast.yaml 不存在），秘境之门不识你的气息。先去 README 缔约领养一只灵兽吧。"
+              -b "@${EXPLORER} 你尚未觉醒（players/ 无你的档案），秘境之门不识你的气息。先去 README 觉醒入道吧。"
             exit 1
           fi
           # 每日限额：查当日已入账的探索次数（bot commit 信息含"秘境探索"）。

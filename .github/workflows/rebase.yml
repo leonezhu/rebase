@@ -34,7 +34,12 @@ jobs:
           RESULT=$(python3 - <<'PYEOF'
           import yaml, json, hashlib
           from datetime import datetime, timezone, timedelta
-          F = f'monsters/${{ github.event.comment.user.login }}/beast.yaml'
+          import glob as _glob, os as _os
+          _ACTOR = '${{ github.event.comment.user.login }}'
+          _cands = [f'players/{_ACTOR}.yaml'] + sorted(_glob.glob(f'players/{_ACTOR}-*.yaml')) + [f'monsters/{_ACTOR}/beast.yaml']
+          F = next((c for c in _cands if _os.path.exists(c)), None)
+          if not F:
+              print(json.dumps({'ok': False, 'msg': '尚无灵籍入册——先觉醒。'})); raise SystemExit
           d = yaml.safe_load(open(F, encoding='utf-8'))
           owner = d.get('owner', '${{ github.event.comment.user.login }}')
           TODAY = datetime.now(timezone(timedelta(hours=8))).date().isoformat()
@@ -89,11 +94,14 @@ jobs:
           titles = d.setdefault('titles', [])
           if '破雷者' not in titles: titles.append('破雷者')
           yaml.safe_dump(d, open(F, 'w', encoding='utf-8'), allow_unicode=True, sort_keys=False)
+          open(os.environ['GITHUB_OUTPUT'], 'a').write(f'beast_file={F}\n')
           print(json.dumps({'ok': True, 'name': d['name'], 'from': realm, 'to': next_realm,
-                            'cost': need_stones, 'balance': d['spirit_stones']}))
+                            'cost': need_stones, 'balance': d['spirit_stones'], 'beast_file': F}))
           PYEOF
           )
           echo "$RESULT" > rebase_result.json
+          BEAST_FILE=$(echo "$RESULT" | python3 -c "import sys,json;print(json.load(sys.stdin).get('beast_file','players/'))" 2>/dev/null || echo players/)
+          export BEAST_FILE
           OK=$(python3 -c "import json;print(json.load(open('rebase_result.json'))['ok'])")
           if [ "$OK" != "True" ]; then
             MSG=$(python3 -c "import json;print(json.load(open('rebase_result.json'))['msg'])")
@@ -103,7 +111,7 @@ jobs:
 
           BRANCH="rebase-log/$ISSUE"
           git checkout -b "$BRANCH"
-          git add monsters/
+          git add "$BEAST_FILE"
           git commit -m "渡劫成功: issue#$ISSUE 燧鸣变基$(python3 -c "import json;d=json.load(open('rebase_result.json'));print(d['from']+'→'+d['to'])")"
           git push origin "$BRANCH"
           gh pr create -R leonezhu/rebase --head "$BRANCH" --base main \
@@ -149,11 +157,14 @@ jobs:
         run: |
           # 渡劫入账 PR 已合并，从 origin/main 重读权威状态
           git fetch origin main --depth=1
-          git checkout origin/main -- monsters/
+          git checkout origin/main -- players/ 2>/dev/null || git checkout origin/main -- monsters/
           NEW=$(python3 - <<'PYEOF'
           import yaml, json
           SEG = {"lianqi":0,"zhuji":1,"jindan":2,"yuanying":3,"huashen":4,"dujie":5,"dacheng":5}
-          F = f"monsters/${{ github.event.comment.user.login }}/beast.yaml"
+          import glob as _g2, os as _os2
+          _A2 = '${{ github.event.comment.user.login }}'
+          _c2 = [f'players/{_A2}.yaml'] + sorted(_g2.glob(f'players/{_A2}-*.yaml')) + [f'monsters/{_A2}/beast.yaml']
+          F = next((c for c in _c2 if _os2.path.exists(c)), None)
           d = yaml.safe_load(open(F, encoding='utf-8'))
           bl = d.get('bloodline', {'unlocked': 0, 'wins': 0})
           new_unlocked = min(5, SEG[d['realm']] + bl.get('wins', 0) // 2)
@@ -173,6 +184,8 @@ jobs:
                   d['memory_fragments'] = mf
               yaml.safe_dump(d, open(F, 'w', encoding='utf-8'), allow_unicode=True, sort_keys=False)
               print(f"UNLOCKED:{new_unlocked}")
+              print(f"BEAST_FILE:{F}")
+              print('AWAKEN' if mf.get('unlocked',0) >= 5 else 'NO-AWAKEN')
           else:
               print("NONE")
           PYEOF
@@ -182,16 +195,13 @@ jobs:
             exit 0
           fi
           N=$(echo "$NEW" | grep -oP '(?<=UNLOCKED:)\d+')
-          # 觉醒判定：集齐5段 → 觉醒剧情触发标记
-          AWAKEN=$(python3 -c "
-          import yaml
-          d = yaml.safe_load(open(f\"monsters/\${{ github.event.comment.user.login }}/beast.yaml\", encoding='utf-8'))
-          print('AWAKEN' if d.get('memory_fragments',{}).get('unlocked',0) >= 5 else 'NO')" 2>/dev/null || echo NO)
+          AWAKEN=$(echo "$NEW" | grep -o 'AWAKEN$' || echo NO)
+          BEAST_FILE=$(echo "$NEW" | grep -oP '(?<=BEAST_FILE:).*' | head -1)
           BRANCH="bloodline-log/$ISSUE"
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -b "$BRANCH"
-          git add monsters/
+          git add "$BEAST_FILE"
           git commit -m "血脉之力: issue#$ISSUE 解开第${N}段（境界段数上涨）"
           # 入账链咽喉点：push/create/merge 失败必须显式红灯（禁 || true 吞错）
           git push origin "$BRANCH"

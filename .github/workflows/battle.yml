@@ -69,7 +69,7 @@ jobs:
             fi
             if [ ! -f "$F" ]; then
               gh issue comment ${{ github.event.issue.number }} -R leonezhu/rebase \
-                -b "@${OWNER} 尚无灵籍入册（monsters/$OWNER/beast.yaml 不存在），无法斗法。"
+                -b "@${OWNER} 尚无灵籍入册（players/ 无你的档案），无法斗法。"
               exit 1
             fi
           done
@@ -401,7 +401,7 @@ jobs:
           def dossier(o, beast):
               stories = []
               if 'genes' in beast:
-                  # 灵兽轨：chronicle/<owner>/ 半场解说（旧制，行为零变化）
+                  # 灵兽轨（旧制残留，monsters已清空=永不命中）：chronicle/<owner>/ 半场解说
                   for f in sorted(_glob.glob(f'chronicle/{o}/*.md'), reverse=True)[:2]:
                       stories.append(open(f, encoding='utf-8').read()[:400])
               else:
