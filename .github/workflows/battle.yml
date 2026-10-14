@@ -129,7 +129,7 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           # label + replay-guard
-          CUR=$(gh issue view ${{ github.event.issue.number }} -R leonezhu/rebase --json labels --jq "[.labels[].name] | join(",")")
+          CUR=$(gh issue view ${{ github.event.issue.number }} -R leonezhu/rebase --json labels --jq '[.labels[].name] | join(",")')
           case ",$CUR," in
             *",斗法/已判,"*|*",斗法/已收录,"*)
               gh issue comment ${{ github.event.issue.number }} -R leonezhu/rebase \
@@ -207,7 +207,7 @@ jobs:
           N: ${{ steps.num.outputs.issue }}
         run: |
           # issue 上已有「已收录」则幂等跳过
-          CUR=$(gh issue view $N -R leonezhu/rebase --json labels --jq "[.labels[].name] | join(\",\")" 2>/dev/null || echo "")
+          CUR=$(gh issue view $N -R leonezhu/rebase --json labels --jq '[.labels[].name] | join(",")' 2>/dev/null || echo "")
           case ",$CUR," in
             *",斗法/已收录,"*) echo "已收录过，跳过"; exit 0 ;;
           esac
