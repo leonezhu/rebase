@@ -403,8 +403,17 @@ jobs:
           json.dump(blood_events, open('blood_events.json','w'), ensure_ascii=False)
           EOF
           git add monsters/ && git commit -m "斗法结算: issue#${{ github.event.issue.number }} 胜方+30灵石+50功力"
-          # 入账链咽喉点：push/create/merge 失败必须显式红灯（禁 || true 吞错），见 ITERATION.md 打磨轮登记
-          git push origin battle-log/${{ github.event.issue.number }}
+          # 入账链咽喉点：create/merge 失败必须显式红灯（禁 || true 吞错）。
+          # push 唯一例外：双触发竞态下另一 run 已推同名分支 → 本 run 重复结算，良性退出
+          # （锁检查有 TOCTOU 窗口，push rejected 即互斥锁的最后裁决，谁 push 成功谁入账）。
+          if ! git push origin battle-log/${{ github.event.issue.number }} 2>push_err.txt; then
+            if grep -q "rejected" push_err.txt; then
+              echo "双触发竞态：另一 run 已入账同名分支，本 run 的重复结算弃用（守卫裁决）"
+              exit 0
+            fi
+            cat push_err.txt >&2
+            exit 1
+          fi
           gh pr create -R leonezhu/rebase --head battle-log/${{ github.event.issue.number }} --base main \
             -t "斗法奖励入账 #${{ github.event.issue.number }}" -b "bot 结算，自动合并"
           gh pr edit battle-log/${{ github.event.issue.number }} -R leonezhu/rebase --add-label "game/bot" || true
