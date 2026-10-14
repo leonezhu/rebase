@@ -153,6 +153,11 @@
       "default": 100,
       "description": "灵性(0-100,满100):每败一场-30,<30闭关当日不应战,每日+20恢复,影响战力±"
     },
+    "spirit_recovered_at": {
+      "type": "string",
+      "format": "date",
+      "description": "灵性惰性恢复锚点(bot写入的最后一次恢复日期,判断每日+20是否已发放)"
+    },
     "talent": {
       "type": "object",
       "required": [
