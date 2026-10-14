@@ -2,6 +2,32 @@
 
 > 夜间 cron 每轮迭代在此记录。设计定案由主会话写入，施工项完成后打勾。
 
+## 2026-10-14 22:0x 夜间轮：好玩路线图 T3-1「404深渊」施工（v0.14 世界Boss）
+
+### 交付
+- **schema 硬边界先行**（schemas/abyss.schema.json）：world/abyss.yaml 全服唯一状态文件——week_id(ISO周)/boss{name,title,element,hp_max恒600,hp_current}/slain/damage_log(owner+date+damage append-only)/rain_log(灵石雨台账)/updated_at；bot 独占写+落盘前 jsonschema 自校验
+- **lore/abyss.yaml 文案池**：六名深渊主宰（缄碑/蔓冢/塌方/回潮/余烬/失焦，金木土水火金——同元素两名是有意的），每名 omen/taunt/weak_hint 三段；弱点暗示只给意象给谜面（碑文畏火/花畏金/悬土畏木/死水畏土/执火畏水/散光畏金），五行克制本身是谜底——zero 技术术语零数值
+- **abyss.yml 双 job**：
+  - attack（issue_comment /abyss）：资格闸（缔约→未slain→每日1次按damage_log查重）→ 伤害=战力×0.4（公式与battle.yml逐项同源：五行相克1.15/被克0.87/血脉+1.5%每段/灵性90+×1.05/<50×0.9/心境/hash涨落±10%）→ 30%反噬-10灵石保底0（PvE不白给）→ 击杀=hp归零→灵石雨（全员30+自身伤害/10，输出榜首+50，单commit入账全员beast.yaml）→ bot贴战况（血条🟥🟩十格+本周出手数+弱点点题）
+  - weekly（周一cron 01:23 UTC+dispatch）：幂等开周报issue（`<!-- abyss:week_id -->` MARKER查重）
+- **Boss 生成**：hash("abyss|"+ISO周) 从文案池确定性抽取，104周分布验证无断档；attack 按需自生成（不依赖weekly先跑），可回放不可操控；concurrency group=abyss 串行化
+- README 指令表补 /abyss 行
+
+### 沙盒（17 断言全过）
+- workflow语法/concurrency/lore池/schema正反样本/hash分布/首击入账/满血一刀不死/反噬扣款/world落盘过schema/补刀击杀判定/灵石雨=30+伤害/10+榜首50/击杀后slain拒战
+- 断言自身踩坑记录：PyYAML 把顶层 `on:` 解析成布尔 True 键——断言 `wf.get('on')` 恒空会假红灯（非 workflow 缺陷）
+
+### e2e（四跑闭环）
+- run 38576312753 **红灯逮住真 bug**：world/ 目录首周不存在 → `W.open('w')` FileNotFoundError（坐标系统没踩中只因 world/ 已被先前步骤建过）。修复=结算前 `Path('world').mkdir(exist_ok=True)`（c5b757c）。教训：**"新机制的首个状态文件"不能假设父目录存在——坐标是第二个吃 world/ 螃蟹的，深渊是第一个**
+- run 38576508630 成功链实锤：拾焰（火）88 伤打余烬（火）【同五行无克制】、30%反噬命中-10灵石（130保住）、血条512/600、PR#71 bot 自动合并、world/abyss.yaml+灵籍同 commit 入账 ✓
+- 同日重复 /abyss → run 38576719723 正确拒绝（"今日已入过雾"），failure 属 reject 设计预期
+- weekly dispatch run 38576862438 success，周报 issue#72 开出（本周主宰·余烬）✓
+- **击杀链（灵石雨全员入账）**：逻辑沙盒已验、线上待真实击杀自然验证（hp600 需约 7~8 人次/周）
+
+### 过程纪律
+- 开工/收尾各一次 git status 快照：收尾时工作区有并发 cron 的称号系统改动（battle.yml+beast.schema.json）——未触碰，DESIGN.md 勾选行单独 patch、仅提交 DESIGN.md+ITERATION.md
+- 两次 push 前均 `git pull --rebase`（首次 rebase 上了并发 cron 的 ad73bc9..6d52bd9）
+
 ## 2026-10-14 21:5x 夜间轮：catalog.yml 只读令牌修复（线上红灯实锤）
 
 ### 发现

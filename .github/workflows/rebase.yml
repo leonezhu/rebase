@@ -83,9 +83,11 @@ jobs:
               print(json.dumps({'ok': False, 'tribulation': 'failed', 'name': d['name'],
                                 'msg': f"天劫骤变：{d['name']} 渡劫失败（心境{mood}，成功率{int(rate*100)}%）。功力跌回 {d['exp']}，灵石 {need_stones} 已随天劫散去。它趴在焦土上，心境跌入低谷——先陪它同梦休养，元气自会回来。养伤之后，再来。"}))
               raise SystemExit
-          # 渡劫成功：境界+1，扣灵石
+          # 渡劫成功：境界+1，扣灵石；一次成=「破雷者」(v0.14)
           d['realm'] = next_realm
           d['spirit_stones'] = stones - need_stones
+          titles = d.setdefault('titles', [])
+          if '破雷者' not in titles: titles.append('破雷者')
           yaml.safe_dump(d, open(F, 'w', encoding='utf-8'), allow_unicode=True, sort_keys=False)
           print(json.dumps({'ok': True, 'name': d['name'], 'from': realm, 'to': next_realm,
                             'cost': need_stones, 'balance': d['spirit_stones']}))
