@@ -39,6 +39,8 @@
     "titles": { "type": "array", "items": { "type": "string" }, "maxItems": 20 },
     "memory_fragments": { "type": "integer", "minimum": 0, "maximum": 5, "description": "前世记忆碎片（血脉之谜线索）" },
     "chronicle": { "type": "array", "items": { "type": "string" }, "description": "人生大事记（append-only，bot 维护，叙事前必读）" },
-    "open_loops": { "type": "array", "items": { "type": "object", "properties": { "hook": { "type": "string" }, "planted": { "type": "string" }, "status": { "type": "string", "enum": ["open", "resolved"] }, "resolve_hint": { "type": "string" } }, "required": ["hook", "planted", "status"] }, "description": "个人伏笔账本：未回收的钩子" }
+    "open_loops": { "type": "array", "items": { "type": "object", "properties": { "hook": { "type": "string" }, "planted": { "type": "string" }, "status": { "type": "string", "enum": ["open", "resolved"] }, "resolve_hint": { "type": "string" } }, "required": ["hook", "planted", "status"] }, "description": "个人伏笔账本：未回收的钩子" },
+    "gongfa": { "type": "array", "maxItems": 9, "items": { "type": "object", "properties": { "name": { "type": "string" }, "grade": { "type": "string", "description": "黄阶/玄阶/地阶/天阶 + 上下品" }, "element": { "type": "string" }, "origin": { "type": "string", "description": "来历（哪个奇遇/伏笔回收）" }, "learned": { "type": "string" } }, "required": ["name", "grade"] }, "description": "功法表：体质的搭档，战斗画面的招式出处" },
+    "artifacts": { "type": "array", "maxItems": 20, "items": { "type": "object", "properties": { "name": { "type": "string" }, "grade": { "type": "string", "description": "法器等级：下品/中品/上品/灵宝" }, "power": { "type": "string", "description": "能力一句话" }, "origin": { "type": "string" }, "obtained": { "type": "string" } }, "required": ["name", "grade", "power"] }, "description": "法宝栏：探索获得，Agent叙事遇险时优先动用" }
   }
 }

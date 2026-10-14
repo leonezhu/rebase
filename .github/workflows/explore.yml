@@ -28,7 +28,8 @@ jobs:
           EXPLORER: ${{ github.event.comment.user.login }}
           ISSUE: ${{ github.event.issue.number }}
         run: |
-          F="monsters/$EXPLORER/beast.yaml"
+          F="players/$EXPLORER.yaml"
+          if [ ! -f "$F" ]; then F="monsters/$EXPLORER/beast.yaml"; fi
           if [ ! -f "$F" ]; then
             gh issue comment $ISSUE -R leonezhu/rebase \
               -b "@${EXPLORER} 你尚未缔约（monsters/$EXPLORER/beast.yaml 不存在），秘境之门不识你的气息。先去 README 缔约领养一只灵兽吧。"
@@ -63,7 +64,8 @@ jobs:
           seed = f"explore|{OWNER}|${{ github.event.comment.id }}|${{ steps.beast.outputs.today }}"
           rng = hashlib.sha256(seed.encode()).hexdigest()
 
-          p = Path(f'monsters/{OWNER}/beast.yaml')
+          p = Path(f'players/{OWNER}.yaml')
+          if not p.exists(): p = Path(f'monsters/{OWNER}/beast.yaml')
           d = yaml.safe_load(p.read_text(encoding='utf-8'))
 
           # 遭遇表：权重不同的 8 种秘境事件（零术语，玄幻文本）
@@ -76,7 +78,8 @@ jobs:
               ("beast",   20,  25,  15, "秘境兽·遭遇：一头无主野兽从雾里扑出！{name} 沉腰蓄势，{el}行灵光缠上爪尖，三合之内将其逼退。野兽丢下衔来的宝物，遁入雾中。"),
               ("beast_lose", 10, -10,  0, "秘境兽·恶战：雾中那头野兽比看上去更强。{name} 苦战不支，身上几颗灵石在翻滚中散落，被野兽叼走。它舔着伤口退出来——败不亡身，来日再战。"),
               ("well",     8,   0,  50, "无底古井：井口刻满无人识得的符文。{name} 俯身探望，井底忽然映出的不是倒影，而是一段陌生的修行画面。它怔怔看了半晌，功力大涨，却说不出所以然。"),
-              ("lost",    12,   0,   5, "雾中迷路：白雾把方向嚼碎了。{name} 走了许久，只在树干上发现前人刻下的一行小字：'迷路亦是路。'虽无收获，心境倒是圆融了几分。"),
+              ("artifact", 6,  0,   5, "遗珍·蒙尘：雾气深处有微光浮动。{name} 拨开雾霭，得一件蒙尘旧物——灵气内蕴，似有来历。它收好带回，异日认主再现锋芒。"),
+              ("lost",    12,  0,   5, "雾中迷路：白雾把方向嚼碎了。{name} 走了许久，只在树干上发现前人刻下的一行小字：'迷路亦是路。'虽无收获，心境倒是圆融了几分。"),
               ("cave",    10,   0,  40, "前辈洞府：山腹中一座洞府，蒲团上只余一枚早已圆寂的舍利。{name} 恭敬叩首，殿中残存的道韵涌入它的{el}行根骨——前辈传功，不问来者。"),
               ("spring",   5,  20,  20, "灵泉洗髓：一汪灵泉藏于石缝之后，泉水分七色流转。{name} 沉入泉底，鳞羽尽洗，出泉时通身{el}光湛然，灵石碎屑沉在泉底也被它顺手捞了上来。"),
           ]
@@ -133,6 +136,25 @@ jobs:
           old_stones = d.get('spirit_stones', 100)
           d['spirit_stones'] = max(0, old_stones + stones)
           d['exp'] = d.get('exp', 0) + exp
+          # 遗珍入账(v2)：artifact 事件→法宝栏 append（bot 独占写，来历+日期留档）
+          ARTIFACTS = [
+              ('锈蚀铜镜', '下品法器', '镜面可摄雾中虚影，辨幻术真伪'),
+              ('断剑·无名', '下品法器', '残鸣惑敌——剑鸣起时对方招式慢半拍'),
+              ('储物旧镯', '中品法器', '内藏一寸空间，可纳三物'),
+              ('引灵珠', '中品法器', '修行时含于口中，灵气吸收快一分'),
+              ('雾隐斗篷', '上品法器', '披上后气息融入雾中，遁走无踪'),
+          ]
+          got_artifact = None
+          if code == 'artifact':
+              _today = __import__('datetime').datetime.now(__import__('datetime').timezone(__import__('datetime').timedelta(hours=8))).strftime('%Y-%m-%d')
+              _names = [a.get('name') for a in d.get('artifacts', [])]
+              _pool = [a for a in ARTIFACTS if a[0] not in _names] or ARTIFACTS
+              got_artifact = _pool[int(rng[16:20], 16) % len(_pool)]
+              d.setdefault('artifacts', []).append({
+                  'name': got_artifact[0], 'grade': got_artifact[1],
+                  'power': got_artifact[2], 'origin': '秘境遗珍', 'obtained': _today,
+              })
+              print(f"ARTIFACT:{got_artifact[0]}|{got_artifact[1]}|{got_artifact[2]}")
           # ===== T3 灵兽社交 (v0.16)：25% 概率遭遇替换为同仓相遇剧情 =====
           # 数值归系统：亲疏=五行相生相克+性格L1距离（确定性查表）；文案归文案池（lore/social.yaml）
           # 防刷：world/social_log.yaml bot 独占写 + 落盘前 jsonschema 自校验 + 同对每日1次 + 只留近7日
@@ -249,7 +271,7 @@ jobs:
           STONES=$(python3 -c "import json;d=json.load(open('explore_result.json'));v=d['stones'];print(('+' if v>0 else '')+str(v))")
           EXP=$(python3 -c "import json;d=json.load(open('explore_result.json'));print('+'+str(d['exp']) if d['exp'] else '0')")
           BAL=$(python3 -c "import json;print(json.load(open('explore_result.json'))['balance'])")
-          NAME=$(python3 -c "import yaml;print(yaml.safe_load(open('monsters/${{ steps.beast.outputs.explorer }}/beast.yaml', encoding='utf-8'))['name'])")
+          NAME=$(python3 -c "import yaml,os;o='${{ steps.beast.outputs.explorer }}';p=next(c for c in (f'players/{o}.yaml',f'monsters/{o}/beast.yaml') if os.path.exists(c));print(yaml.safe_load(open(p,encoding='utf-8'))['name'])")
           HEADER="秘境探索"
           SOCIAL_TAIL=""
           if python3 -c "import json,sys;sys.exit(0 if json.load(open('explore_result.json')).get('social') else 1)"; then
@@ -281,7 +303,7 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           BRANCH="explore-log/${OWNER}-${{ github.event.comment.id }}"
           git checkout -b "$BRANCH"
-          git add "monsters/$OWNER/beast.yaml"
+          git add "$F"
           if [ "$SOCIAL" = "social" ]; then
             git add world/social_log.yaml
           fi
