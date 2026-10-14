@@ -382,8 +382,15 @@ jobs:
               return norm_player(load_beast(o))
           def dossier(o, beast):
               stories = []
-              for f in sorted(glob.glob(f'chronicle/{o}/*.md'), reverse=True)[:2]:
-                  stories.append(open(f, encoding='utf-8').read()[:400])
+              if 'genes' in beast:
+                  # 灵兽轨：chronicle/<owner>/ 半场解说（旧制，行为零变化）
+                  for f in sorted(glob.glob(f'chronicle/{o}/*.md'), reverse=True)[:2]:
+                      stories.append(open(f, encoding='utf-8').read()[:400])
+              else:
+                  # 人修轨：近事取 player.yaml 自身 chronicle 人生大事记末 2 条——
+                  # 修复跨轨污染：人修玩家与旧灵兽共用 owner 空间（如 chronicle/leonezhu/ 是灵兽
+                  # 燧鸣时代的半场志），玩家近事绝不能串到灵兽的斗法史上（issue#90 线上实锤）
+                  stories = [f"{entry}" for entry in (beast.get('chronicle') or [])[-2:]]
               return {
                   "name": beast['name'], "element": beast['element'], "realm": beast['realm'],
                   "spirit": beast.get('spirit', 100),
