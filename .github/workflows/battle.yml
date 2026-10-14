@@ -58,6 +58,13 @@ jobs:
             fi
           done
           echo "✓ 双方灵籍均存在"
+          # 防双触发竞态（v0.8 端到端实测实锤）：issue body 与评论相隔1秒各起一个 run，
+          # 同名 battle-log/<n> 分支 push 撞车。已有「待战」标签 = 另一个 run 正在判定，本 run 退出。
+          CUR=$(gh issue view ${{ github.event.issue.number }} -R leonezhu/rebase --json labels --jq '[.labels[].name] | join(",")')
+          case ",$CUR," in
+            *",斗法/待战,"*|*",斗法/已判,"*|*",斗法/已收录,"*)
+              echo "检测到本 issue 已有斗法标签（双触发/重放），本 run 退出避免入账竞态"; exit 0 ;;
+          esac
           gh issue edit ${{ github.event.issue.number }} -R leonezhu/rebase --add-label "斗法" --add-label "斗法/待战" || true
 
       - name: hash 确定性模拟

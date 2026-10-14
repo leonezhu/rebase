@@ -126,7 +126,7 @@ bot 判定评论自带双方素材包（灵籍字段+chronicle 近 2 场+血脉�
 
 ## 已知坑（少走弯路）
 
-- `/battle` 发在 issue body 里不触发（workflow 只监听评论）——**创建 issue 后必须再补一条含 `/battle` 的评论**
+- `/battle` 发在 issue body 或评论里都会触发（body 触发有约1秒竞态，已由「待战」标签守卫化解）——**习惯上仍建议建 issue 后补一条含 `/battle` 的评论**，时序更稳
 - 斗法 issue 标签状态机：待战 → 已判 → 已收录（双方半场 PR 都合并后自动封卷）
 - `~/.rebase/cache/` 可存最近一次的结果缓存，晨间参悟可直接读缓存省 API
 
