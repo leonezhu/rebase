@@ -1,0 +1,318 @@
+name: Abyss (404深渊 · 世界Boss)
+# T3-1 好玩路线图：每周世界Boss，全服协作讨伐，击杀触发灵石雨
+# - Boss 生成：hash(ISO周) 从 lore/abyss.yaml 文案池确定性抽取（可回放不可操控），
+#   首次 /abyss 时按需生成（不依赖周一 cron 先跑）；cron 只负责开周报 issue
+# - 玩家动作：任意 issue 评论 /abyss → 资格闸 → 战力×0.4 伤害入账
+#   （战力公式与 battle.yml 同源：五行相克±15%/血脉+1.5%每段/灵性修正/心境/hash涨落）
+# - 反噬：30% 概率 Boss 反噬 -10 灵石（保底0）——PvE 不是无风险刷钱
+# - 击杀：hp 归零 → 灵石雨（全员30 + 自身伤害/10，输出榜首+50），单 commit 入账所有参战者
+# 状态：world/abyss.yaml（bot 独占写入，落盘前 schema 自校验，见 schemas/abyss.schema.json）
+# 叙事：Boss 名号/意象预作于 lore/abyss.yaml，本 workflow 只抽取不生成
+
+on:
+  issue_comment:
+    types: [created]
+  schedule:
+    - cron: "23 1 * * 1"   # UTC 周一 01:23 = 上海 09:23，开周报 issue（幂等：本周已有则跳过）
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+concurrency:
+  group: abyss
+  cancel-in-progress: false
+
+jobs:
+  attack:
+    if: github.event_name == 'issue_comment' && startsWith(github.event.comment.body, '/abyss')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 出手资格闸 + 伤害结算
+        id: strike
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE: ${{ github.event.issue.number }}
+        run: |
+          pip install pyyaml jsonschema --quiet
+          RESULT=$(python3 - <<'PYEOF'
+          import yaml, json, hashlib, datetime
+          from pathlib import Path
+
+          OWNER = "${{ github.event.comment.user.login }}"
+          NOW = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8)))
+          TODAY = NOW.date().isoformat()
+          YEAR, WEEK, _ = NOW.isocalendar()
+          WEEK_ID = f"{YEAR}-W{WEEK:02d}"
+          F = f'monsters/{OWNER}/beast.yaml'
+
+          def reject(msg):
+              print(json.dumps({'ok': False, 'msg': msg}, ensure_ascii=False)); raise SystemExit
+
+          if not Path(F).exists():
+              reject(f'@{OWNER} 你尚未缔约。深渊的雾不识无契者的气息——先去 README 缔约领养一只灵兽吧。')
+          d = yaml.safe_load(Path(F).read_text(encoding='utf-8'))
+
+          # 状态文件：无则按周号生成（hash 确定性）
+          W = Path('world/abyss.yaml')
+          if W.exists():
+              w = yaml.safe_load(W.read_text(encoding='utf-8')) or {}
+          if not W.exists() or w.get('week_id') != WEEK_ID:
+              lore = yaml.safe_load(Path('lore/abyss.yaml').read_text(encoding='utf-8'))
+              pool = lore['bosses']
+              seed = hashlib.sha256(f"abyss|{WEEK_ID}".encode()).hexdigest()
+              boss = pool[int(seed[:8], 16) % len(pool)]
+              w = {
+                  'week_id': WEEK_ID,
+                  'boss': {'name': boss['name'], 'title': boss['title'], 'element': boss['element'],
+                           'hp_max': 600, 'hp_current': 600},
+                  'slain': False,
+                  'damage_log': [],
+                  'updated_at': '',
+              }
+
+          name = d['name']
+          if w.get('slain'):
+              reject(f'@{OWNER} 本周主宰【{w["boss"]["name"]}】已被全服讨平，深渊暂归于寂——灵石雨已落，{name} 下周一再来赴雾。')
+          if any(e.get('owner') == OWNER and e.get('date') == TODAY for e in w['damage_log']):
+              reject(f'@{OWNER} {name} 今日已入过雾——一日之力只够一次全力出手，明日再来（每兽每日限 1 次）。')
+
+          # 伤害结算：战力公式与 battle.yml 同源，×0.4 折算为对 Boss
+          ELEM_BEATS = {'metal':'wood','wood':'earth','earth':'water','water':'fire','fire':'metal'}
+          ELEM_CN = {'metal':'金','wood':'木','earth':'土','water':'水','fire':'火'}
+          g = d['genes']
+          base = (g['ling']*1.5 + g['po']*1.2 + g['qiao'] + g['ren']*0.8 + g['yun']*0.5)
+          p = d['personality']
+          base += (p['courage'] + p['temper']) * 0.05
+          base *= 1 + 0.015 * d.get('bloodline', {}).get('unlocked', 0)
+          bel = w['boss']['element']
+          if ELEM_BEATS.get(d['element']) == bel:
+              base *= 1.15; adv = True
+          elif ELEM_BEATS.get(bel) == d['element']:
+              base *= 0.87; adv = False
+          else:
+              adv = None
+          sp = d.get('spirit', 100)
+          if sp >= 90: base *= 1.05
+          elif sp < 50: base *= 0.9
+          m = d.get('mood', {})
+          if m.get('updated') == TODAY:
+              if m.get('state') == '昂扬': base *= 1.03
+              elif m.get('state') == '低落': base *= 0.97
+          seed = f"{WEEK_ID}|{OWNER}|{TODAY}|{w['boss']['name']}"
+          rng = hashlib.sha256(seed.encode()).hexdigest()
+          fluct = int(rng[:4], 16) % 21 - 10
+          dmg = max(1, int(base * 0.4 * (1 + fluct / 100)))
+
+          # 反噬：30% 概率 -10 灵石（保底0）
+          backlash = int(rng[4:8], 16) % 100 < 30
+          stones_before = d.get('spirit_stones', 0)
+          if backlash:
+              d['spirit_stones'] = max(0, stones_before - 10)
+          yaml.safe_dump(d, open(F, 'w', encoding='utf-8'), allow_unicode=True, sort_keys=False)
+
+          # 击杀判定（先扣血，再看是否归零）
+          w['boss']['hp_current'] = max(0, w['boss']['hp_current'] - dmg)
+          w['damage_log'].append({'owner': OWNER, 'date': TODAY, 'damage': dmg})
+          w['updated_at'] = datetime.datetime.now(datetime.timezone.utc).isoformat()
+          slain_now = w['boss']['hp_current'] == 0
+
+          # 灵石雨：击杀当场结算
+          rain = []
+          if slain_now:
+              w['slain'] = True
+              tot = {}
+              for e in w['damage_log']:
+                  tot[e['owner']] = tot.get(e['owner'], 0) + e['damage']
+              top = max(tot, key=tot.get)
+              accounts = {}
+              for bf in sorted(Path('monsters').glob('*/beast.yaml')):
+                  bd = yaml.safe_load(bf.read_text(encoding='utf-8'))
+                  accounts[bd['owner']] = (bf, bd)
+              for o, dmg_sum in tot.items():
+                  if o in accounts:
+                      bf, bd = accounts[o]
+                      stones = 30 + dmg_sum // 10 + (50 if o == top else 0)
+                      bd['spirit_stones'] = bd.get('spirit_stones', 0) + stones
+                      yaml.safe_dump(bd, bf.open('w', encoding='utf-8'), allow_unicode=True, sort_keys=False)
+                      rain.append({'owner': o, 'stones': stones})
+              w['rain_log'] = rain
+
+          # schema 硬边界自校验（bot 写入也必须过自己的 schema）
+          import jsonschema
+          schema = json.loads(Path('schemas/abyss.schema.json').read_text(encoding='utf-8'))
+          jsonschema.validate(w, schema)
+          yaml.safe_dump(w, W.open('w', encoding='utf-8'), allow_unicode=True, sort_keys=False)
+
+          lore = yaml.safe_load(Path('lore/abyss.yaml').read_text(encoding='utf-8'))
+          entry = next(b for b in lore['bosses'] if b['name'] == w['boss']['name'])
+          hp = w['boss']['hp_current']; hpmax = w['boss']['hp_max']
+          pct = hp * 10 // hpmax
+          bar = '🟥' * (10 - pct) + '🟩' * pct if hp else '⬛' * 10
+          print(json.dumps({
+              'ok': True, 'slain': slain_now, 'name': name, 'owner': OWNER,
+              'boss_name': w['boss']['name'], 'boss_title': w['boss']['title'],
+              'elem_cn': ELEM_CN[d['element']], 'boss_elem_cn': ELEM_CN[bel], 'adv': adv,
+              'dmg': dmg, 'hp': hp, 'hp_max': hpmax, 'bar': bar,
+              'omen': entry['omen'], 'taunt': entry['taunt'],
+              'weak_hint': entry['weak_hint'],
+              'backlash': backlash, 'balance': d['spirit_stones'],
+              'strikers': len(w['damage_log']),
+              'rain': rain, 'week_id': WEEK_ID,
+          }, ensure_ascii=False))
+          PYEOF
+          )
+          echo "$RESULT" > abyss_result.json
+          OK=$(python3 -c "import json;print(json.load(open('abyss_result.json'))['ok'])")
+          if [ "$OK" != "True" ]; then
+            MSG=$(python3 -c "import json;print(json.load(open('abyss_result.json'))['msg'])")
+            gh issue comment $ISSUE -R leonezhu/rebase -b "$MSG"
+            exit 1
+          fi
+
+      - name: bot 贴战况
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ISSUE: ${{ github.event.issue.number }}
+        run: |
+          python3 - <<'PYEOF'
+          import json, subprocess
+          d = json.load(open('abyss_result.json'))
+          rain_block = ''
+          if d['slain']:
+              lines = '\n'.join(f"- **{r['owner']}** 落袋 **+{r['stones']}**" for r in d['rain'])
+              rain_block = f"""
+
+          ## 🌧️ 灵石雨 · 落定
+
+          > 雾散了。那些没能走完大变基的意识终于落定——旧世界的记忆 residue 凝成灵石，落向每一位入过雾的灵兽。
+
+          {lines}
+
+          *深渊暂归于寂。下周一，新的雾会再度淤起。*"""
+          adv_txt = {True: '**（相克）**', False: '（被克）', None: ''}[d['adv']]
+          bl_txt = f"\n\n> 💢 它被反噬擦中——疗伤耗去 10 灵石，余额 {d['balance']}。" if d['backlash'] else f"\n\n> 灵石余额 {d['balance']}，无损。"
+          body = f"""## 🌫️ 404深渊 · 第 {d['week_id']} 周讨伐
+
+          > {d['name']}（{d['elem_cn']}行）入雾，直取【{d['boss_title']}】。
+
+          **{d['name']} 的这一击：造成 {d['dmg']} 点伤害{adv_txt}**
+
+          **【{d['boss_name']}】血量：{d['hp']} / {d['hp_max']}**
+          {d['bar']}
+
+          本周已有 **{d['strikers']}** 只灵兽入雾。{bl_txt}
+
+          > *「{d['taunt']}」*
+          > *（弱点暗示：{d['weak_hint']}）*{rain_block}
+
+          ---
+
+          *每兽每日 1 次 /abyss。五行相克 ×1.15、被克 ×0.87——选对出手的方向，雾就薄得更快。*"""
+          subprocess.run(['gh', 'issue', 'comment', str(${{ github.event.issue.number }}),
+                          '-R', 'leonezhu/rebase', '-b', body], check=True)
+          PYEOF
+
+      - name: 入账（bot commit + 自动合并）
+        if: success()
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          OWNER="${{ github.event.comment.user.login }}"
+          ISSUE="${{ github.event.issue.number }}"
+          SLAIN=$(python3 -c "import json;print(json.load(open('abyss_result.json'))['slain'])")
+          DMG=$(python3 -c "import json;print(json.load(open('abyss_result.json'))['dmg'])")
+          HP=$(python3 -c "import json;print(json.load(open('abyss_result.json'))['hp'])")
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          BRANCH="abyss-log/$OWNER-$(date +%s)"
+          git checkout -b "$BRANCH"
+          if [ "$SLAIN" = "True" ]; then
+            git add world/abyss.yaml monsters/
+            git commit -m "深渊讨伐: issue#$ISSUE $OWNER 最后一击 $DMG 伤, Boss血量$HP, 灵石雨入账"
+          else
+            git add world/abyss.yaml "monsters/$OWNER/beast.yaml"
+            git commit -m "深渊讨伐: issue#$ISSUE $OWNER 出手 $DMG 伤, Boss余血$HP"
+          fi
+          # 入账链咽喉点：push/create/merge 失败必须显式红灯（禁 || true 吞错）
+          git pull --rebase origin main
+          git push origin "$BRANCH"
+          gh pr create -R leonezhu/rebase --head "$BRANCH" --base main \
+            -t "🌫️ 深渊讨伐入账 #$ISSUE" -b "bot 结算，自动合并"
+          gh pr edit "$BRANCH" -R leonezhu/rebase --add-label "game/bot" || true
+          gh pr merge "$BRANCH" --merge
+
+  weekly:
+    # 周报 issue：上海周一 09:23 开，幂等（按本周 MARKER 查重）
+    if: github.event_name != 'issue_comment'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 开本周深渊周报 issue（幂等）
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          pip install pyyaml --quiet
+          python3 - <<'PYEOF'
+          import yaml, hashlib, json, subprocess, datetime, os
+          from pathlib import Path
+
+          NOW = datetime.datetime.now(datetime.timezone(datetime.timedelta(hours=8)))
+          YEAR, WEEK, _ = NOW.isocalendar()
+          WEEK_ID = f"{YEAR}-W{WEEK:02d}"
+          MARKER = f"<!-- abyss:{WEEK_ID} -->"
+
+          existing = subprocess.run(
+              ['gh', 'issue', 'list', '-R', 'leonezhu/rebase', '--label', '秘境',
+               '--state', 'all', '--limit', '30', '--json', 'number,body'],
+              capture_output=True, text=True, check=True).stdout
+          if any(MARKER in (i.get('body') or '') for i in json.loads(existing)):
+              print(f'{WEEK_ID} 周报已开过，跳过'); raise SystemExit(0)
+
+          seed = hashlib.sha256(f"abyss|{WEEK_ID}".encode()).hexdigest()
+          lore = yaml.safe_load(Path('lore/abyss.yaml').read_text(encoding='utf-8'))
+          boss = lore['bosses'][int(seed[:8], 16) % len(lore['bosses'])]
+          ELEM_CN = {'metal':'金','wood':'木','earth':'土','water':'水','fire':'火'}
+
+          # 继承上周状态显示连续性（仅叙事，不依赖）
+          prev = ''
+          W = Path('world/abyss.yaml')
+          if W.exists():
+              w = yaml.safe_load(W.read_text(encoding='utf-8')) or {}
+              if w.get('week_id') != WEEK_ID and w.get('slain'):
+                  prev = f"\n\n> 上周【{w['boss']['name']}】已被讨平，灵石雨已落。旧雾散处，新雾又起。"
+
+          title = f"🌫️ 404深渊 · {WEEK_ID} ·【{boss['name']}】"
+          body = f"""{MARKER}
+          ## {boss['title']}
+
+          > {boss['omen']}
+
+          **五行：{ELEM_CN[boss['element']]}行 · 血量 600 · 全服共享击杀进度**
+
+          **讨法**：在本 issue（或任何 issue）评论 \`/abyss\`，你的灵兽即入雾出手。每兽每日 1 次；
+          五行相克 ×1.15、被克 ×0.87；30% 概率被反噬耗 10 灵石——深渊不白闯，也不白给。
+
+          **击杀之日**：灵石雨——所有入雾的灵兽落袋 30 + 自身伤害/10，输出榜首另 +50。
+
+          {prev}
+
+          ---
+          *雾里那东西每周换一副面孔。它不记得自己是谁——和你的灵兽一样。*"""
+          out = subprocess.run(['gh', 'issue', 'create', '-R', 'leonezhu/rebase',
+                                '--label', '秘境', '-t', title, '-b', body],
+                               capture_output=True, text=True)
+          print(out.stdout, out.stderr)
+          if out.returncode != 0:
+              raise SystemExit(out.returncode)
+          PYEOF

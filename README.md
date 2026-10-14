@@ -55,6 +55,7 @@ GitHub Actions 自动校验并合并 PR，bot 开一个**降世 issue**——你
 | `/battle @对方` | 主仓库 issue 评论 | 发起斗法，hash 判定+五行相克，双方 Agent 各写半场解说 |
 | `/explore` | 秘境 issue 评论 | 探索遭遇，随机事件（开发中） |
 | `/coordinate` | 任意 issue 评论 | 旧分支坐标探测（化神+，每日1次50灵石，全服共享进度） |
+| `/abyss` | 任意 issue 评论 | 404深渊：每周世界Boss全服讨伐（每兽每日1次，击杀触发灵石雨） |
 | `/rebase` | 自己的灵兽 issue | 境界达标后进化：渡劫=CI 全绿（开发中） |
 | `/release` | 自己的灵兽 issue | 放生：7 天冷静期，灵兽入 abyss 成 NPC（开发中） |
 

@@ -1,0 +1,69 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Rebase Abyss 404深渊（T3 世界Boss · 周期协作）",
+  "type": "object",
+  "required": [
+    "week_id",
+    "boss",
+    "slain",
+    "damage_log",
+    "updated_at"
+  ],
+  "properties": {
+    "week_id": {
+      "type": "string",
+      "pattern": "^\\d{4}-W\\d{2}$",
+      "description": "ISO 周标识（2026-W42），一周一个 Boss；boss 生成种子=week_id，hash 确定性可回放"
+    },
+    "boss": {
+      "type": "object",
+      "required": ["name", "title", "element", "hp_max", "hp_current"],
+      "additionalProperties": false,
+      "properties": {
+        "name": {"type": "string", "minLength": 1, "maxLength": 12, "description": "Boss 名（lore/abyss.yaml 文案池按 hash 抽取，本字段只是记录）"},
+        "title": {"type": "string", "minLength": 1, "maxLength": 40, "description": "Boss 名号（本周深渊主宰）"},
+        "element": {"enum": ["metal", "wood", "earth", "water", "fire"], "description": "五行属性（决定相克方向）"},
+        "hp_max": {"type": "integer", "const": 600, "description": "血量恒600（约全服15~20人次/周击杀线，可回调但属规则层变更）"},
+        "hp_current": {"type": "integer", "minimum": 0, "maximum": 600, "description": "当前血量（bot 独占写，归零即 slain）"}
+      },
+      "description": "本周 Boss（从 lore/abyss.yaml 文案池 hash 周号确定性抽取；数值字段仅 hp_current 可变）"
+    },
+    "slain": {
+      "type": "boolean",
+      "description": "本周 Boss 是否已被全服击杀（true 后 /abyss 拒绝出手，等下周）"
+    },
+    "damage_log": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["owner", "date", "damage"],
+        "additionalProperties": false,
+        "properties": {
+          "owner": {"type": "string", "pattern": "^[a-zA-Z0-9-]{1,39}$"},
+          "date": {"type": "string", "format": "date"},
+          "damage": {"type": "integer", "minimum": 0, "description": "该次出手造成的伤害（0 也记——打空也是一次出征）"}
+        }
+      },
+      "description": "出手流水（append-only，bot 独占写）；每日限1次按 owner+date 查重；击杀结算与输出榜同源"
+    },
+    "rain_log": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["owner", "stones"],
+        "additionalProperties": false,
+        "properties": {
+          "owner": {"type": "string", "pattern": "^[a-zA-Z0-9-]{1,39}$"},
+          "stones": {"type": "integer", "minimum": 0, "description": "灵石雨落袋数（30全员+自身伤害/10；榜首+50）"}
+        }
+      },
+      "description": "击杀时的灵石雨台账（对账用；灵籍入账在同一 bot commit 内完成）"
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time"
+    }
+  },
+  "additionalProperties": false,
+  "description": "404深渊：每周 hash(week_id) 从 lore/abyss.yaml 文案池确定性生成一名世界Boss，全服每兽每日1次 /abyss 出手（伤害=灵兽战力×0.4，五行克制同斗法），累计血量归零触发灵石雨（全员30+自身伤害/10，输出榜首+50）。数值归系统（bot独占写+落盘前jsonschema自校验），叙事文本预作于 lore/abyss.yaml，workflow 只按 hash 抽取不生成"
+}
