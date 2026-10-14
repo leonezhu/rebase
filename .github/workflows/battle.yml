@@ -101,6 +101,7 @@ jobs:
           # 种子：issue id + 触发事件 id + 双方名 → 双方都不可控（comment.id 在 issues 事件下为空，故用 event.id）
           seed = f"{C}|{D}|${{ github.event.issue.number }}|${{ github.event.id }}"
           rng = hashlib.sha256(seed.encode()).hexdigest()
+          TODAY = __import__('datetime').date.today().isoformat()  # mood当日判断用
 
           ELEM_BEATS = {'metal':'wood','wood':'earth','earth':'water','water':'fire','fire':'metal'}
           ELEM_CN = {'metal':'金','wood':'木','earth':'土','water':'水','fire':'火'}
