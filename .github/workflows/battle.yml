@@ -175,12 +175,13 @@ jobs:
           yaml.safe_dump(d, open(p,'w',encoding='utf-8'), allow_unicode=True)
           print(f"胜方 ${WINNER} +30 灵石 +50 功力")
           EOF
-          git add monsters/ && git commit -m "斗法结算: issue#${{ github.event.issue.number }} 胜方+30灵石+50功力" || true
-          git push origin battle-log/${{ github.event.issue.number }} || true
+          git add monsters/ && git commit -m "斗法结算: issue#${{ github.event.issue.number }} 胜方+30灵石+50功力"
+          # 入账链咽喉点：push/create/merge 失败必须显式红灯（禁 || true 吞错），见 ITERATION.md 打磨轮登记
+          git push origin battle-log/${{ github.event.issue.number }}
           gh pr create -R leonezhu/rebase --head battle-log/${{ github.event.issue.number }} --base main \
-            -t "斗法奖励入账 #${{ github.event.issue.number }}" -b "bot 结算，自动合并" || true
+            -t "斗法奖励入账 #${{ github.event.issue.number }}" -b "bot 结算，自动合并"
           gh pr edit battle-log/${{ github.event.issue.number }} -R leonezhu/rebase --add-label "game/bot" || true
-          gh pr merge battle-log/${{ github.event.issue.number }} --merge || true
+          gh pr merge battle-log/${{ github.event.issue.number }} --merge
 
   # ===== 斗法收录终态：解说 PR 合并后，双方半场齐 → issue 打「斗法/已收录」 =====
   chronicle-seal:

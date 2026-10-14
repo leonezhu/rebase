@@ -1,6 +1,7 @@
 name: Lore 奖励入账（共创收录后）
 # 触发：lore/* PR 被 merge → 给投稿人发灵石 + 更新著史者名录
 # ⚠️ 此文件严禁用 PyYAML safe_dump 整文件回写：裸键 on 会被解析成布尔 True 再 dump 成 true，workflow 永久失效（e176bc5/2cf3bcc 两次实锤）
+# 2026-10-14 打磨轮：改用块标量(|)书写 run，消除折叠标量转义；python 压单行避免块内顶格行终止块标量；入账链去 || true（咽喉点显式红灯，见 ITERATION.md）
 on:
   pull_request:
     types:
@@ -22,42 +23,49 @@ jobs:
         GH_TOKEN: ${{ github.token }}
         PR: ${{ github.event.pull_request.number }}
         AUTHOR: ${{ github.event.pull_request.user.login }}
-      run: "git config user.name \"github-actions[bot]\"\ngit config user.email \"\
-        41898282+github-actions[bot]@users.noreply.github.com\"\n\n# 浅克隆拿不到 base sha（labels.yml\
-        \ 同款坑），改 PR files API 取变更文件\nFILES=$(gh pr view \"$PR\" -R leonezhu/rebase\
-        \ --json files --jq '[.files[].path] | join(\"\\n\")')\nN_LORE=$(echo \"$FILES\"\
-        \ | grep -c \"lore/encounters/.*yaml\" || true)\nN_LORE=${N_LORE:-0}\n# 有遭遇投稿才发奖励：每篇\
-        \ +20 灵石\nif [ \"$N_LORE\" -eq 0 ]; then\n  echo \"纯传说文本投稿，无遭遇数值，跳过灵石奖励（仍算著史贡献）\"\
-        \nelse\n  REWARD=$((N_LORE * 20))\n  F=\"monsters/$AUTHOR/beast.yaml\"\n \
-        \ if [ -f \"$F\" ]; then\n    BRANCH=\"lore-reward/$PR\"\n    git checkout\
-        \ -b \"$BRANCH\"\n    python3 -c \"\nimport yaml\np = '$F'\nd = yaml.safe_load(open(p,\
-        \ encoding='utf-8'))\nd['spirit_stones'] = d.get('spirit_stones', 100) + $REWARD\n\
-        yaml.safe_dump(d, open(p, 'w', encoding='utf-8'), allow_unicode=True)\nprint('著史奖励:',\
-        \ d['name'], '+$REWARD 灵石')\n\"\n    git add \"$F\" lore/\n    git commit\
-        \ -m \"共创收录: PR#$PR @$AUTHOR 著史奖励+$REWARD灵石\"\n    git push origin \"$BRANCH\"\
-        \n    gh pr create -R leonezhu/rebase --head \"$BRANCH\" --base main \\\n\
-        \      -t \"\U0001F4DC 著史奖励 PR#$PR\" -b \"@$AUTHOR 投稿收录，+$REWARD 灵石（game/bot\
-        \ 自动合并）\" \\\n      --label \"game/bot\" || true\n    sleep 2\n    gh pr merge\
-        \ \"$BRANCH\" --merge || true\n  else\n    echo \"@$AUTHOR 尚无灵籍，奖励暂存（注册后补发需手动）\"\
-        \n  fi\nfi\n"
+      run: |
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+        # 浅克隆拿不到 base sha（labels.yml 同款坑），改 PR files API 取变更文件
+        FILES=$(gh pr view "$PR" -R leonezhu/rebase --json files --jq '[.files[].path] | join("\n")')
+        N_LORE=$(echo "$FILES" | grep -c "lore/encounters/.*yaml" || true)
+        N_LORE=${N_LORE:-0}
+        # 有遭遇投稿才发奖励：每篇 +20 灵石
+        if [ "$N_LORE" -eq 0 ]; then
+          echo "纯传说文本投稿，无遭遇数值，跳过灵石奖励（仍算著史贡献）"
+        else
+          REWARD=$((N_LORE * 20))
+          F="monsters/$AUTHOR/beast.yaml"
+          if [ -f "$F" ]; then
+            BRANCH="lore-reward/$PR"
+            git checkout -b "$BRANCH"
+            python3 -c "import yaml; p='$F'; d=yaml.safe_load(open(p, encoding='utf-8')); d['spirit_stones']=d.get('spirit_stones',100)+$REWARD; yaml.safe_dump(d, open(p,'w',encoding='utf-8'), allow_unicode=True); print('著史奖励:', d['name'], '+$REWARD 灵石')"
+            git add "$F" lore/
+            git commit -m "共创收录: PR#$PR @$AUTHOR 著史奖励+$REWARD灵石"
+            # 入账链咽喉点：push/create/merge 失败必须显式红灯（禁 || true 吞错），见 ITERATION.md 打磨轮登记
+            git push origin "$BRANCH"
+            gh pr create -R leonezhu/rebase --head "$BRANCH" --base main \
+              -t "📜 著史奖励 PR#$PR" -b "@$AUTHOR 投稿收录，+$REWARD 灵石（game/bot 自动合并）" \
+              --label "game/bot"
+            sleep 2
+            gh pr merge "$BRANCH" --merge
+          else
+            echo "@$AUTHOR 尚无灵籍，奖励暂存（注册后补发需手动）"
+          fi
+        fi
     - name: 更新著史者名录
       env:
         GH_TOKEN: ${{ github.token }}
         PR: ${{ github.event.pull_request.number }}
         AUTHOR: ${{ github.event.pull_request.user.login }}
-      run: 'git config user.name "github-actions[bot]"
-
+      run: |
+        git config user.name "github-actions[bot]"
         git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-
         DATE=$(TZ=Asia/Shanghai date +%Y-%m-%d)
-
         echo "| $DATE | @$AUTHOR | #$PR |" >> lore/HALL.md
-
         git add lore/HALL.md
-
         git commit -m "著史者名录: @$AUTHOR (PR#$PR)" || exit 0
-
-        git push origin main || gh pr create -R leonezhu/rebase --head lore-hall --base
-        main -t "著史者名录更新" -b "game/bot" || true
-
-        '
+        # 入账链咽喉点：push 失败必须显式红灯（禁 || true 吞错），见 ITERATION.md 打磨轮登记
+        git push origin main
+        gh pr create -R leonezhu/rebase --head lore-hall --base main -t "著史者名录更新" -b "game/bot"

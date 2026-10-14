@@ -132,4 +132,20 @@
 ### 🐛 发现（bug 级，登记待修）：入账链 `|| true` 连锁吞错使 bot PR 创建失败完全不可见
 - battle/explore/growth 三处入账步骤同构：`git push || true` → `gh pr create ... || true` → `gh pr merge ... || true`。若 pr create 失败（权限/网络/分支已存在），merge 必失败也被吞——结算故事已贴、灵石未落库、workflow 显示 success，零痕迹。白天「bot 无 create PR 权限」事故（issue#2/#6/#3 补录）即此模式的真实爆发
 - 与「入账链路静默丢账」总登记项同源但更具体：**pr create 是链路咽喉**，其失败必须显式报错（去掉 create 上的 `|| true` 即可让 step 红灯），push/merge 失败也会随之可见
-- 建议（留主会话定夺，一处 3 行改动）：入账步骤只保留 `gh pr edit --add-label` 上的 `|| true`（标签失败无账务影响），`git commit`/`git push`/`gh pr create`/`gh pr merge` 全部去 `|| true`
+- ✅ 2026-10-14 高频轮已按建议修复（见下「入账链去吞错」节）
+
+## 2026-10-14 11:xx 高频轮：入账链去吞错（`|| true` 连锁吞错修复）
+
+### 改动（4 文件）
+- battle.yml / explore.yml / growth.yml 三处入账链：`git commit` / `git push` / `gh pr create` / `gh pr merge` 全部去 `|| true`——push/create/merge 任一失败即 step 红灯，静默丢账升格为可见失败；仅保留 `gh pr edit --add-label` 上的 `|| true`（标签失败无账务影响）
+- lore-reward.yml：奖励入账链同改（push 已无吞错，pr create/merge 去吞错）；「著史者名录」步 `git push origin main || gh pr create ... || true` 三连环拆开——push 显式报错、pr create 单列；run 块由折叠标量整文件重写为块标量（转义地狱根治），奖励步 python 压单行（块内顶格行会终止块标量，勿写多行 python）
+
+### 校验
+- 8 workflow YAML 全过；触发器 4 改动文件 `on` 键完好（未触碰 PyYAML 回写）
+- 4 个改动文件全部 run 块提取 `bash -n` 语法全过
+- lore-reward python 单行 compile 校验通过
+- 咽喉断言：4 文件 push/create/merge/commit 行无 `|| true` 残留
+
+### 遗留
+- 修复后入账失败会体现为 workflow 红灯（正是目的），但尚无「失败后 edit 已贴评论告知玩家重试」的补偿动作——本次只做可见化，补偿留主会话定夺
+- 下一轮观察点：一次真实 explore/battle 触发验证新入账链线上跑通（去吞错后的正确路径与此前行为一致，理论上零行为变化）
