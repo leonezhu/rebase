@@ -1,6 +1,6 @@
 created_at: '2026-10-14T22:00:00+08:00'
 element: fire
-exp: 25
+exp: 30
 genes:
   ling: 40
   po: 40
@@ -29,3 +29,4 @@ spirit: 100
 spirit_recovered_at: '2026-10-15'
 spirit_stones: 130
 stage: hatched
+titles: []
