@@ -188,7 +188,10 @@ jobs:
           # 双轨补丁(2026-10-15)：$F 只在上一个 step 定义且不跨 step 传递——入账步必须自行解析
           # 修 bot 层 add 空/错路径的隐性 bug（旧轨此前碰巧成立只是因为 git add monsters/ 兜住了）
           F="players/$OWNER.yaml"
-          if [ ! -f "$F" ]; then F="monsters/$OWNER/beast.yaml"; fi
+          if [ ! -f "$F" ]; then
+            MATCH=$(ls players/"$OWNER"-*.yaml 2>/dev/null | head -1)
+            if [ -n "$MATCH" ]; then F="$MATCH"; else F="monsters/$OWNER/beast.yaml"; fi
+          fi
           BRANCH="explore-log/${OWNER}-${{ github.event.comment.id }}"
           git checkout -b "$BRANCH"
           git add "$F"
