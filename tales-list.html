@@ -40,7 +40,7 @@ fetch('world/index.json')
     tales.forEach(item => {
       const d = document.createElement('a');
       d.className = 'card';
-      d.href = 'tales/view.html?owner=' + item.id;
+      d.href = 'tales/' + encodeURIComponent(item.id) + '.html';
       d.innerHTML = '<h3>'+item.name+'</h3><div class="meta">'+item.status+(item.entries?' · '+item.entries+' 回':'')+'</div>';
       if(item.desc) d.innerHTML += '<div class="desc">'+item.desc+'</div>';
       list.appendChild(d);

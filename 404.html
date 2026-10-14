@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#faf9f5">
+<title>万灵变基录</title>
+<style>
+:root{--bg:#faf9f5;--surface:#ffffff;--border:#e5e1d5;--fg:#29261b;--dim:#6e6b5e;--accent:#d97757;--accent2:#c15f3c}
+*{margin:0;padding:0;box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--fg);font-family:"Songti SC","Noto Serif SC",Georgia,serif;line-height:2}
+.wrap{max-width:640px;margin:0 auto;padding:0 1.1rem 4rem}
+header{padding:3.2rem 0 1.6rem;text-align:center;border-bottom:1px solid var(--border)}
+header .kicker{font-size:.78rem;letter-spacing:.5em;color:var(--accent2);margin-bottom:.7rem}
+header h1{font-size:1.9rem;letter-spacing:.25em;font-weight:700}
+.chapter p{font-size:1.02rem;margin-bottom:1.1rem;text-align:justify}
+.chapter p b,.chapter strong{color:var(--accent2)}
+.quote{background:var(--surface);border-left:3px solid var(--accent);border-radius:0 12px 12px 0;padding:.9rem 1.1rem;margin:1.2rem 0;color:var(--dim);font-size:.95rem}
+nav.links{display:flex;gap:1.5rem;justify-content:center;padding:2rem 0}
+nav.links a{color:var(--accent2);text-decoration:none}
+.loading{text-align:center;padding:4rem;color:var(--dim)}
+footer{margin-top:2rem;padding-top:1.6rem;border-top:1px solid var(--border);color:var(--dim);font-size:.75rem;text-align:center;line-height:1.9}
+footer a{color:var(--accent2);text-decoration:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div id="app"><div class="loading">正在加载…</div></div>
+</div>
+
+<script type="module">
+// 404 兜底渲染器：让 tales/<owner-角色名>.html 这样的静态地址直接可访问
+// GitHub Pages 对不存在的路径统一回退到本页，URL 保持原样
+import { marked } from 'https://cdn.jsdelivr.net/npm/marked@14/+esm';
+
+const APP = document.getElementById('app');
+const m = location.pathname.match(/\/tales\/(.+?)\.html$/);
+
+// 判断是否是渲染器自身等真实存在的页面（不会被404兜底，防御性跳过）
+const PASS_THROUGH = ['view'];
+
+if (m && !PASS_THROUGH.includes(m[1])) {
+  const ID = decodeURIComponent(m[1]);
+  document.title = ID + ' · 万灵变基录';
+  try {
+    const res = await fetch('./' + encodeURIComponent(ID) + '.md');
+    if (!res.ok) throw new Error('未找到「' + ID + '」的传记');
+    const md = await res.text();
+    const titleMatch = md.match(/^#\s+(.+)$/m);
+    const title = titleMatch ? titleMatch[1].trim() : ID;
+    APP.innerHTML = `
+      <header>
+        <div class="kicker">万灵变基录 · 人物专题</div>
+        <h1>${title}</h1>
+      </header>
+      <article class="chapter" style="padding:1.5rem 0">${marked.parse(md)}</article>
+      <footer>
+        《万灵变基录》· ${title}<br>
+        <a href="../tales-list.html">← 返回传记目录</a>
+      </footer>
+    `;
+  } catch(e) {
+    APP.innerHTML = `
+      <header><div class="kicker">万灵变基录</div><h1>迷路了</h1></header>
+      <p style="text-align:center;color:var(--dim);padding:1rem 0">${e.message}</p>
+      <nav class="links"><a href="../index.html">返回主页</a><a href="../tales-list.html">传记目录</a></nav>`;
+  }
+} else {
+  APP.innerHTML = `
+    <header><div class="kicker">万灵变基录</div><h1>迷路了</h1></header>
+    <p style="text-align:center;color:var(--dim);padding:1rem 0">这一页不存在，或者还没有人写下它。</p>
+    <nav class="links"><a href="../index.html">返回主页</a><a href="../tales-list.html">传记目录</a></nav>`;
+}
+</script>
+</body>
+</html>

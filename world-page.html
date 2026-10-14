@@ -228,7 +228,7 @@ function renderTales(data) {
     const last = el('div','desc');
     last.textContent = 'Last: '+(item.last_update||'—');
     const a = document.createElement('a');
-    a.href = 'tales/'+item.id+'.html';
+    a.href = 'tales/' + encodeURIComponent(item.id) + '.html';
     a.textContent = '→ 查看专题页';
     a.style.cssText = 'display:inline-block;margin-top:.5rem;color:var(--accent2);text-decoration:none';
     d.append(h3,meta,last,a);
