@@ -13,7 +13,7 @@ chronicle:
 comprehension: 50
 constitution: ''
 created_at: 2026-10-14T23:46:11+0800
-exp: 23
+exp: 33
 gongfa:
 - element: fire
   grade: 黄阶下品
@@ -47,6 +47,6 @@ spirit_root:
   element: fire
   purity: 75
   variant: normal
-spirit_stones: 5
+spirit_stones: 20
 stage: cultivating
 titles: []
