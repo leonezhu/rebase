@@ -1,0 +1,39 @@
+# Pages 部署: push main → 构建斗法志索引 → 部署整个仓库为静态站
+# 线上入口: / (图鉴缓存) → /battle-chronicle.html (斗法志回放)
+name: Pages Deploy
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'chronicle/**'
+      - 'chronicle-index.json'
+      - 'battle-chronicle.html'
+      - '.github/workflows/pages.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+concurrency:
+  group: pages
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 1 }
+      - name: 构建斗法志索引
+        run: python3 scripts/build-chronicle-index.py
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4
