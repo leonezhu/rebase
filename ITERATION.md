@@ -171,3 +171,23 @@
 
 ### 演练方法教训
 - 并发施工窗口：开工 `git pull` 后 5 分钟内远端又进新 commit（rebase.yml），本轮演练以 pull 后 HEAD 为准做了一次、修复时重新对齐远端——worktree 隔离 + 收尾 `git pull --ff-only` 复核可兜住，但「演练基线可能过期」应成为高频轮默认假设
+
+## 2026-10-14 12:2x 高频轮：bot 入账 PR 四链 startup failure 实锤（重跑可洗绿，修复无效已回滚，待主会话定夺）
+
+### 现象（确定性复现，非瞬态）
+- **每一个** github-actions[bot] 创建的入账 PR（rebase-log/2、explore-log/*×2、lore-reward/22、battle-log/31、battle-log/35）上，挂 `pull_request: [opened/synchronize]` 的 4 个 workflow（register/growth/labels/lore）必然 startup failure：0 job、0 check-run、页面提示 "This run likely failed because of a workflow file issue"，run 挂在 PR 的 head sha 上
+- 只挂 `pull_request: [closed]` 的 battle/lore-reward 在同一批 PR 上零失败；人类分支的 PR 全天零失败；同 sha 的 main push 全 success
+- 每次真实入账（rebase/battle/explore）都会同步产生 4 条红灯噪音
+
+### 实锤「非文件 bug」的过程
+- 重跑任一 failure run → job 正常求值、正常 skip（本轮已把 14 个历史 failure 全部重跑洗绿：explore×8、battle-log/31×4、rebase-log/2×1、lore-reward/22×1、battle-log/35×4）
+- 失败只发生在 PR create→merge 的 ~2 秒高速窗口内排队的 run；merge ref 计算期分支状态被并入/清理打断，疑为平台启动层竞态（未拿到 GitHub 官方文档佐证，标注为推测）
+
+### 修复尝试（无效，已完整回滚，防重蹈）
+- 第一版在 4 个 workflow 的 pull_request 触发器加 `branches-ignore: [battle-log/**, explore-log/**, ...]`——提交前自查 GitHub 官方文档发现两个致命伤：① `branches`/`branches-ignore` 过滤的是 PR 的 **base** 分支（所有入账 PR 的 base 都是 main，根本拦不住），head 分支只能在 job `if` 里用 `github.head_ref` 过滤（on 层做不到）；② 同一事件**禁止**同时用 `branches` + `branches-ignore`（4 个文件都定义了 `branches: [main]`），硬上会让 workflow 解析失败、连 issue_comment/push 等其他触发器一起报废
+- 补丁在 worktree 内做出、未 commit，验证思路失败后 checkout 还原、worktree remove，主仓零污染
+
+### 建议（留主会话定夺，二选一）
+1. **job if 过滤 head 分支**：4 个 workflow 的 job `if` 加 `&& !startsWith(github.head_ref, 'battle-log/')` 等 5 个 bot 分支前缀（lore.yml 已有 head_ref 条件可顺带扩展）——job 层求值在 startup 之后，能挡住吗未经验证：startup failure 发生在 job 求值之前的话此路同样不通，需先做一次实验性 commit 验证
+2. **容忍噪音**：startup failure 本身无账务影响（入账链自己的 run 全 success），把「入账 PR 附带 4 条红灯」当作已知噪音接受，发现真 failure 时以「重跑后仍 failure」为判定标准
+- 另一个未验证的旁路：入账链改用 `gh pr create --fill` 前先给 PR 打 draft 或先用 API 预建 check 豁免——均属设计层改动，本轮不动
