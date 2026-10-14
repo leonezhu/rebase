@@ -89,7 +89,7 @@ jobs:
           gh pr create -R leonezhu/rebase --head "$BRANCH" --base main \
             -t "⚡ 渡劫入账 #$ISSUE" -b "bot 结算，自动合并" --label "game/bot" || true
           sleep 2
-          gh pr merge "$BRANCH" --merge || true
+          gh pr merge "$BRANCH" --merge
 
       - name: 渡劫动画（bot 贴出）
         if: success()
