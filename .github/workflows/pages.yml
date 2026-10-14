@@ -7,7 +7,6 @@ on:
     paths:
       - 'chronicle/**'
       - 'chronicle-index.json'
-      - 'battle-chronicle.html'
       - 'index.html'
       - 'codex.html'
       - 'world-page.html'
