@@ -7,7 +7,7 @@ boss:
   hp_current: 512
 slain: false
 damage_log:
-- owner: leonezhu
+- owner: leonezhu-雄大
   date: '2026-10-14'
   damage: 88
 updated_at: '2026-10-14T13:59:30.666667+00:00'
