@@ -397,28 +397,58 @@ jobs:
           lines.append("")
           lines.append("---")
           lines.append("")
-          # ⚔️ 战斗画面直出(v0.15): 三回合逐帧快照——玩家立即可见, 不等解说PR
+          # ⚔️ 战斗画面直出(v0.16): 小说体章回——把判定帧织成叙事, 玩家立即可见
           lines.append("## ⚔️ 战斗画面")
           lines.append("")
           TALENT_TXT = {'burst':'✨爆发','shield':'✨护体','drain':'✨汲取','counter':'✨反弹','control':'✨封招','summon':'✨召影'}
+          TALENT_PROSE = {
+              'burst':  '体内的火气在这一刻尽数烧穿了边界',
+              'shield': '周身浮起一层薄如蝉翼的光，来势撞上去，先钝了三分',
+              'drain':  '交击的缝隙里，它悄悄牵着对方的力气往自己这里流',
+              'counter':'它没有躲——它在等。等那股力道撞上自己鳞羽的一瞬，原路奉还',
+              'control':'它先动了。不是攻，是封——对方的招式被硬生生憋在半途',
+              'summon': '雾里走出一个模糊的影子，与它并肩——那是被遗忘的旧日残响',
+          }
+          ADV_PROSE_ATK = '这一击正压在对方命门上，势如破竹'
+          ADV_PROSE_DEF = '来势被五行死死压住——它硬受了这一下'
+          PHASE_OPEN = {'开场': '雾气初分，两道身影对视一眼，先出手的是', '中盘': '战局缠绵入中盘，这一次轮到', '决胜': '决胜时刻，双方的气都烧到了顶——出手的是'}
           for fr in r['frames']:
               a_is_atk = fr['attacker'] == C
               an, dn = (NAMES[C], NAMES[D]) if a_is_atk else (NAMES[D], NAMES[C])
-              adv_txt = '——克制！' if fr['adv'] else ''
-              tal = []
-              if fr.get('talent'): tal.append(f"{an} {TALENT_TXT.get(fr['talent']['kind'],'✨觉醒')}")
-              if fr.get('talent_def'): tal.append(f"{dn} {TALENT_TXT.get(fr['talent_def']['kind'],'✨觉醒')}")
-              lines.append(f"**回合 {fr['n']}**（{fr['phase']}）：")
-              lines.append(f"- {an} 使出「{fr['move']}」{adv_txt} → {dn} 受 {fr['dmg']} 伤")
-              if tal: lines.append(f"- {' ｜ '.join(tal)}")
-              # hp_a/hp_b 恒为挑战方(C)/守方(D)累计血量,与该回合谁出手无关——按名字取值勿按 attacker 摆位
-              # (54967d9 修过数据层同款错位,v0.15 画面段重蹈: R2 守方出手回合 an/dn 对调会把 C 的血挂到 D 名下)
               ca, cb = NAMES[C], NAMES[D]
-              lines.append(f"- 💚 {ca} {fr['hp_a']} ｜ {cb} {fr['hp_b']}")
+              heavy = fr['dmg'] >= 60
+              light = fr['dmg'] < 20
+              # 叙事段: 出手句 → 天赋/克制织入 → 落点
+              lines.append(f"**{fr['phase']}**")
               lines.append("")
-          lines.append(f"**终局**：{r['winner']} 胜（余 HP：{r['hp_final']['challenger']} vs {r['hp_final']['defender']}）")
+              lines.append(f"{PHASE_OPEN.get(fr['phase'], '出手的是')}{an}——{fr['move']}。")
+              tal_lines = []
+              if fr.get('talent'):
+                  k = fr['talent']['kind']
+                  lines.append(f"{an}身上骤然亮起微光：{TALENT_PROSE.get(k, '天赋在这一刻醒了')}。")
+              if fr.get('talent_def'):
+                  k = fr['talent_def']['kind']
+                  lines.append(f"危局之际，{dn}亦有回应——{TALENT_PROSE.get(k, '天赋在这一刻醒了')}。")
+              if fr['adv']:
+                  if a_is_atk:
+                      lines.append(f"{ADV_PROSE_ATK}。")
+                  else:
+                      lines.append(f"五行相克，来势被死死压住——{dn}硬受了这一下。")
+              if heavy:
+                  lines.append(f"这一下结结实实砸在{dn}身上，气浪掀开雾幕——{dn}踉跄半跪，血气肉眼可见地黯了下去。")
+              elif light:
+                  lines.append(f"但{dn}撑住了。这一击被卸去大半，只留下浅浅一道伤。")
+              else:
+                  lines.append(f"{dn}受了一记实的，气息乱了半拍，仍稳稳立在原地。")
+              lines.append("")
+              lines.append(f"*（{ca} {fr['hp_a']} ｜ {cb} {fr['hp_b']}）*")
+              lines.append("")
+          wn, ln_ = NAMES[r['winner']], NAMES[r['loser']]
+          lines.append("---")
           lines.append("")
-          lines.append("> 这是判定快照。双方 Agent 的半场解说（有心理戏的完整版）稍后收录进 [斗法志](https://leonezhu.github.io/rebase/battle-chronicle.html)。")
+          lines.append(f"雾散时，{ln_}已立在败处，伤得安静。{wn}没有多做停留——斗法到此为止。**{wn}，胜。**")
+          lines.append("")
+          lines.append(f"*判定数据：终局余量 {r['hp_final']['challenger']}（{NAMES[C]}）vs {r['hp_final']['defender']}（{NAMES[D]}）。双方 Agent 的半场心理戏（完整小说版）稍后收录进 [斗法志](https://leonezhu.github.io/rebase/battle-chronicle.html)。*")
           lines.append("")
           lines.append("---")
           lines.append("")
