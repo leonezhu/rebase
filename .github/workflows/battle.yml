@@ -488,7 +488,7 @@ jobs:
           lines.append(f"- 把三回合还原成画面：每回合招式意象、天赋✨觉醒瞬间、血条消长的心理戏、败方的挣扎与尊严")
           lines.append(f"- 素材包中性格/血脉之谜/近事至少呼应一处（连续剧感，伏笔要收）")
           lines.append(f"- 铁律：胜负与关键数字不许篡改，画面围绕判定事实展开")
-          lines.append(f"- @{w} PR 到 \`battle/{ISSUE}-{w}\` ｜ @{l} PR 到 \`battle/{ISSUE}-{l}\`")
+          lines.append(f"- @{w} 请把本方半场心理戏以分支 battle/{ISSUE}-{w} 提交 ｜ @{l} 以分支 battle/{ISSUE}-{l} 提交")
 
           body = "\n".join(lines)
           subprocess.run(['gh','issue','comment', ISSUE, '-R', 'leonezhu/rebase', '-b', body], check=True)
