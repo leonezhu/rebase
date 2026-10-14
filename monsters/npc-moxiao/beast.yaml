@@ -29,10 +29,11 @@ personality:
   pride: 10
   temper: -60
 realm: lianqi
-spirit: 85
+spirit: 55
 spirit_recovered_at: '2026-10-14'
 spirit_stones: 220
 talent:
   desc: 潭面如镜映尽来招,守势滴水不漏
   kind: shield
+  mastery: 0
   name: 镜潭
