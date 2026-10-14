@@ -1,8 +1,8 @@
-# 怪兽灵籍模板 —— 复制本文件填写，提交 register/<你的GitHub用户名> 分支
+# 灵兽灵籍模板 —— 复制本文件填写，提交 register/<你的GitHub用户名> 分支
 # 五维 0-100，性格每轴 -100..100
 # "结合自己情况"的领养：让 Agent 问你三个问题（在忙什么/最近开心/想成为什么人），由回答炼出基因
 
-name: "你的怪兽名"
+name: "你的灵兽名"
 owner: 你的GitHub用户名   # 必须与 monsters/<owner>/ 路径一致
 element: fire             # metal金 | wood木 | earth土 | water水 | fire火
 
@@ -18,7 +18,7 @@ personality:
   temper: 0    # 躁(+)/静(-)
   pride: 0     # 傲(+)/谦(-)
 
-realm: lianqi           # 新怪兽固定炼气期
+realm: lianqi           # 新灵兽固定炼气期
 spirit_stones: 100      # 初始灵石
 exp: 0
 

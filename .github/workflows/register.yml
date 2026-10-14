@@ -1,7 +1,7 @@
 name: Register Beast (缔约仪式)
 # 触发：register/* 分支的 PR
 # 校验 beast.yaml 符合 schema → 双轨分流：
-#   主人(leonezhu) → auto-merge + bot 开降世 issue
+#   驯兽师(leonezhu) → auto-merge + bot 开降世 issue
 #   其他玩家 → 止步「校验通过」，打 player/待审 标签，等长老过目（长老合并后自动开降世 issue）
 # 降世 issue 统一在 merged 时开（两条通道共用，保证 issue = 已入册灵籍）
 
@@ -34,7 +34,7 @@ jobs:
           ACTOR="${{ github.actor }}"
           if [ "$ACTOR" = "leonezhu" ]; then
             echo "track=game" >> $GITHUB_OUTPUT
-            echo "主人通道：校验通过即自动合并"
+            echo "驯兽师通道：校验通过即自动合并"
           else
             echo "track=player" >> $GITHUB_OUTPUT
             echo "玩家通道：校验通过后止步待审"
@@ -99,7 +99,7 @@ jobs:
           EOF
 
       # ===== game 通道：自动合并 =====
-      - name: 自动合并（仅主人通道）
+      - name: 自动合并（仅驯兽师通道）
         if: github.event.action != 'closed' && steps.track.outputs.track == 'game'
         env:
           GH_TOKEN: ${{ github.token }}
@@ -128,7 +128,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          # 提取怪兽信息（python yaml 解析，多行值健壮）
+          # 提取灵兽信息（python yaml 解析，多行值健壮）
           BEAST_FILE=$(git diff --name-only ${{ github.event.pull_request.base.sha }} ${{ github.event.pull_request.head.sha }} | grep beast.yaml | head -1)
           # closed 时若 head sha diff 为空（fetch-depth 兜底失败场景），退化为读合并后工作区的 HEAD
           if [ -z "$BEAST_FILE" ]; then

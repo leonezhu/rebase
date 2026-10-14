@@ -8,7 +8,7 @@ name: Growth (修行入账)
 #   ⑤ 灵石余额：每次修行耗 10 灵石，余额不足整单拒绝
 # 校验通过 → bot 幂等结算（增量 = 今日事件总数 - 今日已入账次数，重跑不重复入账）：
 #   bot commit 更新 monsters/<owner>/beast.yaml（功力 +5/次，灵石 -10/次）→ bot PR(game/bot) 自动合并
-# 双轨制：growth PR 本体——主人通道自动合并；玩家通道止步 player/待审（结算不受影响）
+# 双轨制：growth PR 本体——驯兽师通道自动合并；玩家通道止步 player/待审（结算不受影响）
 
 on:
   pull_request:
@@ -42,7 +42,7 @@ jobs:
         run: |
           if [ "${{ github.actor }}" = "leonezhu" ]; then
             echo "track=game" >> $GITHUB_OUTPUT
-            echo "主人通道：修行记录 PR 校验通过即自动合并"
+            echo "驯兽师通道：修行记录 PR 校验通过即自动合并"
           else
             echo "track=player" >> $GITHUB_OUTPUT
             echo "玩家通道：修行记录 PR 止步待审"
@@ -135,7 +135,7 @@ jobs:
           EOF
 
       # ===== game 通道：修行记录 PR 自动合并 =====
-      - name: 自动合并修行记录 PR（仅主人通道）
+      - name: 自动合并修行记录 PR（仅驯兽师通道）
         if: github.event.action != 'closed' && steps.track.outputs.track == 'game'
         env:
           GH_TOKEN: ${{ github.token }}

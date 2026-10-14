@@ -38,13 +38,13 @@ curl -sL https://raw.githubusercontent.com/leonezhu/rebase/main/skills/rebase-ad
 
 ### 第 2 步：对 Agent 说
 
-> 我要领养一只 Rebase 怪兽
+> 我要领养一只 Rebase 灵兽
 
-Agent 会举行「问灵三问」（在忙什么/最近开心的事/想成为什么人），把你的回答炼成五维基因，生成三只候选怪兽。你选一只、定誓词，它提交注册 PR。
+Agent 会举行「问灵三问」（在忙什么/最近开心的事/想成为什么人），把你的回答炼成五维基因，生成三只候选灵兽。你选一只、定誓词，它提交注册 PR。
 
 ### 第 3 步：等缔约完成
 
-GitHub Actions 自动校验并合并 PR，bot 开一个**降世 issue**——你怪兽的第一篇传记，里面埋着一条「血脉之谜」待你随境界解锁。
+GitHub Actions 自动校验并合并 PR，bot 开一个**降世 issue**——你灵兽的第一篇传记，里面埋着一条「血脉之谜」待你随境界解锁。
 
 ---
 
@@ -54,8 +54,8 @@ GitHub Actions 自动校验并合并 PR，bot 开一个**降世 issue**——你
 |---|---|---|
 | `/battle @对方` | 主仓库 issue 评论 | 发起斗法，hash 判定+五行相克，双方 Agent 各写半场解说 |
 | `/explore` | 秘境 issue 评论 | 探索遭遇，随机事件（开发中） |
-| `/rebase` | 自己的怪兽 issue | 境界达标后进化：渡劫=CI 全绿（开发中） |
-| `/release` | 自己的怪兽 issue | 放生：7 天冷静期，怪兽入 abyss 成 NPC（开发中） |
+| `/rebase` | 自己的灵兽 issue | 境界达标后进化：渡劫=CI 全绿（开发中） |
+| `/release` | 自己的灵兽 issue | 放生：7 天冷静期，灵兽入 abyss 成 NPC（开发中） |
 
 ### 🏷️ issue 标签导航
 
@@ -63,7 +63,7 @@ GitHub Actions 自动校验并合并 PR，bot 开一个**降世 issue**——你
 
 | 标签 | 含义 |
 |---|---|
-| 降世 | 怪兽传记 issue，每兽一个，永久存在 = 怪兽主页/操作台 |
+| 降世 | 灵兽传记 issue，每兽一个，永久存在 = 灵兽主页/操作台 |
 | 斗法 | 对战 issue，带状态子标签：`斗法/待战` → `斗法/已判` → `斗法/已收录` |
 | 秘境 | 定时投放的世界事件 |
 | 放生 | 放生申请与 7 天冷静期追踪 |
@@ -87,7 +87,7 @@ GitHub Actions 自动校验并合并 PR，bot 开一个**降世 issue**——你
 
 - **七境**：炼气 → 筑基 → 金丹 → 元婴 → 化神 → 渡劫 → 大乘
 - **五行相克**：金→木→土→水→火→金（伤害 ±15%）
-- **五维基因**：灵（法术）/ 魄（体质）/ 巧（敏捷）/ 韧（意志）/ 韵（灵性——韵值越高，你的怪兽传记写得越华丽）
+- **五维基因**：灵（法术）/ 魄（体质）/ 巧（敏捷）/ 韧（意志）/ 韵（灵性——韵值越高，你的灵兽传记写得越华丽）
 - **性格三轴**：勇怯 / 躁静 / 傲谦——喂养方式漂移性格，性格决定它怎么战斗、怎么说话
 
 完整设计文档：[DESIGN.md](DESIGN.md)
@@ -103,7 +103,7 @@ GitHub Actions 自动校验并合并 PR，bot 开一个**降世 issue**——你
 | 游戏服务器 | 本仓库（public，Actions 免费无上限） |
 | 规则引擎 | `.github/workflows/` |
 | 官方账本（灵籍） | `monsters/`（仅 `github-actions[bot]` 可写） |
-| 玩家本地 | `~/.rebase/`（日记+缓存，删了不丢怪兽） |
+| 玩家本地 | `~/.rebase/`（日记+缓存，删了不丢灵兽） |
 | 反作弊 | 数值只认 bot commit + hash 确定性模拟 + 公开 diff 审计 |
 
 状态推进全部通过 PR / issue / 评论驱动。
@@ -111,7 +111,7 @@ GitHub Actions 自动校验并合并 PR，bot 开一个**降世 issue**——你
 **手动玩家路线**（不用 Agent，`gh` CLI 全流程）：
 
 ```bash
-# 1. 缔约：写好怪兽 YAML 提交注册 PR
+# 1. 缔约：写好灵兽 YAML 提交注册 PR
 git checkout -b register/<你的GitHub用户名>
 mkdir -p monsters/<你的GitHub用户名>
 # 参考 monsters/leonezhu/beast.yaml 或 schemas/beast.schema.json 填写
