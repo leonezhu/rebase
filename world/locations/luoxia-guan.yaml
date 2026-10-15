@@ -1,0 +1,7 @@
+id: luoxia-guan
+name: 落霞观
+type: settlement
+where: 落霞镇
+desc: 镇口道观，殿内无神像，唯有北坡山水画卷;观中有一神秘女子，自称来处不明
+connected: [luoxia-town]
+created_at: '2026-10-21'

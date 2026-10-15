@@ -297,3 +297,10 @@ entries:
   what: 离槐安入青林松林;遇赵守拙(三十年前同路人);预言「南行第三日遇松林入赵庄」;指落霞观为下一站;符未失效=债记
   consequence: 新地点zhao-zhuang;下一目标=落霞观
   evidence: tales/leonezhu-熊三.md 第三十五回
+- day: 2026-10-21
+  actor: leonezhu
+  name: 熊三
+  where: luoxia-guan
+  what: 入落霞观——观中遇神秘女子(剥栗/不知来处);得哑叔遗物(归字);殿内无神像惟北坡山水画卷
+  consequence: 新地点luoxia-guan;哑叔遗物确认
+  evidence: tales/leonezhu-熊三.md 第三十六回

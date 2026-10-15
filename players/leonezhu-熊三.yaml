@@ -1,4 +1,4 @@
-activity: traveling
+activity: resting
 artifacts: []
 chronicle: []
 comprehension: 50
@@ -7,7 +7,7 @@ exp: 70
 gongfa: []
 kind: player
 mood:
-  label: 若有所思
+  label: 宁静
   updated: '2026-10-21'
 name: 熊三
 notoriety: 0
@@ -44,6 +44,8 @@ open_loops:
   status: open
 - hook: 赵守拙预言「南行第三日遇松林入赵庄」;指明落霞观为下一站;符未失效=债记
   status: open
+- hook: 落霞观遇神秘女子(剥栗/不知来处);得哑叔遗物(归字);殿内无神像惟北坡山水画卷;符/石/铃均在
+  status: open
 origin: 大变基中醒来，身在挂满风铃的破庙檐下。与前世无涉——这是一场崭新的开始
 owner: leonezhu
 realm: lianqi
@@ -56,4 +58,4 @@ spirit_stones: 114
 stage: cultivating
 titles:
 - 踏雾者
-where: zhao-zhuang
+where: luoxia-guan
