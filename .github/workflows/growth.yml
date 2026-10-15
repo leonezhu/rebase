@@ -42,7 +42,7 @@ jobs:
       - name: 分流判定
         id: track
         run: |
-          if [ "${{ github.actor }}" = "leonezhu" ]; then
+          if [ "${{ github.actor }}" = "${{ github.repository_owner }}" ]; then
             echo "track=game" >> $GITHUB_OUTPUT
             echo "缔约者通道：修行记录 PR 校验通过即自动合并"
           else
@@ -76,7 +76,7 @@ jobs:
 
           def refuse(msg):
               print(f"::error::{msg}")
-              subprocess.run(["gh", "pr", "comment", os.environ["PR"], "-R", "leonezhu/rebase", "-b", msg], env=gh_env)
+              subprocess.run(["gh", "pr", "comment", os.environ["PR"], "-R", "${{ github.repository }}", "-b", msg], env=gh_env)
               sys.exit(1)
 
           files = sh("git", "diff", "--name-only", base, head).split()
@@ -166,7 +166,7 @@ jobs:
           PR: ${{ github.event.pull_request.number }}
           SENDER: ${{ github.actor }}
         run: |
-          gh pr comment "$PR" -R leonezhu/rebase \
+          gh pr comment "$PR" -R "${{ github.repository }}" \
             -b "✨ 修行记录校验通过（append-only ✓ 限额 ✓ 灵石余额 ✓）。@${SENDER} 功不唐捐。" 
           gh pr merge "$PR" --merge --subject "修行记录收录"
 
@@ -222,7 +222,7 @@ jobs:
           git commit -m "修行: $OWNER 共${DELTA}次 灵石-${COST} 功力+${EXP}"
           # 入账链咽喉点：push/create/merge 失败必须显式红灯（禁 || true 吞错），见 ITERATION.md 打磨轮登记
           git push origin "$BRANCH"
-          gh pr create -R leonezhu/rebase --head "$BRANCH" --base main \
+          gh pr create -R "${{ github.repository }}" --head "$BRANCH" --base main \
             -t "修行入账 · $OWNER (#$PR)" -b "bot 结算，自动合并"
-          gh pr edit "$BRANCH" -R leonezhu/rebase --add-label "game/bot" || true
+          gh pr edit "$BRANCH" -R "${{ github.repository }}" --add-label "game/bot" || true
           gh pr merge "$BRANCH" --merge

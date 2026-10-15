@@ -118,7 +118,7 @@ jobs:
           gh pr merge "$PR" --merge --subject "觉醒入世：${NAME}"
 
       - name: 外人觉醒 → 欢迎入世
-        if: env.ACTOR != 'leonezhu' && env.IS_REGISTER == 'true'
+        if: env.ACTOR != github.repository_owner && env.IS_REGISTER == 'true'
         env:
           GH_TOKEN: ${{ github.token }}
           PR: ${{ github.event.pull_request.number }}

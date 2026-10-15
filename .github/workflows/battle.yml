@@ -73,7 +73,7 @@ jobs:
               if [ -n "$MATCH" ]; then F="$MATCH"; else F="monsters/$OWNER/beast.yaml"; fi
             fi
             if [ ! -f "$F" ]; then
-              gh issue comment ${{ github.event.issue.number }} -R leonezhu/rebase \
+              gh issue comment ${{ github.event.issue.number }} -R "${{ github.repository }}" \
                 -b "@${OWNER} 尚无灵籍入册（players/ 无你的档案），无法斗法。"
               exit 1
             fi
@@ -85,13 +85,13 @@ jobs:
           for i in 1 2 3; do
             if git ls-remote --exit-code --heads origin "battle-log/${{ github.event.issue.number }}" >/dev/null 2>&1; then
               echo "battle-log/${{ github.event.issue.number }} 分支已存在（另一 run 已结算/正在结算），本 run 退出避免入账竞态"
-              gh issue comment ${{ github.event.issue.number }} -R leonezhu/rebase \
+              gh issue comment ${{ github.event.issue.number }} -R "${{ github.repository }}" \
                 -b "检测到同一 issue 的另一场天道推演已在进行（双触发竞态守卫生效），本场不入重赛。想再战请另开新 issue。" || true
               exit 0
             fi
             sleep $((i * 2))
           done
-          gh issue edit ${{ github.event.issue.number }} -R leonezhu/rebase --add-label "斗法" --add-label "斗法/待战" || true
+          gh issue edit ${{ github.event.issue.number }} -R "${{ github.repository }}" --add-label "斗法" --add-label "斗法/待战" || true
 
       - name: 同地与行事校验（2026-10-15 空间合理性）
         env:
@@ -441,15 +441,15 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           # label + replay-guard
-          CUR=$(gh issue view ${{ github.event.issue.number }} -R leonezhu/rebase --json labels --jq '[.labels[].name] | join(",")')
+          CUR=$(gh issue view ${{ github.event.issue.number }} -R "${{ github.repository }}" --json labels --jq '[.labels[].name] | join(",")')
           case ",$CUR," in
             *",斗法/已判,"*|*",斗法/已收录,"*)
-              gh issue comment ${{ github.event.issue.number }} -R leonezhu/rebase \
+              gh issue comment ${{ github.event.issue.number }} -R "${{ github.repository }}" \
                 -b "此战已由天道判定完毕，胜负已分，不入重赛。想再战请另开新 issue。"
               # 守卫已妥善应答玩家（拒战评论已贴），非故障：exit 0 避免确定性假红灯（真结算 run 已 success）
               exit 0 ;;
           esac
-          gh issue edit ${{ github.event.issue.number }} -R leonezhu/rebase --add-label "斗法" --add-label "斗法/已判" --remove-label "斗法/待战" || true
+          gh issue edit ${{ github.event.issue.number }} -R "${{ github.repository }}" --add-label "斗法" --add-label "斗法/已判" --remove-label "斗法/待战" || true
 
           python3 - <<'PYEOF'
           import json, subprocess, os
@@ -604,7 +604,7 @@ jobs:
           lines.append(f"- @{w} 请把本方半场心理戏以分支 battle/{ISSUE}-{w} 提交 ｜ @{l} 以分支 battle/{ISSUE}-{l} 提交")
 
           body = "\n".join(lines)
-          subprocess.run(['gh','issue','comment', ISSUE, '-R', 'leonezhu/rebase', '-b', body], check=True)
+          subprocess.run(['gh','issue','comment', ISSUE, '-R', '${{ github.repository }}', '-b', body], check=True)
           PYEOF
 
       - name: 生死分野与恶名（2026-10-15 自由度扩展）
@@ -852,9 +852,9 @@ jobs:
             cat push_err.txt >&2
             exit 1
           fi
-          gh pr create -R leonezhu/rebase --head battle-log/${{ github.event.issue.number }} --base main \
+          gh pr create -R "${{ github.repository }}" --head battle-log/${{ github.event.issue.number }} --base main \
             -t "斗法奖励入账 #${{ github.event.issue.number }}" -b "bot 结算，自动合并"
-          gh pr edit battle-log/${{ github.event.issue.number }} -R leonezhu/rebase --add-label "game/bot" || true
+          gh pr edit battle-log/${{ github.event.issue.number }} -R "${{ github.repository }}" --add-label "game/bot" || true
           gh pr merge battle-log/${{ github.event.issue.number }} --merge
           # 血脉之力(v0.8)：有新解锁段时在战报 issue 贴解锁叙事（须在入账 PR 合并后，重读已入账数据）
           BL=$(python3 -c "import json;print(len(json.load(open('blood_events.json'))))")
@@ -872,7 +872,7 @@ jobs:
           print("\n".join(LINES))
           BLEOF
             )
-            gh issue comment ${{ github.event.issue.number }} -R leonezhu/rebase -b "$BODY"
+            gh issue comment ${{ github.event.issue.number }} -R "${{ github.repository }}" -b "$BODY"
           fi
           # 天赋觉醒(v0.10)：熟练度升级瞬间贴觉醒播报（✨事件，与血脉🩸同级的最优戏眼）
           AW=$(python3 -c "import json;print(len(json.load(open('awaken_events.json'))))")
@@ -891,7 +891,7 @@ jobs:
           print("\n".join(LINES))
           AWEOF
             )
-            gh issue comment ${{ github.event.issue.number }} -R leonezhu/rebase -b "$BODY"
+            gh issue comment ${{ github.event.issue.number }} -R "${{ github.repository }}" -b "$BODY"
           fi
           # 威名授予播报(v0.18 称号收口)：闭关复出——🎖️ 与 🩸/✨ 同级的戏眼
           # 修复注：旧实现用 python heredoc(<<'TCEOF')构造，令 GitHub workflow 解析器整体拒收
@@ -899,7 +899,7 @@ jobs:
           # 2026-10-15 e2e 实锤并二分定位到该块）。改纯 bash + stdin heredoc。
           if python3 -c "import json,sys;r=json.load(open('battle_result.json'));sys.exit(0 if r.get('winner') in r.get('comeback',[]) else 1)"; then
             WINNER=$(python3 -c "import json;print(json.load(open('battle_result.json'))['winner'])")
-            gh issue comment ${{ github.event.issue.number }} -R leonezhu/rebase --body-file - <<BCEOF
+            gh issue comment ${{ github.event.issue.number }} -R "${{ github.repository }}" --body-file - <<BCEOF
           ## 🎖️ 威名 · 铸成
 
           > 威名不是谁赏的，是自己一场一场挣来的——
@@ -914,7 +914,7 @@ jobs:
           if python3 -c "import json,sys;import yaml as y,os as _os;r=json.load(open('battle_result.json'));owner=r.get('winner');p=next((c for c in ([f'players/{owner}.yaml']+sorted(__import__('glob').glob(f'players/{owner}-*.yaml'))+[f'monsters/{owner}/beast.yaml']) if os.path.exists(c)), None);d=y.safe_load(open(p,encoding='utf-8'));ws=d.get('battle_history',{}).get('win_streak',0);mood=d.get('mood',{}).get('state','');sys.exit(0 if ws>=3 and mood!='低落' else 1)"; then
             WINNER=$(python3 -c "import json;print(json.load(open('battle_result.json'))['winner'])")
             WNAME=$(python3 -c "import yaml,os as _os;o='${WINNER}';p=next((c for c in ([f'players/{o}.yaml']+sorted(__import__('glob').glob(f'players/{o}-*.yaml'))+[f'monsters/{o}/beast.yaml']) if os.path.exists(c)), None);print(yaml.safe_load(open(p,encoding='utf-8'))['name'])")
-            gh issue comment ${{ github.event.issue.number }} -R leonezhu/rebase --body-file - <<FCEOF
+            gh issue comment ${{ github.event.issue.number }} -R "${{ github.repository }}" --body-file - <<FCEOF
           ## 🎖️ 威名 · 铸成
 
           > 威名不是谁赏的，是自己一场一场挣来的——

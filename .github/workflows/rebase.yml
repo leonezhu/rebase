@@ -105,7 +105,7 @@ jobs:
           OK=$(python3 -c "import json;print(json.load(open('rebase_result.json'))['ok'])")
           if [ "$OK" != "True" ]; then
             MSG=$(python3 -c "import json;print(json.load(open('rebase_result.json'))['msg'])")
-            gh issue comment $ISSUE -R leonezhu/rebase -b "⚡ 渡劫未成：$MSG"
+            gh issue comment $ISSUE -R "${{ github.repository }}" -b "⚡ 渡劫未成：$MSG"
             exit 1
           fi
 
@@ -114,7 +114,7 @@ jobs:
           git add "$BEAST_FILE"
           git commit -m "渡劫成功: issue#$ISSUE 燧鸣变基$(python3 -c "import json;d=json.load(open('rebase_result.json'));print(d['from']+'→'+d['to'])")"
           git push origin "$BRANCH"
-          gh pr create -R leonezhu/rebase --head "$BRANCH" --base main \
+          gh pr create -R "${{ github.repository }}" --head "$BRANCH" --base main \
             -t "⚡ 渡劫入账 #$ISSUE" -b "bot 结算，自动合并" --label "game/bot" || true
           sleep 2
           gh pr merge "$BRANCH" --merge
@@ -146,7 +146,7 @@ jobs:
           *天道公告：自此刻起，万灵图鉴上它的名字换了颜色。*
           *血脉之谜的下一页，在雷声停止的方向。*"""
           subprocess.run(['gh', 'issue', 'comment', '${{ github.event.issue.number }}',
-                          '-R', 'leonezhu/rebase', '-b', body], check=True)
+                          '-R', '${{ github.repository }}', '-b', body], check=True)
           PYEOF
 
       - name: 血脉之力入账（v0.8：境界段数上涨→解锁新段）
@@ -205,11 +205,11 @@ jobs:
           git commit -m "血脉之力: issue#$ISSUE 解开第${N}段（境界段数上涨）"
           # 入账链咽喉点：push/create/merge 失败必须显式红灯（禁 || true 吞错）
           git push origin "$BRANCH"
-          gh pr create -R leonezhu/rebase --head "$BRANCH" --base main \
+          gh pr create -R "${{ github.repository }}" --head "$BRANCH" --base main \
             -t "🩸 血脉之力入账 #$ISSUE" -b "bot 结算，自动合并"
-          gh pr edit "$BRANCH" -R leonezhu/rebase --add-label "game/bot" || true
+          gh pr edit "$BRANCH" -R "${{ github.repository }}" --add-label "game/bot" || true
           gh pr merge "$BRANCH" --merge
-          gh issue comment "$ISSUE" -R leonezhu/rebase \
+          gh issue comment "$ISSUE" -R "${{ github.repository }}" \
             -b '## 🩸 血脉之力 · 苏醒
 
           > 渡劫的雷声里，它想起了一段更早的事。

@@ -181,7 +181,7 @@ jobs:
           NAME=$(python3 -c "import yaml,os;o='${{ steps.beast.outputs.explorer }}';p=next((c for c in ([f'players/{o}.yaml']+sorted(__import__('glob').glob(f'players/{o}-*.yaml'))+[f'monsters/{o}/beast.yaml']) if os.path.exists(c)), None);print(yaml.safe_load(open(p,encoding='utf-8'))['name'])")
           HEADER="秘境探索"
 
-          gh issue comment $ISSUE -R leonezhu/rebase -b "## 🌫️ ${HEADER} · ${NAME}
+          gh issue comment $ISSUE -R "${{ github.repository }}" -b "## 🌫️ ${HEADER} · ${NAME}
 
           ${STORY}
           ---
@@ -221,9 +221,9 @@ jobs:
           # 冲突仍挂则显式红灯（不静默重试，防同一次 roll 双入账）
           git pull --rebase origin main
           git push origin "$BRANCH"
-          gh pr create -R leonezhu/rebase --head "$BRANCH" --base main \
+          gh pr create -R "${{ github.repository }}" --head "$BRANCH" --base main \
             -t "秘境探索入账 · $OWNER (#${{ github.event.issue.number }})" -b "bot 结算，自动合并"
-          gh pr edit "$BRANCH" -R leonezhu/rebase --add-label "game/bot" || true
+          gh pr edit "$BRANCH" -R "${{ github.repository }}" --add-label "game/bot" || true
           gh pr merge "$BRANCH" --merge
 
   travel:

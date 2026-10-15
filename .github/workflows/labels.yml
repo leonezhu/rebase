@@ -25,7 +25,7 @@ jobs:
           PR: ${{ github.event.pull_request.number }}
         run: |
           # 用 PR files API 而非 git diff：浅克隆拿不到 base sha（fatal: bad object）
-          FILES=$(gh pr view "$PR" -R leonezhu/rebase --json files --jq '.files[].path')
+          FILES=$(gh pr view "$PR" -R "${{ github.repository }}" --json files --jq '.files[].path')
 
           META=0
           for f in $FILES; do
@@ -36,8 +36,8 @@ jobs:
           done
 
           if [ "$META" = "1" ]; then
-            gh pr edit "$PR" -R leonezhu/rebase --add-label "meta/规则"
-            gh pr comment "$PR" -R leonezhu/rebase \
+            gh pr edit "$PR" -R "${{ github.repository }}" --add-label "meta/规则"
+            gh pr comment "$PR" -R "${{ github.repository }}" \
               -b "⚖️ 本 PR 触碰规则层（workflow/schema/设计文档），已按双轨制打 \`meta/规则\` 标签，需仓库缔约者 review 后方可合并。"
             echo "已打 meta/规则 标签"
           else
@@ -54,7 +54,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          create() { gh label create "$1" -R leonezhu/rebase --color "$2" --description "$3" 2>/dev/null \
+          create() { gh label create "$1" -R "${{ github.repository }}" --color "$2" --description "$3" 2>/dev/null \
             && echo "✓ 建标签 $1" || echo "· $1 已存在，跳过"; }
           create "降世"       "0e8a16" "角色觉醒传记（每人一个，永久主页/操作台）"
           create "斗法"       "d93f0b" "对战 issue"
