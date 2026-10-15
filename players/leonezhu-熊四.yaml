@@ -9,12 +9,14 @@ realm: lianqi
 constitution: 凡骨
 element: 阴
 aptitude: 下品
-exp: 0
+exp: 10
 stones: 0
-gongfa: []
+gongfa: [引气诀]
 artifacts: []
 notoriety: 0
 mood: {}
-open_loops: []
+open_loops:
+- hook: 问心崖试炼
+  status: open
 chronicle: []
 origin: 于某处醒来，全然不知前世何事
