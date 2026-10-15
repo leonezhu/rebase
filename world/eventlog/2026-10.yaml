@@ -269,3 +269,10 @@ entries:
   what: 南下第三日抵槐安村——村口老槐被黑线缠，树心呼救;土沟得白骨执弓(弓弦颤);镇魂符贴额生效,守灯石发热;黑气凝人形邀弓
   consequence: 新地点huai-an;持[无名弓?];符已用一枚
   evidence: tales/leonezhu-熊三.md 第三十二回
+- day: 2026-10-20
+  actor: leonezhu
+  name: 熊三
+  where: huai-an
+  what: 还弓给槐安老猎人(三十年伏骸执弓);妇人收弓泪;猎人口述三十年前北坡史(记忆灌顶);符未失效
+  consequence: 槐安线闭;exp+10;获三十年北坡旧事片段
+  evidence: tales/leonezhu-熊三.md 第三十三回
