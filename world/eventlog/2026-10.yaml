@@ -339,3 +339,10 @@ entries:
   what: 抵钟山观——灰衣道士(哑叔师弟)说明灯约:每年冬至回点灯;赠归山铜钱;熊三应允,历练线开
   consequence: 灯约成立;exp+20;mood=释然
   evidence: tales/leonezhu-熊三.md 第四十一回
+- day: 2026-10-15
+  actor: leonezhu
+  name: 熊三
+  where: zhongshan-guan
+  what: 兵解——舍弃三十三回因果，灰石/铜铃/铜牌落阶，剑意断，新蜕待定
+  consequence: 熊三 retired; 开启全新轮回
+  evidence: tales/leonezhu-熊三.md 第四十二回

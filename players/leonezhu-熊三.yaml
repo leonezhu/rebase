@@ -45,6 +45,8 @@ open_loops:
 origin: 大变基中醒来，身在挂满风铃的破庙檐下。与前世无涉——这是一场崭新的开始
 owner: leonezhu
 realm: lianqi
+retired_at: '2026-10-15'
+retirement_reason: 兵解
 spirit: 100
 spirit_root:
   element: water
@@ -52,6 +54,7 @@ spirit_root:
   variant: pseudo
 spirit_stones: 114
 stage: cultivating
+status: retired
 titles:
 - 踏雾者
 where: zhongshan-guan
