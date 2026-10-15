@@ -30,6 +30,8 @@ open_loops:
   status: open
 - hook: 罐中之物=数百遍同符布卷+哑叔焦灯芯+竹刻「灯借你,芯是我的;芯灭前,喊他名」;铜牌贴芯→焦油亮一线(名在牌中?)
   status: closed
+- hook: 乌老倌在灯台背阴处沉睡般活着,怀信「交点灯人」未拆
+  status: open
 origin: 大变基中醒来，身在挂满风铃的破庙檐下。与前世无涉——这是一场崭新的开始
 owner: leonezhu
 realm: lianqi
