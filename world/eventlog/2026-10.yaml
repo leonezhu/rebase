@@ -178,3 +178,10 @@ entries:
   what: 勘探乌老倌披屋——收拾停等等主人不回的屋子;遗白纸灯笼(哑叔的)+三壶松脂灯油(他的)+指甲刻字「第三夜他下来接灯。第四夜你上去」
   consequence: 持有[哑叔灯笼+灯油x3];今夜第四夜=我上雾线
   evidence: tales/leonezhu-熊三.md 第十九回
+- day: 2026-10-17
+  actor: leonezhu
+  name: 熊三
+  where: beipo-shiken
+  what: 石龛中开陶罐——数百遍同符布卷+哑叔自灯烧剩的焦灯芯+竹刻遗言「灯借你;芯是我的;芯灭前,喊他名」;铜牌近芯,焦油亮一线
+  consequence: 喊名=以牌喊(水火同源之用);夜幕将临=第四夜
+  evidence: tales/leonezhu-熊三.md 第二十回
