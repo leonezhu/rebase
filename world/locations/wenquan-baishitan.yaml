@@ -1,0 +1,12 @@
+id: wenquan-baishitan
+name: 温泉白石滩
+kind: location
+type: 灵地
+element: fire
+desc: 山坳里一汪野温泉，白石铺底，热气在冷雾里结成细珠。泉眼极深处隐隐有暖流涌动，像地脉在缓缓呼吸。
+notable:
+  - 雄二醒来的地方
+  - 泉底白石温润，冬日不寒
+danger: 低
+first_seen: 雄二 · 大变基第十一日
+created_by_bot: false

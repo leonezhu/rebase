@@ -1,0 +1,26 @@
+activity: traveling
+artifacts: []
+chronicle: []
+comprehension: 50
+created_at: '2026-10-15'
+exp: 0
+gongfa: []
+kind: player
+mood:
+  state: 初醒
+  updated: '2026-10-15'
+name: 雄二
+notoriety: 0
+open_loops: []
+origin: 大变基中醒来，身在温泉白石滩
+owner: leonezhu
+realm: lianqi
+spirit: 100
+spirit_root:
+  element: fire
+  purity: 73
+  variant: normal
+spirit_stones: 100
+stage: early
+titles: []
+where: wenquan-baishitan
