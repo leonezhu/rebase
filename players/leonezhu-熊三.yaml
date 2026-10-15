@@ -1,13 +1,13 @@
-activity: traveling
+activity: none
 artifacts: []
 chronicle: []
 comprehension: 50
 created_at: 2026-10-15T11:30:00|xiong3-reborn
-exp: 25
+exp: 40
 gongfa: []
 kind: player
 mood:
-  label: 凝神
+  label: 澄然
   updated: '2026-10-17'
 name: 熊三
 notoriety: 0
@@ -21,7 +21,7 @@ open_loops:
 - hook: 烤鱼老头失踪——留炭条字「钟响第三夜。北坡。别带牌」;今晨=钟响第几夜?
   status: open
 - hook: 提灯者=哑叔(守灯人)——石龛是其哨位,正字计数差一笔;乌老倌疑是守山人或守山人之后,抱物入镇"替人收着"
-  status: open
+  status: closed
 - hook: 龛壁正字差最后一笔——谁替哑叔刻?/哑叔等灯亮
   status: open
 - hook: 婆婆遗训「灯灭之夜勿应钟声;钟唤你名则水近不得火;牌不认人认骨血」——末行小注笔迹拙=哑叔口授默录
@@ -29,7 +29,7 @@ open_loops:
 - hook: 乌老倌披屋遗命——灯笼(哑叔的)+三壶灯油(他的)都归我;「第三夜他下来接灯,第四夜你上去」今夜=第四夜
   status: open
 - hook: 罐中之物=数百遍同符布卷+哑叔焦灯芯+竹刻「灯借你,芯是我的;芯灭前,喊他名」;铜牌贴芯→焦油亮一线(名在牌中?)
-  status: open
+  status: closed
 origin: 大变基中醒来，身在挂满风铃的破庙檐下。与前世无涉——这是一场崭新的开始
 owner: leonezhu
 realm: lianqi

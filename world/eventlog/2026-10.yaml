@@ -192,3 +192,10 @@ entries:
   what: 入雾线抵灯台——烛泪山+两副膝印+乌老倌已点新灯,遗字「替我点了三十年,今夜换你,芯别灭」
   consequence: 新地点dengtai-wuxian;乌老倌三十年点灯人身份坐实
   evidence: tales/leonezhu-熊三.md 第二十一回
+- day: 2026-10-17
+  actor: leonezhu
+  name: 熊三
+  where: dengtai-wuxian
+  what: 不跪。碎旧芯,安哑叔焦芯浇乌老倌松脂油,以半块铜牌为火种点灯;哑半钟声应灯三响复静,雾线深起伏一次;呼"灯亮了,你的灯"
+  consequence: exp=40;灯债了结(提灯者/灯借你两条钩closed);「应钟者替他点灯」应验
+  evidence: tales/leonezhu-熊三.md 第二十二回
