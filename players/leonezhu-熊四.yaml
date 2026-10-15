@@ -14,9 +14,11 @@ stones: 0
 gongfa: [引气诀]
 artifacts: []
 notoriety: 0
-mood: {}
+mood:
+  label: 迷茫
+  updated: '2026-10-15'
 open_loops:
-- hook: 问心崖试炼
+- hook: 斩尘关
   status: open
 chronicle:
 - day: 1
