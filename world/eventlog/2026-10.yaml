@@ -332,3 +332,10 @@ entries:
   what: 离落霞观南行——老头赠茶指引方向;见南山百里外有观有钟;藏经阁废书(水火两本)留疑;归字未解
   consequence: 新目标南山;exp+10;mood=坚定
   evidence: tales/leonezhu-熊三.md 第三十九回
+- day: 2026-10-25
+  actor: leonezhu
+  name: 熊三
+  where: zhongshan-guan
+  what: 抵钟山观——灰衣道士(哑叔师弟)说明灯约:每年冬至回点灯;赠归山铜钱;熊三应允,历练线开
+  consequence: 灯约成立;exp+20;mood=释然
+  evidence: tales/leonezhu-熊三.md 第四十一回

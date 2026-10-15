@@ -1,14 +1,14 @@
-activity: traveling
+activity: resting
 artifacts: []
 chronicle: []
 comprehension: 50
 created_at: 2026-10-15T11:30:00|xiong3-reborn
-exp: 100
+exp: 120
 gongfa: []
 kind: player
 mood:
-  label: 坚定
-  updated: '2026-10-22'
+  label: 释然
+  updated: '2026-10-25'
 name: 熊三
 notoriety: 0
 open_loops:
@@ -46,6 +46,8 @@ open_loops:
   status: open
 - hook: 南山有观有钟;茶指引南行;藏经阁废书(水火两本)留疑;归字未解
   status: open
+- hook: 钟山观灰衣道士(哑叔师弟)接灯;约定每年冬至点灯;铜钱为钥匙;历练线正式开启
+  status: open
 origin: 大变基中醒来，身在挂满风铃的破庙檐下。与前世无涉——这是一场崭新的开始
 owner: leonezhu
 realm: lianqi
@@ -58,4 +60,4 @@ spirit_stones: 114
 stage: cultivating
 titles:
 - 踏雾者
-where: nanshan-road
+where: zhongshan-guan
