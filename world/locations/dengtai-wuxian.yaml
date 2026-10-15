@@ -1,0 +1,7 @@
+id: dengtai-wuxian
+name: 灯台
+type: landmark
+where: 北坡雾线深处
+desc: 雾中无雾空地，石台积三十年烛泪如小山。台前两副膝印（深者守山人/浅者哑叔）。乌老倌每夜上山代点灯，已燃新灯一盏。
+connected: [beipo-shiken]
+created_at: '2026-10-17'

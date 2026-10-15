@@ -185,3 +185,10 @@ entries:
   what: 石龛中开陶罐——数百遍同符布卷+哑叔自灯烧剩的焦灯芯+竹刻遗言「灯借你;芯是我的;芯灭前,喊他名」;铜牌近芯,焦油亮一线
   consequence: 喊名=以牌喊(水火同源之用);夜幕将临=第四夜
   evidence: tales/leonezhu-熊三.md 第二十回
+- day: 2026-10-17
+  actor: leonezhu
+  name: 熊三
+  where: dengtai-wuxian
+  what: 入雾线抵灯台——烛泪山+两副膝印+乌老倌已点新灯,遗字「替我点了三十年,今夜换你,芯别灭」
+  consequence: 新地点dengtai-wuxian;乌老倌三十年点灯人身份坐实
+  evidence: tales/leonezhu-熊三.md 第二十一回
