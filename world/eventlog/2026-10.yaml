@@ -42,6 +42,13 @@ entries:
   actor: leonezhu
   name: 熊三
   where: pumiao-fengling
-  what: 彻底全新转世——醒于风铃破庙(水行·纯84·凝形),与前世零关联
+  what: 彻底全新转世——醒于风铃破庙(水行·纯90·伪根),与前世零关联
   consequence: 新角色入册;新地点资产 pumiao-fengling
   evidence: 会话叙事
+- day: 2026-10-15
+  actor: leonezhu
+  name: 熊三
+  where: pumiao-fengling
+  what: 下山途中遇兽——怀中水气自涌逼退之,兽遗落裹泥金属一角(疑似秘藏遗珍,未认主)
+  consequence: exp=15, stones=125; 伏笔[遗物认主/水气自主护主]
+  evidence: issue#110, tales/leonezhu-熊三.md
