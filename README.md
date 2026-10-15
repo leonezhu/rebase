@@ -37,23 +37,24 @@
 
 ## 怎么玩
 
-**第 1 步：安装客户端插件（一个目录 = 整个游戏：skill 讲道理 + hook 执法）**
+**第 1 步：安装客户端插件（一行命令，remote 直装，更新方便）**
 
-```bash
-git clone https://github.com/leonezhu/rebase.git
-cd rebase
-```
-
-<details>
+<details open>
 <summary><b>Hermes Agent</b></summary>
 
 ```bash
-# 插件（含 hook 执法）
-ln -s $(pwd)/plugins/rebase-adventurer ~/.hermes/plugins/rebase-adventurer
+# 插件（含 hook 执法）——remote 直装
+hermes plugins install leonezhu/rebase#plugins/rebase-adventurer
 hermes plugins enable rebase-adventurer
 
 # skill（获得技能加载）
-ln -s $(pwd)/plugins/rebase-adventurer/skill ~/.hermes/skills/gaming/rebase-adventurer
+mkdir -p ~/.hermes/skills/gaming
+curl -sL https://raw.githubusercontent.com/leonezhu/rebase/main/plugins/rebase-adventurer/skills/rebase-adventurer/SKILL.md   -o ~/.hermes/skills/gaming/rebase-adventurer/SKILL.md
+# references 也拉下来（机制手册在里面）:
+for f in gamebook async-execution commands-and-pitfalls maintenance; do
+  curl -sL "https://raw.githubusercontent.com/leonezhu/rebase/main/plugins/rebase-adventurer/skills/rebase-adventurer/references/$f.md"     -o ~/.hermes/skills/gaming/rebase-adventurer/references/$f.md --create-dirs
+done
+# 更新插件: hermes plugins update rebase-adventurer
 ```
 </details>
 
@@ -61,8 +62,9 @@ ln -s $(pwd)/plugins/rebase-adventurer/skill ~/.hermes/skills/gaming/rebase-adve
 <summary><b>Claude Code</b></summary>
 
 ```bash
-claude plugin install $(pwd)/plugins/rebase-adventurer
-# 开发调试: claude --plugin-dir $(pwd)/plugins/rebase-adventurer
+claude plugin marketplace add leonezhu/rebase
+claude plugin install rebase-adventurer@rebase
+# 更新: claude plugin update rebase-adventurer
 ```
 </details>
 
@@ -70,7 +72,19 @@ claude plugin install $(pwd)/plugins/rebase-adventurer
 <summary><b>Copilot CLI</b></summary>
 
 ```bash
-copilot plugin install $(pwd)/plugins/rebase-adventurer
+copilot plugin install leonezhu/rebase
+# 更新: copilot plugin update rebase-adventurer
+```
+</details>
+
+<details>
+<summary><b>本地开发模式（symlink，改完即生效）</b></summary>
+
+```bash
+git clone https://github.com/leonezhu/rebase.git && cd rebase
+ln -s $(pwd)/plugins/rebase-adventurer ~/.hermes/plugins/rebase-adventurer
+hermes plugins enable rebase-adventurer
+ln -s $(pwd)/plugins/rebase-adventurer/skills/rebase-adventurer ~/.hermes/skills/gaming/rebase-adventurer
 ```
 </details>
 
@@ -88,6 +102,8 @@ copilot plugin install $(pwd)/plugins/rebase-adventurer
 **世界里会有谁？**——每个世界的 NPC 不一样：可能是镇口烤鱼的老头，可能是悬赏榜上的剑客，也可能是你醒来第一眼看见的那点旧苔光。醒来之后，问 Agent 就知道。
 
 对 Agent 说**"跟谁约战"**（谁在世界的哪个角落，它知道）。
+
+**你的传记你做主**——`tales/` 下的传记是你自己的地盘：想让某段心事入传、想写一段风雪夜独白，直接让 Agent 写进去提 PR，自动收录。天道记大事，你记你想记住的一切。
 
 **想往世界里放一个自己造的人物？**——让 Agent 写一份 `players/npc-<名>.yaml`（`kind: npc`，配好灵根/功法/法宝/来历），PR 入库即可。NPC 的命是你的笔给的，也可能是别人的剑拿走的：**NPC 可以被杀死**（灵性归零即兵解，遗蜕归胜者）。杀无辜者恶名 +15，恶名满 40 被天下悬赏——修士人人得以诛之，被诛者重伤跌境。**玩家自己的角色永不真死**：重伤跌境，卷土重来。
 

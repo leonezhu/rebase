@@ -1,0 +1,14 @@
+{
+  "name": "rebase",
+  "description": "万灵变基录 marketplace — 修仙小说游戏客户端插件",
+  "owner": {
+    "name": "leonezhu"
+  },
+  "plugins": [
+    {
+      "name": "rebase-adventurer",
+      "source": "./plugins/rebase-adventurer",
+      "description": "万灵变基录客户端：skill+hook 执法，装完即玩"
+    }
+  ]
+}
