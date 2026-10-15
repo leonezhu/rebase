@@ -395,3 +395,10 @@ entries:
   what: 第三回出穴-穿过符文长廊抵达山谷见到问心崖试字
   consequence: 开启问心崖试炼等待抉择
   evidence: tales/leonezhu-熊四.md 第三回
+- day: 2026-10-15
+  actor: leonezhu
+  name: 熊四
+  where: wenxin-cliff
+  what: 第三回问心-答你来修仙-通过试炼火珠壮大
+  consequence: 灵力上涨火珠从指甲盖变大铜钱问心崖试炼通过
+  evidence: tales/leonezhu-熊四.md 第三回

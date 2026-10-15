@@ -3,13 +3,13 @@ owner: leonezhu
 kind: player
 created_at: '2026-10-15T16:30:00'
 status: awakening
-where: 未知
+where: wenxin-cliff
 activity: none
 realm: lianqi
 constitution: 凡骨
 element: 阴
 aptitude: 下品
-exp: 10
+exp: 30
 stones: 0
 gongfa: [引气诀]
 artifacts: []
@@ -18,5 +18,11 @@ mood: {}
 open_loops:
 - hook: 问心崖试炼
   status: open
-chronicle: []
+chronicle:
+- day: 1
+  event: 灵脉觉醒
+- day: 2
+  event: 行气-火珠自主运转
+- day: 3
+  event: 出穴-过符文长廊-问心崖试炼通过
 origin: 于某处醒来，全然不知前世何事
