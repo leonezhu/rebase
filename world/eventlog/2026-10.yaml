@@ -262,3 +262,10 @@ entries:
   what: 三宝明用——铃=应急灯钥(贴芯灯自亮);守灯石=夜路不迷向/邪祟避三尺;符布=数百镇魂符可撕用。辞别灯台众人,南下官道启程历练
   consequence: where=guandao-nan;北坡线全闭,历练线开
   evidence: tales/leonezhu-熊三.md 第三十一回
+- day: 2026-10-20
+  actor: leonezhu
+  name: 熊三
+  where: huai-an
+  what: 南下第三日抵槐安村——村口老槐被黑线缠，树心呼救;土沟得白骨执弓(弓弦颤);镇魂符贴额生效,守灯石发热;黑气凝人形邀弓
+  consequence: 新地点huai-an;持[无名弓?];符已用一枚
+  evidence: tales/leonezhu-熊三.md 第三十二回

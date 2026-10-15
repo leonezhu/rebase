@@ -1,0 +1,7 @@
+id: huai-an
+name: 槐安村
+type: settlement
+where: 南下官道右侧
+desc: 无名小村，村口老槐树被黑线缠绕，树心有人声求救；土沟中发现白骨执弓，弓弦犹颤
+connected: [guandao-nan]
+created_at: '2026-10-20'
