@@ -1,7 +1,7 @@
 name: Explore (秘境探索)
 # 触发：任意 issue 评论 /explore
 # hash 确定性遭遇 → bot 贴事件故事 → 灵石/功力入账 bot commit
-# 规则：只结算评论者自己的灵兽；每兽每日至多 3 次探索
+# 规则：只结算评论者自己的角色；探索不限次数——世界是活的，走多远是你的缘分（2026-10-15 去网游化）
 
 on:
   issue_comment:
@@ -39,22 +39,7 @@ jobs:
               -b "@${EXPLORER} 你尚未觉醒（players/ 无你的档案），秘境之门不识你的气息。先去 README 觉醒入道吧。"
             exit 1
           fi
-          # 每日限额：查当日已入账的探索次数（bot commit 信息含"秘境探索"）。
-          # 按 committer 上海本地日期精确过滤——不用 git --since="today 00:00"：
-          # 实测 approxidate 对该语法解析不可靠（返回空集），会导致每日 3 次限额永不触发
-          TODAY=$(TZ=Asia/Shanghai git log --format="%cd|%s" --date=format-local:"%Y-%m-%d" -- "$F" \
-            | grep "^$(TZ=Asia/Shanghai date +%Y-%m-%d)|" | grep -c "秘境探索" || true)
-          # 转世豁免(v0.13): 灵籍created_at=今日(新缔约/转世第一日)不计旧账——new life new day
-          CREATED=$(python3 -c "import yaml;print(str(yaml.safe_load(open('$F', encoding='utf-8')).get('created_at',''))[:10])")
-          if [ "$CREATED" = "$(TZ=Asia/Shanghai date +%Y-%m-%d)" ]; then TODAY=0; fi
-          if [ "${TODAY:-0}" -ge 3 ]; then
-            gh issue comment $ISSUE -R leonezhu/rebase \
-              -b "@${EXPLORER} 今日秘境已探索 ${TODAY} 次，灵兽灵力耗竭，明日再来（每日限 3 次）。"
-            exit 1
-          fi
-          echo "explorer=$EXPLORER" >> $GITHUB_OUTPUT
-          echo "today=$TODAY" >> $GITHUB_OUTPUT
-
+          
       - name: hash 定遭遇 + 结算
         id: enc
         run: |
@@ -65,7 +50,7 @@ jobs:
 
           OWNER = "${{ steps.beast.outputs.explorer }}"
           # 种子：评论者 + 评论 id + 当日已探索次数 → 同一评论重跑结果不变，玩家不可控
-          seed = f"explore|{OWNER}|${{ github.event.comment.id }}|${{ steps.beast.outputs.today }}"
+          seed = f"explore|{OWNER}|${{ github.event.comment.id }}"
           rng = hashlib.sha256(seed.encode()).hexdigest()
 
           import glob as _g
@@ -172,7 +157,7 @@ jobs:
 
           **入账**：灵石 ${STONES} · 功力 ${EXP} · 余额 ${BAL} 灵石
 
-          今日还可探索 $((3 - ${{ steps.beast.outputs.today }} - 1)) 次 · 评论 \`/explore\` 再入秘境"
+          雾不关机，随来随探 · 评论 \`/explore\` 再入秘境"
 
       - name: 灵石入账（bot commit + 自动合并）
         env:

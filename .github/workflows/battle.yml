@@ -159,6 +159,8 @@ jobs:
                   base = 100 + beast.get('spirit_root', {}).get('purity', 50) * 1.2                       + beast.get('comprehension', 50) * 0.8                       + len(beast.get('gongfa', [])) * 12                       + len(beast.get('artifacts', [])) * 10
                   if beast.get('constitution'):
                       base *= 1.08
+                  # 灵性=状态因子(带伤应战战力打折,不锁行动): 100灵=全盛, 0灵=六成战力
+                  base *= (0.6 + 0.4 * beast.get('spirit', 100) / 100)
                   if ELEM_BEATS.get(beast['element']) == opp['element']:
                       base *= 1.15
                   elif ELEM_BEATS.get(opp['element']) == beast['element']:
@@ -220,8 +222,7 @@ jobs:
               if beast.get('spirit_recovered_at') != TODAY:
                   beast['spirit'] = min(100, beast.get('spirit', 100) + 20)
                   beast['spirit_recovered_at'] = TODAY
-              if beast['spirit'] < 30:
-                  raise SystemExit(f"CLOSED:{owner}:{beast['name']}:灵性耗竭，已闭关，明日再战（今日灵性 {beast['spirit']}）")
+              # 灵性低=带伤应战(战力因子已含), 不再锁行动——想打就打, 代价自负(2026-10-15 去网游化)
               if was_below:
                   comeback_set.add(owner)
 
@@ -598,6 +599,89 @@ jobs:
           body = "\n".join(lines)
           subprocess.run(['gh','issue','comment', ISSUE, '-R', 'leonezhu/rebase', '-b', body], check=True)
           PYEOF
+
+      - name: 生死分野与恶名（2026-10-15 自由度扩展）
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python3 - <<'PYEOF'
+          import yaml, json, os, glob, sys
+          r = json.load(open('battle_result.json'))
+          WINNER, LOSER = r['winner'], r['loser']
+          
+          def find_doc(owner):
+              for c in ([f'players/{owner}.yaml'] + sorted(glob.glob(f'players/{owner}-*.yaml')) + [f'monsters/{owner}/beast.yaml']):
+                  if os.path.exists(c):
+                      return c
+              return None
+          
+          pw, pl = find_doc(WINNER), find_doc(LOSER)
+          if not pw or not pl:
+              print('::notice::缺档，跳过生死结算')
+              sys.exit(0)
+          dw, dl = yaml.safe_load(open(pw, encoding='utf-8')), yaml.safe_load(open(pl, encoding='utf-8'))
+          
+          KILL = dl.get('spirit', 100) <= 0
+          loser_kind = dl.get('kind', 'npc')
+          lines = []
+          
+          if KILL and loser_kind == 'npc':
+              loot = int(dl.get('spirit_stones', 0) * 0.6)
+              dl['spirit_stones'] = dl.get('spirit_stones', 0) - loot
+              dl['status'] = 'fallen'
+              dl['fallen_at'] = __import__('datetime').date.today().isoformat()
+              dl['fallen_by'] = WINNER
+              moved = []
+              if loot > 0:
+                  dw['spirit_stones'] = dw.get('spirit_stones', 0) + loot
+                  moved.append(f'{loot} 枚灵石')
+              arts = dl.get('artifacts') or []
+              if arts:
+                  take = arts.pop(0)
+                  dw.setdefault('artifacts', []).append(take)
+                  moved.append(f'「{take["name"]}」')
+              for pth, dd in ((pw, dw), (pl, dl)):
+                  yaml.safe_dump(dd, open(pth, 'w', encoding='utf-8'), allow_unicode=True, sort_keys=True)
+              lines.append(f'☠️ **{dl.get("name", LOSER)}** 灵性燃尽，就此兵解。')
+              if moved:
+                  lines.append(f'遗蜕归 **{WINNER}**：{"、".join(moved)}。')
+          
+          elif KILL and loser_kind == 'player':
+              REALMS = [('lianqi', 0), ('zhuji', 150), ('jindan', 500), ('yuanying', 1500), ('huashen', 4000), ('liuhe', 10000)]
+              realm = dl.get('realm', 'lianqi')
+              idx = next((i for i, (nm, _) in enumerate(REALMS) if nm == realm), 0)
+              if idx > 0:
+                  dl['realm'] = REALMS[idx-1][0]
+                  dl['exp'] = REALMS[idx-1][1]
+                  lines.append(f'🩸 **{dl.get("name", LOSER)}** 道基受创，境界跌落——修为散作上一境，重伤未愈。')
+              else:
+                  lines.append(f'🩸 **{dl.get("name", LOSER)}** 重伤垂死，命悬一线——修为尚浅，跌无可跌。')
+              dl['spirit'] = 30
+              yaml.safe_dump(dl, open(pl, 'w', encoding='utf-8'), allow_unicode=True, sort_keys=True)
+          
+          if KILL and loser_kind == 'npc':
+              noto = int(dw.get('notoriety', 0))
+              victim_noto = int(dl.get('notoriety', 0))
+              if victim_noto < 40:
+                  noto += 15
+                  dw['notoriety'] = noto
+                  yaml.safe_dump(dw, open(pw, 'w', encoding='utf-8'), allow_unicode=True, sort_keys=True)
+                  if noto >= 40:
+                      lines.append(f'🌑 **{WINNER}** 恶名已著（{noto}）——江湖悬赏加身，修士人人得以诛之。')
+                  else:
+                      lines.append(f'🌑 **{WINNER}** 手上沾了无辜者的血（恶名 {noto}）。因果自负。')
+              else:
+                  lines.append(f'⚖️ **{dl.get("name", LOSER)}** 本就是恶名昭彰之辈，**{WINNER}** 此番是替天行道。')
+          
+          if lines:
+              with open('karma_result.md', 'w') as f:
+                  f.write('\n'.join(lines) + '\n')
+              print('\n'.join(lines))
+          PYEOF
+          if [ -f karma_result.md ]; then
+            python3 -c "import json,os; r=json.load(open('battle_result.json')); rf=r.get('report_file'); (rf and os.path.exists(rf)) and open(rf,'a').write('\\n---\\n\\n'+open('karma_result.md').read()); print('karma done')"
+          fi
+
 
       - name: 奖励入账（bot commit）
         env:

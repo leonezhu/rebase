@@ -34,6 +34,7 @@ gongfa:
   learned: '2026-09-25'
   name: 金锋洗髓
   origin: 剑心通明体质自生的配套心法，无师自通
+kind: npc
 memory_fragments: 3
 mood:
   state: 昂扬

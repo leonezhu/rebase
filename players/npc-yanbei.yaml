@@ -1,52 +1,53 @@
-owner: npc-yanbei
+artifacts:
+- grade: 上品法器
+  name: 叠嶂印
+  obtained: '2026-10-05'
+  origin: 渡劫成功那夜，天雷劈开的崖心里嵌着它
+  power: 掷出化山，镇压之处地脉归拢，对方如陷泥沼
+- grade: 下品法器
+  name: 罗盘残影
+  obtained: '2026-09-15'
+  origin: 与他一同醒来的虚影，从此再未离身
+  power: 指向主人最想找的东西——不明原理，从未指错
+chronicle:
+- D1 · 醒于黑石荒原，身侧只有一枚罗盘虚影
+- D8 · 地脉得《镇岳诀》，自此脚下三尺皆是助力
+- D22 · 渡劫一次成，得「破雷者」之名；崖心拾叠嶂印
+comprehension: 62
+constitution: ''
+created_at: '2026-10-14T10:00:00+08:00'
+exp: 620
+gongfa:
+- element: earth
+  grade: 玄阶上品
+  learned: '2026-09-20'
+  name: 镇岳诀
+  origin: 黑石荒原地脉深处的前辈坐化处，蒲团下压着半卷玉简
+- element: earth
+  grade: 黄阶中品
+  learned: '2026-10-02'
+  name: 缩地成寸
+  origin: 用一枚中品灵石跟游商换的残篇，自己补全了后三式
+kind: npc
+memory_fragments: 2
+mood:
+  state: 平静
+  updated: '2026-10-14'
 name: 严北岳
+open_loops:
+- hook: 罗盘最近总指向雾渊方向——它想找的东西在那边
+  planted: '2026-10-12'
+  status: open
 origin: 醒来时在黑石荒原，第一件事是把随身罗盘的残影画在地上——没人知道他跟了谁
-created_at: "2026-10-14T10:00:00+08:00"
+owner: npc-yanbei
 realm: jindan
-stage: cultivating
+spirit: 100
 spirit_root:
   element: earth
   purity: 82
   variant: normal
-constitution: ""
-comprehension: 62
-exp: 620
 spirit_stones: 380
-spirit: 100
-mood:
-  state: 平静
-  updated: "2026-10-14"
+stage: cultivating
 titles:
-  - 破雷者
-  - 踏雾者
-memory_fragments: 2
-gongfa:
-  - name: 镇岳诀
-    grade: 玄阶上品
-    element: earth
-    origin: 黑石荒原地脉深处的前辈坐化处，蒲团下压着半卷玉简
-    learned: "2026-09-20"
-  - name: 缩地成寸
-    grade: 黄阶中品
-    element: earth
-    origin: 用一枚中品灵石跟游商换的残篇，自己补全了后三式
-    learned: "2026-10-02"
-artifacts:
-  - name: 叠嶂印
-    grade: 上品法器
-    power: 掷出化山，镇压之处地脉归拢，对方如陷泥沼
-    origin: 渡劫成功那夜，天雷劈开的崖心里嵌着它
-    obtained: "2026-10-05"
-  - name: 罗盘残影
-    grade: 下品法器
-    power: 指向主人最想找的东西——不明原理，从未指错
-    origin: 与他一同醒来的虚影，从此再未离身
-    obtained: "2026-09-15"
-chronicle:
-  - "D1 · 醒于黑石荒原，身侧只有一枚罗盘虚影"
-  - "D8 · 地脉得《镇岳诀》，自此脚下三尺皆是助力"
-  - "D22 · 渡劫一次成，得「破雷者」之名；崖心拾叠嶂印"
-open_loops:
-  - hook: 罗盘最近总指向雾渊方向——它想找的东西在那边
-    planted: "2026-10-12"
-    status: open
+- 破雷者
+- 踏雾者

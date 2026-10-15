@@ -185,6 +185,14 @@ bot 判定评论自带双方素材包（档案字段+chronicle 近 2 场+伏笔�
 - 等待也是玩法：经脉要养、心境要平复——异世界有自己的时间，玩家陪它等，比替它跑完更有味道
 - 例外：纯只读查询（看图鉴/看传记/查状态）不消耗节奏，可连答
 
+## 自由度与因果（2026-10-15 用户定调）
+
+- **不设网游式限制**：探索/修行不限次数，无体力墙。想练几坐练几坐
+- **角色身份**：玩家角色 `kind: player` 永不真死（重伤+跌一境）；AI 生成 NPC `kind: npc` 可被杀（兵解，遗蜕归胜者）
+- **恶名**：杀良民 NPC（notoriety<40）+15；≥40 天下悬赏，人人可诛。诛恶名者无因果
+- **叙事转译**：灵性=伤势气血；恶名=江湖风评（NPC 神色、客栈闲话）；兵解=一战之后的遗体与遗物
+- **生成 NPC**：让 Agent 写 `players/npc-<名>.yaml`（kind: npc + 灵根/功法/法宝/来历）PR 入库，生死自负
+
 ## 已知坑（少走弯路）
 
 - **workflow改后必跑 actionlint**（本地：`/tmp/actionlint` 或 `go install github.com/rhysd/actionlint/cmd/actionlint@latest`）：YAML safe_load 通过≠GitHub schema 通过。已实锤的坑：①bash变量写成 `${{WINNER}}`（双括号=GitHub expression，undefined variable → 骨架 failure run，jobs 为空、run name 显示为文件路径）；②python heredoc 里用了 `_glob` 忘了 import（运行时才炸）；③`grep -oP '[a-zA-Z0-9-]+'` 匹配不到中文角色名。骨架 failure 的特征：`jobs:[]` + log not found + event 与触发器不匹配。

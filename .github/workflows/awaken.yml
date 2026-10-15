@@ -74,8 +74,9 @@ jobs:
               jsonschema.validate(d, J.load(open('schemas/player.schema.json')))
           except ImportError:
               # 最小手检：关键字段
-              for k in ['owner', 'name', 'realm', 'stage', 'spirit_root', 'exp', 'spirit_stones']:
+              for k in ['owner', 'name', 'realm', 'stage', 'spirit_root', 'exp', 'spirit_stones', 'kind']:
                   if k not in d: err.append(f"缺字段: {k}")
+              if d.get('kind') != 'player': err.append("kind 必须为 player（awaken 只铸真实玩家角色；AI 生成 NPC 走 world/ 投稿，生死自负）")
               if d.get('owner') != owner: err.append(f"owner({d.get('owner')}) 与文件名({owner}) 不一致")
               sr = d.get('spirit_root', {})
               if not all(k in sr for k in ('element', 'purity', 'variant')):
