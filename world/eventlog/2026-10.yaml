@@ -206,3 +206,10 @@ entries:
   what: 借灯问乌老倌消息——哑叔以钟应(一长北/两短深雾);基座守山人刻字「灯照归人,其在灯外不在灯山」;灯台背阴处寻见乌老倌,活,抱担而坐,怀信「交点灯人」
   consequence: 乌老倌寻获(失踪closed);未拆信一封
   evidence: tales/leonezhu-熊三.md 第二十三回
+- day: 2026-10-17
+  actor: leonezhu
+  name: 熊三
+  where: dengtai-wuxian
+  what: 拆读乌老倌遗信——本名乌,守山人次子;哑叔=学徒兄,非哑是不肯言;半块牌乃守山人入雾前所托;前晚雾中有声呼其小名,他应了一步,被收至灯台
+  consequence: 身世全线收拢;牌的归宿=灯台(非乌非我)
+  evidence: tales/leonezhu-熊三.md 第二十四回
