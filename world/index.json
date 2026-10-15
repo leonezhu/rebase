@@ -537,19 +537,19 @@
   ],
   "tales": [
     {
-      "id": "leonezhu-林栖",
-      "owner": "leonezhu",
-      "name": "林栖",
-      "entries": 2,
-      "desc": "",
-      "status": "连载中"
-    },
-    {
       "id": "leonezhu-熊三",
       "owner": "leonezhu",
       "name": "熊三",
       "entries": 42,
       "desc": "大变基第十一日，破庙檐下的风铃忽然自己响了一声。",
+      "status": "连载中"
+    },
+    {
+      "id": "leonezhu-熊四",
+      "owner": "leonezhu",
+      "name": "熊四",
+      "entries": 2,
+      "desc": "灵根既开，明日卯时，持牌至问心崖。",
       "status": "连载中"
     },
     {
