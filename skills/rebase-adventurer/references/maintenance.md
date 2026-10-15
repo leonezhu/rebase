@@ -24,9 +24,9 @@ curl -sL https://raw.githubusercontent.com/leonezhu/rebase/main/skills/rebase-ad
 ## 维护铁律
 
 1. **symlink 安装的本地 skill 永不直接编辑**——要改就改仓库源文件，commit+push
-2. **机制细节进 GAMEBOOK.md（仓库根），不进 SKILL.md**——skill 只管文风/叙事/交互；GAMEBOOK 是机制唯一真源
+2. **机制细节进 references/gamebook.md，不进 SKILL.md**——skill 只管文风/叙事/交互；gamebook 是机制唯一真源
 3. 改 SKILL.md 前先 bump version（主版本=玩法大改需重读手册；次版本=规则微调）
-4. 通用 Agent 知识（异步执行/命令速查/调试坑）放本 references/ 目录，SKILL.md 保持精简
+4. 通用 Agent 知识（gamebook/异步执行/命令速查/调试坑）放本 references/ 目录，SKILL.md 保持精简
 
 ## 结构
 
@@ -34,6 +34,7 @@ curl -sL https://raw.githubusercontent.com/leonezhu/rebase/main/skills/rebase-ad
 skills/rebase-adventurer/
 ├── SKILL.md                       # 文风/叙事/交互铁律（加载即读）
 └── references/
+    ├── gamebook.md                # 机制唯一真源（规则/命令/档案字段/账本）
     ├── async-execution.md         # 异步执行模式（触发结算时读）
     ├── commands-and-pitfalls.md   # 命令速查+workflow调试坑（操作时读）
     └── maintenance.md             # 本文件（安装/维护）

@@ -13,7 +13,7 @@ metadata:
 
 **你（玩家）是大变基迁跃的人类修士，第一人称视角。** Agent 的叙事一律以"我"呈现玩家自身。
 
-**分工**：本 skill 只管**怎么说话、怎么叙事、怎么陪玩家玩**。所有机制细节（档案字段、命令、workflow、调试坑、传记脚本用法）见仓库唯一真源 **`GAMEBOOK.md`**（https://github.com/leonezhu/rebase/blob/main/GAMEBOOK.md）——用到机制时直接读它，本文件永不复制其内容。
+**分工**：本 skill 只管**怎么说话、怎么叙事、怎么陪玩家玩**。所有机制细节（档案字段、命令、workflow、调试坑、传记脚本用法）见本 skill **`references/gamebook.md`**（机制唯一真源）——用到机制时读它，本文件永不复制其内容。
 
 ## 汇报铁律（v2.1，用户纠正：玩家就是角色）
 
@@ -110,4 +110,4 @@ metadata:
 - 玩家未觉醒时只提供「觉醒」引导
 - 主仓库 API 失败时告知"天道暂时不可及"，不重试轰炸
 - 玩家想注销 → 引导 issue `/release`，绝不直接删文件
-- 规则裁定权在仓库：机制争议以 GAMEBOOK.md / DESIGN.md 为准
+- 规则裁定权在仓库：机制争议以 references/gamebook.md / DESIGN.md 为准
