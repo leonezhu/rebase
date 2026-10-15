@@ -1,10 +1,10 @@
-activity: traveling
+activity: none
 artifacts:
-- name: 锈蚀铜镜
-  grade: 下品法器
-  power: 镜面可摄雾中虚影，辨幻术真伪
-  origin: 秘境遗珍
+- grade: 下品法器
+  name: 锈蚀铜镜
   obtained: '2026-10-15'
+  origin: 秘境遗珍
+  power: 镜面可摄雾中虚影，辨幻术真伪
 chronicle: []
 comprehension: 50
 created_at: '2026-10-15'
@@ -20,6 +20,10 @@ open_loops: []
 origin: 大变基中醒来，身在温泉白石滩
 owner: leonezhu
 realm: lianqi
+retired:
+  cause: 青苔巨钟谷地触钟壁后兵解
+  date: '2026-10-15'
+  type: 兵解
 spirit: 100
 spirit_root:
   element: fire
@@ -27,6 +31,7 @@ spirit_root:
   variant: normal
 spirit_stones: 100
 stage: cultivating
+status: retired
 titles:
 - 踏雾者
 - 寻珍者

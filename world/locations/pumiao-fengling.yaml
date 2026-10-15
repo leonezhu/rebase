@@ -1,0 +1,11 @@
+id: pumiao-fengling
+name: 风铃破庙
+kind: location
+type: 废墟
+desc: 半山腰一座塌了半边的破庙，檐角挂着上百只风铃，材质各异——铜的、陶的、骨的。无风时它们一动不动，起风的夜里满山叮咚，像无数人在低声说话。
+notable:
+  - 熊三醒来的地方
+  - 风铃无风自动时,是山那头有大事发生
+danger: 低
+first_seen: 熊三 · 大变基第十一日
+created_by_bot: false
