@@ -20,6 +20,15 @@ header h1{font-size:1.9rem;letter-spacing:.25em;font-weight:700}
 nav.links{display:flex;gap:1.5rem;justify-content:center;padding:2rem 0}
 nav.links a{color:var(--accent2);text-decoration:none}
 .loading{text-align:center;padding:4rem;color:var(--dim)}
+.toolbar{display:flex;gap:.6rem;justify-content:center;padding:1.2rem 0 0;flex-wrap:wrap}
+.toolbar button{font-family:inherit;font-size:.85rem;padding:.45rem 1.1rem;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--fg);cursor:pointer;transition:all .15s}
+.toolbar button:hover{border-color:var(--accent);color:var(--accent2)}
+.toc{display:none;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:.9rem 1.2rem;margin:1rem 0;max-height:50vh;overflow:auto}
+.toc.open{display:block}
+.toc a{display:block;color:var(--fg);text-decoration:none;padding:.35rem 0;border-bottom:1px dashed var(--border);font-size:.95rem}
+.toc a:last-child{border-bottom:none}
+.toc a:hover{color:var(--accent2)}
+h2[id]{scroll-margin-top:1rem}
 footer{margin-top:2rem;padding-top:1.6rem;border-top:1px solid var(--border);color:var(--dim);font-size:.75rem;text-align:center;line-height:1.9}
 footer a{color:var(--accent2);text-decoration:none}
 </style>
@@ -49,17 +58,48 @@ if (m && !PASS_THROUGH.includes(m[1])) {
     const md = await res.text();
     const titleMatch = md.match(/^#\s+(.+)$/m);
     const title = titleMatch ? titleMatch[1].trim() : ID;
+
+    // 章节锚点: h2 自动编号 id, 收集目录
+    const html = marked.parse(md);
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const chapters = [];
+    doc.querySelectorAll('h2').forEach((h2, i) => {
+      h2.id = 'ch-' + (i + 1);
+      chapters.push({ id: h2.id, text: h2.textContent });
+    });
+    const tocHtml = chapters.length
+      ? `<div class="toc" id="toc">${chapters.map(c => `<a href="#${c.id}">${c.text}</a>`).join('')}</div>`
+      : '';
+
     APP.innerHTML = `
       <header>
         <div class="kicker">万灵变基录 · 人物专题</div>
         <h1>${title}</h1>
+        <div class="toolbar">
+          ${chapters.length ? '<button id="btn-toc">章节目录</button><button id="btn-latest">跳到最新一章 ↓</button>' : ''}
+        </div>
+        ${tocHtml}
       </header>
-      <article class="chapter" style="padding:1.5rem 0">${marked.parse(md)}</article>
+      <article class="chapter" style="padding:1.5rem 0">${doc.body.innerHTML}</article>
       <footer>
         《万灵变基录》· ${title}<br>
         <a href="../tales-list.html">← 返回传记目录</a>
       </footer>
     `;
+
+    const btnToc = document.getElementById('btn-toc');
+    const toc = document.getElementById('toc');
+    if (btnToc && toc) btnToc.onclick = () => toc.classList.toggle('open');
+    const btnLatest = document.getElementById('btn-latest');
+    if (btnLatest && chapters.length) btnLatest.onclick = () => {
+      const el = document.getElementById(chapters[chapters.length - 1].id);
+      el && el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      toc && toc.classList.remove('open');
+    };
+    // 带 hash 进入时直接跳章节
+    if (location.hash && document.querySelector(location.hash)) {
+      setTimeout(() => document.querySelector(location.hash).scrollIntoView(), 100);
+    }
   } catch(e) {
     APP.innerHTML = `
       <header><div class="kicker">万灵变基录</div><h1>迷路了</h1></header>

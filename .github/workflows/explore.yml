@@ -27,9 +27,10 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           EXPLORER: ${{ github.event.comment.user.login }}
           ISSUE: ${{ github.event.issue.number }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
         run: |
           # 多角色选通(2026-10-15)：/explore [@角色名]，唯一活角色直通，多个则列出让选
-          F=$(bash scripts/pick-character.sh "$EXPLORER" "$ISSUE" "${{ github.event.comment.body }}")
+          F=$(bash scripts/pick-character.sh "$EXPLORER" "$ISSUE" "$COMMENT_BODY")
           if [ ! -f "$F" ]; then
             exit 1
           fi
@@ -127,6 +128,36 @@ jobs:
               stones = d['spirit_stones'] - old_stones  # 实际损失（保底后，保持负号——丢灵石不可记成正入账）
 
           p.write_text(yaml.safe_dump(d, allow_unicode=True, sort_keys=False), encoding='utf-8')
+
+          # 传记自动续写(2026-10-15 修复"传记不更新"): 遭遇入传, 幕数自增
+          ENC_NAME = {'herb': '灵草', 'array': '法阵', 'beast': '秘兽', 'beast_lose': '恶战',
+                      'well': '古井', 'artifact': '遗珍', 'lost': '迷雾', 'cave': '洞府'}
+          tale_f = Path(f"tales/{p.stem}.md")
+          if tale_f.exists():
+              mtale = tale_f.read_text(encoding='utf-8')
+              import re as _re
+              acts = _re.findall(r'^## 第([一二三四五六七八九十百零]+)回', mtale, _re.M)
+              n = 0
+              CNUM = {'零':0,'一':1,'二':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9}
+              for a in acts:
+                  v = 0
+                  for ch in a:
+                      if ch in CNUM: v = v*10 + CNUM[ch]
+                      elif ch == '十': v = (v or 1)*10
+                  n = max(n, v)
+              nn = n + 1
+              tens = ['','十','二十','三十','四十','五十','六十','七十','八十','九十']
+              def cnum(x):
+                  if x < 10: return ['零','一','二','三','四','五','六','七','八','九'][x]
+                  if x < 100:
+                      t_, o = divmod(x, 10)
+                      return (['','一','二','三','四','五','六','七','八','九'][t_] if t_>1 else '') + '十' + (['','一','二','三','四','五','六','七','八','九'][o] if o else '')
+                  return str(x)
+              sec = f"\n## 第{cnum(nn)}回 · {ENC_NAME.get(code, '遭际')}\n\n{story}\n"
+              # 全卷终不续写
+              if '全卷终' not in mtale:
+                  tale_f.write_text(mtale.rstrip() + '\n' + sec, encoding='utf-8')
+
           result = {
               "owner": OWNER, "code": code,
               "stones": stones, "exp": exp,
@@ -178,6 +209,9 @@ jobs:
           BRANCH="explore-log/${OWNER}-${{ github.event.comment.id }}"
           git checkout -b "$BRANCH"
           git add "$F"
+          # 传记自动续写入同一commit
+          [ -n "${F:-}" ] && TALES_F="tales/${F#players/}" && TALES_F="${TALES_F%.yaml}.md"
+          [ -f "$TALES_F" ] && git add "$TALES_F"
           git commit -m "秘境探索($CODE): $OWNER ${STONES:+灵石$STONES}${EXP:+功力$EXP}"
           # 入账链咽喉点：push/create/merge 失败必须显式红灯（禁 || true 吞错），见 ITERATION.md 打磨轮登记
           # 并发竞态修复(v0.16.1)：多条 /explore 排队同跑时 beast.yaml+social_log.yaml 双双撞车
