@@ -27,6 +27,21 @@ BANNED = [
     "仓库", "部署", "入账", "校验",
 ]
 
+# 决策禁止词（决策铁律: 绝不允许替玩家做决定）
+DECISION_BLOCKED = [
+    "我决定",
+    "我选择",
+    "我愿意",
+    "我不愿意",
+    "我选择",
+    "我决定要",
+    "我选择了",
+    "我决定去",
+    "我决定不",
+    "我决定守",
+    "我决定不守",
+]
+
 
 def check_tale_updated(changed_paths):
     """动了角色档案/世界资产却没动传记 → 剧情未入史
@@ -60,7 +75,18 @@ def check_text(text, enabled=True):
     return None
 
 
-def evaluate(text, changed_paths=None, attempt=0, text_checks=False):
+def check_decision_blocked(text, enabled=True):
+    """决策禁止词检查（决策铁律）
+    当文本中出现替玩家做决定的词汇时block，强制重写"""
+    if not enabled or not text:
+        return None
+    for phrase in DECISION_BLOCKED:
+        if phrase in text:
+            return f"回复中出现了\"{phrase}\"——这是玩家的决定，不是你的。叙事必须停在问题处，等玩家亲口说。请删掉这段代答，重写。"
+    return None
+
+
+def evaluate(text, changed_paths=None, attempt=0, text_checks=False, decision_checks=True):
     """统一裁决。attempt>=2 放行（防死循环, 上层还有 nudge 上限兜底）"""
     if attempt >= 2:
         return {"verdict": "allow"}
@@ -68,6 +94,9 @@ def evaluate(text, changed_paths=None, attempt=0, text_checks=False):
     if msg:
         return {"verdict": "block", "message": msg}
     msg = check_text(text, enabled=text_checks)
+    if msg:
+        return {"verdict": "block", "message": msg}
+    msg = check_decision_blocked(text, enabled=decision_checks)
     if msg:
         return {"verdict": "block", "message": msg}
     return {"verdict": "allow"}
@@ -103,6 +132,7 @@ def main():
         print(json.dumps(evaluate(
             data.get("text", ""), data.get("changed_paths") or [],
             data.get("attempt", 0), data.get("text_checks", False),
+            data.get("decision_checks", True),  # 默认开启决策检查
         ), ensure_ascii=False))
         return
 
