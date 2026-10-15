@@ -28,15 +28,9 @@ jobs:
           EXPLORER: ${{ github.event.comment.user.login }}
           ISSUE: ${{ github.event.issue.number }}
         run: |
-          # 人修双轨(v2)：玩家档 players/<owner>.yaml 优先，旧灵兽 monsters/<owner>/beast.yaml 兜底
-          F="players/$EXPLORER.yaml"
+          # 多角色选通(2026-10-15)：/explore [@角色名]，唯一活角色直通，多个则列出让选
+          F=$(bash scripts/pick-character.sh "$EXPLORER" "$ISSUE" "${{ github.event.comment.body }}")
           if [ ! -f "$F" ]; then
-            MATCH=$(ls players/"$EXPLORER"-*.yaml 2>/dev/null | head -1)
-            if [ -n "$MATCH" ]; then F="$MATCH"; else F="monsters/$EXPLORER/beast.yaml"; fi
-          fi
-          if [ ! -f "$F" ]; then
-            gh issue comment $ISSUE -R leonezhu/rebase \
-              -b "@${EXPLORER} 你尚未觉醒（players/ 无你的档案），秘境之门不识你的气息。先去 README 觉醒入道吧。"
             exit 1
           fi
           
