@@ -49,18 +49,35 @@
 - chronicle append-only（D<天数> · 一句）；open_loops 伏笔账本（open→resolved）
 - 灵根 hash 派生：sha256(owner|created_at)，Agent 不许自选
 
+## 世界仓库解析（关键：先于一切 gh 命令）
+
+**所有 gh 命令必须带正确的 `-R <owner/repo>`。解析顺序：**
+
+1. **自动探测（首选）**：Agent 本地有仓库 clone 时，从 git remote 推断：
+   ```bash
+   REPO=$(git -C <仓库路径> remote get-url origin | sed -E 's#.*github.com[:/]##; s/\.git$//')
+   ```
+2. **会话配置**：玩家说过"我在用 xxx/rebase 玩"→ 记住，本次会话全程用它
+3. **默认兜底**：`leonezhu/rebase`（公共世界——所有玩家共享同一个天道与世界资产）
+
+**给玩家的话术**：
+- "直接来公共世界玩" → 什么也不用配，默认就是 leonezhu/rebase，你的角色/剧情/资产入公共账
+- "我想有自己的世界" → fork 仓库，开启 Actions，然后把 fork 地址告诉 Agent（或本地 clone 后由 remote 自动推断）
+
+公共世界的好处：世界资产（功法/地点/NPC/事件）所有人共享——别人留下的洞府可能是你的机缘。
+
 ## 命令速查（Agent 自用）
 
 ```bash
 # 读玩家档案
-gh api repos/leonezhu/rebase/contents/players/<玩家名>.yaml --jq .content | base64 -d
+gh api repos/$REPO/contents/players/<玩家名>.yaml --jq .content | base64 -d
 
 # 斗法（两步：建 issue + 补评论触发）
-gh issue create -R leonezhu/rebase -t "斗法：A 挑战 B" -b "/battle @B"
-gh issue comment <issue号> -R leonezhu/rebase -b "/battle @B"
+gh issue create -R "$REPO" -t "斗法：A 挑战 B" -b "/battle @B"
+gh issue comment <issue号> -R "$REPO" -b "/battle @B"
 
 # 盯 workflow（放后台）
-gh run watch <run-id> -R leonezhu/rebase --exit-status
+gh run watch <run-id> -R "$REPO" --exit-status
 
 # 传记入传（对话通道）
 python3 scripts/append-tale.py <角色名> <回目名> <<'EOF'

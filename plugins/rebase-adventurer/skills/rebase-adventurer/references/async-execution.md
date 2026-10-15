@@ -24,10 +24,10 @@
 ```bash
 ( for i in $(seq 1 12); do
     sleep 15
-    R=$(gh run list -R leonezhu/rebase --limit 1 --json status,conclusion --jq '.[0] | "\(.status) \(.conclusion)"')
+    R=$(gh run list -R "$REPO" --limit 1 --json status,conclusion --jq '.[0] | "\(.status) \(.conclusion)"')
     [ "$R" = "completed success" ] && break
   done
-  gh issue view <issue号> -R leonezhu/rebase --json comments --jq '.comments[-1].body' \
+  gh issue view <issue号> -R "$REPO" --json comments --jq '.comments[-1].body' \
     > /tmp/last-result.md ) &
 ```
 

@@ -2,22 +2,24 @@
 
 ## 命令速查（Agent 自用）
 
+> 前置：先按 gamebook「世界仓库解析」确定 `$REPO`（自动探测 > 会话配置 > 默认 leonezhu/rebase）
+
 ```bash
 # 读玩家档案（权威状态）
-gh api repos/leonezhu/rebase/contents/players/<玩家名>.yaml --jq .content | base64 -d
+gh api repos/$REPO/contents/players/<玩家名>.yaml --jq .content | base64 -d
 
 # 斗法（两步：建 issue + 补评论触发）
-gh issue create -R leonezhu/rebase -t "斗法：A 挑战 B" -b "/battle @B"
-gh issue comment <issue号> -R leonezhu/rebase -b "/battle @B"
+gh issue create -R "$REPO" -t "斗法：A 挑战 B" -b "/battle @B"
+gh issue comment <issue号> -R "$REPO" -b "/battle @B"
 
 # 探索（开 issue 或发评论均可）
-gh issue create -R leonezhu/rebase -t "秘境探索 · <地点>" -b "/explore [@角色名]"
+gh issue create -R "$REPO" -t "秘境探索 · <地点>" -b "/explore [@角色名]"
 
 # 移动角色
-gh issue comment <issue号> -R leonezhu/rebase -b "/travel <地点id>"
+gh issue comment <issue号> -R "$REPO" -b "/travel <地点id>"
 
 # 盯一次结算跑完（放后台）
-gh run watch <run-id> -R leonezhu/rebase --exit-status
+gh run watch <run-id> -R "$REPO" --exit-status
 
 # 传记入传（对话通道剧情必走；回目自增+全卷终保护由脚本负责）
 python3 scripts/append-tale.py <角色名> <回目名> <<'EOF'
