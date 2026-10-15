@@ -304,6 +304,17 @@
       "danger": "低",
       "first_seen": "雄二 · 大变基第十一日",
       "created_by_bot": false
+    },
+    {
+      "id": "zhao-zhuang",
+      "name": "赵庄",
+      "type": "settlement",
+      "where": "青林松林中",
+      "desc": "松林深处的旧庄子，白墙黑瓦。三十年前亦曾接待过南行的修士。赵守拙居此。",
+      "connected": [
+        "guandao-nan"
+      ],
+      "created_at": "2026-10-21"
     }
   ],
   "npcs": [
@@ -518,7 +529,7 @@
       "id": "leonezhu-熊三",
       "owner": "leonezhu",
       "name": "熊三",
-      "entries": 34,
+      "entries": 35,
       "desc": "大变基第十一日，破庙檐下的风铃忽然自己响了一声。",
       "status": "连载中"
     },
