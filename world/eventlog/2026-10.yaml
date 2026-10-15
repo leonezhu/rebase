@@ -360,3 +360,10 @@ entries:
   what: 第二回青石镇-打听消息吴三故事土地庙石像钟声决定去钟山
   consequence: 获得关键线索吴三猎户三十年前土地庙石像与灰石同源钟声来自钟山
   evidence: tales/leonezhu-林栖.md 第二回
+- day: 2026-10-15
+  actor: leonezhu
+  name: 熊四
+  where: 灵脉石室
+  what: 第一回灵脉觉醒-骨痛入定聚灵阵开灵根感灵
+  consequence: 灵根初开丹田起火明日卯时问心崖
+  evidence: tales/leonezhu-熊四.md 第一回
