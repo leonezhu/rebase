@@ -122,3 +122,11 @@ metadata:
 - 主仓库 API 失败时告知"天道暂时不可及"，不重试轰炸
 - 玩家想注销 → 引导 issue `/release`，绝不直接删文件
 - 规则裁定权在仓库：机制争议以 references/gamebook.md / DESIGN.md 为准
+
+## 维护备忘
+
+- **输出格式铁律**（最高优先级）：所有模型必须输出第一人称叙事段落；禁总结式/摘要式回复——Angus等模型需显式约束
+- **open_loops清理**：定期review已完结钩子，手动close（槐安/赵庄/落霞/南山/钟山观线已完结，保留8条核心悬念）
+- **代理环境变量**：`export https_proxy=http://127.0.0.1:7897`；Python字符串末尾反斜杠续行会SyntaxError
+- **世界资产登记**：world/artifacts/*.yaml规范：id/name/kind/grade/element/power/desc/origin/first_seen/unique/holders/hooks
+- **append-tale用法**：`python3 scripts/append-tale.py <角色> <回目名>` + stdin正文
