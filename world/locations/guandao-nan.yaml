@@ -1,0 +1,7 @@
+id: guandao-nan
+name: 南下官道
+type: region
+where: 浅湖镇以南
+desc: 出镇官道，往南不知几百里。两侧原野，草木气生疏。
+connected: [qianhuzhen]
+created_at: '2026-10-17'

@@ -1,4 +1,4 @@
-activity: none
+activity: traveling
 artifacts: []
 chronicle: []
 comprehension: 50
@@ -7,7 +7,7 @@ exp: 50
 gongfa: []
 kind: player
 mood:
-  label: 强自镇定
+  label: 舒展
   updated: '2026-10-17'
 name: 熊三
 notoriety: 0
@@ -52,4 +52,4 @@ spirit_stones: 114
 stage: cultivating
 titles:
 - 踏雾者
-where: dengtai-wuxian
+where: guandao-nan
