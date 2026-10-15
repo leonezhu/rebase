@@ -62,14 +62,14 @@ def main():
     for kind, dirp in kinds.items():
         out[kind] = scan_dir(dirp, kind) if dirp.exists() else []
     # titles 是列表，单独扫描
-    if OUTDIR/'titles.yaml'.exists():
+    if (OUTDIR / 'titles.yaml').exists():
         try:
-            out['titles'] = load_yaml(OUTDIR/'titles.yaml')
+            out['titles'] = load_yaml(OUTDIR / 'titles.yaml')
         except Exception as e:
             print(f'[WARN] titles.yaml: {e}', file=sys.stderr)
     else:
         out['titles'] = []
-    out['tales'] = scan_tales(BASE/'tales')
+    out['tales'] = scan_tales(BASE / 'tales')
     with open(OUTPUT, 'w', encoding='utf-8') as f:
         json.dump(out, f, ensure_ascii=False, indent=2)
     total = sum(len(v) for v in out.values())

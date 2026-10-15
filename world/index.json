@@ -420,6 +420,88 @@
       }
     ]
   ],
+  "titles": [
+    {
+      "id": "chiming",
+      "name": "初鸣",
+      "how": "人生第一场斗法得胜——雷声虽小，天地听见了",
+      "effect": 0.5,
+      "first_seen": "battle.yml v0.14（首胜授予）",
+      "granted_by_bot": true
+    },
+    {
+      "id": "yuejizhan",
+      "name": "越级斩",
+      "how": "越境挑战而胜——以下克上，一击成名",
+      "effect": 1.0,
+      "first_seen": "battle.yml v0.14（境界差动×2.5 胜授予）",
+      "granted_by_bot": true
+    },
+    {
+      "id": "baizhefuqi",
+      "name": "败者复起",
+      "how": "连败两场仍敢应战，第三场翻身——败过的人才知道怎么赢",
+      "effect": 1.0,
+      "first_seen": "battle.yml v0.14（连败≥2 后首胜授予，v0.15 修死代码）",
+      "granted_by_bot": true
+    },
+    {
+      "id": "fengmangneilian",
+      "name": "锋芒内敛",
+      "how": "连胜三场而心不狂——气韵自敛，方是长久之道",
+      "effect": 1.0,
+      "first_seen": "battle.yml v0.19（连胜≥3 且心境未低落授予）",
+      "granted_by_bot": true
+    },
+    {
+      "id": "fuyuwankang",
+      "name": "负隅顽抗",
+      "how": "三番落败仍立于场中——虽败犹战，其志不折",
+      "effect": 0.5,
+      "first_seen": "battle.yml v0.19（总败场≥3 授予，败方独自入账）",
+      "granted_by_bot": true
+    },
+    {
+      "id": "tianfchuxing",
+      "name": "天赋初醒",
+      "how": "天赋初次觉醒——沉睡的东西睁开了眼",
+      "effect": 0.5,
+      "first_seen": "battle.yml v0.18（天赋首次跨入 Lv1+ 授予，胜负无关）",
+      "granted_by_bot": true
+    },
+    {
+      "id": "biguanfuchu",
+      "name": "闭关复出",
+      "how": "灵性枯竭闭关，出关首战即胜——出关即巅峰",
+      "effect": 1.0,
+      "first_seen": "battle.yml v0.18（闭关标+本场获胜授予）",
+      "granted_by_bot": true
+    },
+    {
+      "id": "poleizhe",
+      "name": "破雷者",
+      "how": "渡劫一次而成——天雷劈不碎的，从此记他的名字",
+      "effect": 1.0,
+      "first_seen": "rebase.yml v0.14（一次成授予）",
+      "granted_by_bot": true
+    },
+    {
+      "id": "tawuzhe",
+      "name": "踏雾者",
+      "how": "第一次踏入迷雾深处的秘境——雾之外还有雾，他迈了第一步",
+      "effect": 0.5,
+      "first_seen": "explore.yml v0.14（首次探索授予）",
+      "granted_by_bot": true
+    },
+    {
+      "id": "xunzhenzhe",
+      "name": "寻珍者",
+      "how": "一趟秘境满载而归——眼睛毒的人，运气都不会太差",
+      "effect": 1.0,
+      "first_seen": "explore.yml v0.14（单次探索功力≥20 授予）",
+      "granted_by_bot": true
+    }
+  ],
   "tales": [
     {
       "id": "leonezhu-熊三",
