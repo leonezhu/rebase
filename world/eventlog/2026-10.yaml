@@ -227,3 +227,10 @@ entries:
   what: 自问为何跪——自答:非感动,是欠;修路人从不指望被谢。守山人拉起他:「不必跪,灯又不是我点的」;父子重逢,乌老倌恸哭
   consequence: mood=怅然;灯债线全闭
   evidence: tales/leonezhu-熊三.md 第二十六回
+- day: 2026-10-17
+  actor: leonezhu
+  name: 熊三
+  where: beipo-shiken
+  what: 抽身事外——还灯笼留铜铃,"来时拿了多少走时留下多少,我不欠这山什么";下山途中见脚窝与己足同大(路乃三十年前修),拔脚而行不回头
+  consequence: mood=强自镇定;持有[灰石](牌/铃/灯皆还山)
+  evidence: tales/leonezhu-熊三.md 第二十七回
