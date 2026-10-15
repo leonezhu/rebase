@@ -1,0 +1,22 @@
+name: 石磊
+owner: leonezhu
+kind: npc
+created_at: '2026-10-15T18:00:00'
+status: active
+where: zhongshan-guan
+activity: wujian
+realm: lianqi
+constitution: 凡骨
+element: 土
+aptitude: 下品
+exp: 15
+stones: 0
+gongfa: [基础剑法]
+artifacts: [粗铁剑]
+notoriety: 0
+mood:
+  state: 平静
+  updated: '2026-10-15'
+open_loops: []
+chronicle: []
+origin: 同批入门弟子，性格沉稳，擅长土系功法
