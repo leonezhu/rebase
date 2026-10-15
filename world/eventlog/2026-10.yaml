@@ -122,3 +122,10 @@ entries:
   what: 打听得烤鱼老头来历——姓乌,三十年前自北山下来,熟北坡路("那条路我熟");午后动身赴北坡
   consequence: stones=122;activity=traveling
   evidence: tales/leonezhu-熊三.md 第十回
+- day: 2026-10-16
+  actor: leonezhu
+  name: 熊三
+  where: qianhuzhen
+  what: 夜宿北坡山脚石龛守等第三夜;留馒头试坡上"东西"讲不讲道理;后半夜铜牌无风自颤一次
+  consequence: exp=25;地点=北坡山脚
+  evidence: tales/leonezhu-熊三.md 第十一回
