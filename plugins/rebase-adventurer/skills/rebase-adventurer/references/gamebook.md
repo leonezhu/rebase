@@ -68,11 +68,12 @@ YAML，文风好坏由读者裁。唯一红线：**别人的传记不许碰**（
 5. 地点的 `connected` 列出相邻地点 id（逗号分隔）
 6. **index.json 必须重新生成**：`build-world-index.py` 扫描后输出， Pages 自动拉取
 
-**常见遗漏**：
+**常见遗漏与修复**：
 - 玩家获得法宝但未入 `world/artifacts/` → 图鉴页看不到
-- `world/lore/titles.yaml` 误放 lore 子目录 → 应为 `world/titles.yaml`（列表格式，不是 lore 条目）
-- `build-world-index.py` 未扫新目录（如新增 titles.yaml）→ 须同步修脚本
+- `world/lore/titles.yaml` 误放 lore 子目录 → 应为 `world/titles.yaml`（列表格式，不是 lore 条目）；catalog.yml 引用路径也需同步更新
+- `build-world-index.py` 未扫新目录（如新增 titles.yaml）→ 须同步修脚本，再重建 index.json
 - `constitution` 字段空值 → 默认补 `凡骨`
+- **每次修改 world/ 目录后必须执行**：`python3 scripts/build-world-index.py` + 验证 `gh run list -R <repo> --limit 3` 全绿
 
 ## 世界仓库解析（关键：先于一切 gh 命令）
 
