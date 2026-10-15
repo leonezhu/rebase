@@ -37,9 +37,10 @@ copilot plugin install $(pwd)/rebase/plugins/rebase-adventurer
 
 ```
 rebase-adventurer/
-├── skill/                      # 游戏本体知识（加载即读）
-│   ├── SKILL.md                #   文风/叙事/交互铁律
-│   └── references/
+├── skills/
+│   └── rebase-adventurer/      # 游戏本体知识（目录名=skill名）
+│       ├── SKILL.md            #   文风/叙事/交互铁律
+│       └── references/
 │       ├── gamebook.md         #   机制唯一真源（档案/命令/账本/因果）
 │       ├── async-execution.md  #   异步执行模式
 │       ├── commands-and-pitfalls.md

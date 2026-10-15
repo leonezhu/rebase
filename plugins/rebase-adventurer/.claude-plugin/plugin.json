@@ -6,5 +6,5 @@
     "name": "leonezhu"
   },
   "hooks": "./hooks/hooks.json",
-  "skills": "./skill"
+  "skills": "./skills"
 }
