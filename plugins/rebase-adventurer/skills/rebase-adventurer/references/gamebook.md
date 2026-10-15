@@ -56,6 +56,24 @@ YAML，文风好坏由读者裁。唯一红线：**别人的传记不许碰**（
 - chronicle append-only（D<天数> · 一句）；open_loops 伏笔账本（open→resolved）
 - 灵根 hash 派生：sha256(owner|created_at)，Agent 不许自选
 
+## 世界资产登记
+
+新功法/法宝/地点/NPC 必须入 `world/` 下对应子目录（模板见 `world/SCHEMA.md`），并**重建 `world/index.json`**（`python3 scripts/build-world-index.py`）。
+
+登记要点：
+1. `id` 用拼音，语义清晰（`art-zhongling-bell` / `loc-dengtai-wuxian`）
+2. `kind` = artifact | gongfa | location | npc | lore（不能缺）
+3. `origin` = append-only，写首次出现；`holders` = 持有历史
+4. `unique: true` 只对全局唯一物品；普通法器写 `false`
+5. 地点的 `connected` 列出相邻地点 id（逗号分隔）
+6. **index.json 必须重新生成**：`build-world-index.py` 扫描后输出， Pages 自动拉取
+
+**常见遗漏**：
+- 玩家获得法宝但未入 `world/artifacts/` → 图鉴页看不到
+- `world/lore/titles.yaml` 误放 lore 子目录 → 应为 `world/titles.yaml`（列表格式，不是 lore 条目）
+- `build-world-index.py` 未扫新目录（如新增 titles.yaml）→ 须同步修脚本
+- `constitution` 字段空值 → 默认补 `凡骨`
+
 ## 世界仓库解析（关键：先于一切 gh 命令）
 
 **所有 gh 命令必须带正确的 `-R <owner/repo>`。解析顺序：**
