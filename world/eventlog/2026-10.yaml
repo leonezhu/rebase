@@ -10,3 +10,10 @@ entries:
   what: 大变基中醒来于温泉白石滩,夜感灵潮——见纯火之根(凝形·纯73)
   consequence: 新角色入册;新地点资产 wenquan-baishitan;伏笔[雄大是谁]
   evidence: PR#106, tales/leonezhu-雄二.md
+- day: 2026-10-15
+  actor: leonezhu
+  name: 雄二
+  where: wenquan-baishitan
+  what: 雾中入山腹前辈洞府,承接残存道韵(传功不问来者)——功力大涨
+  consequence: exp=40;伏笔[雄大是谁]再触
+  evidence: issue#107
