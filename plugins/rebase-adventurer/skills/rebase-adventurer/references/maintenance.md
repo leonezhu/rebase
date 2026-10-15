@@ -31,14 +31,12 @@ curl -sL https://raw.githubusercontent.com/leonezhu/rebase/main/skills/rebase-ad
 ## 结构
 
 ```
-plugins/rebase-adventurer/          # 本插件（=完整客户端包）
-├── skills/rebase-adventurer/      # skill（目录名=skill名）
-│   ├── SKILL.md                   #   文风/叙事/交互铁律（加载即读）
-└── skills/rebase-adventurer/      # skill（目录名=skill名）
-│   ├── SKILL.md                   #   文风/叙事/交互铁律（加载即读）
+plugins/rebase-adventurer/          # 本插件
+├── skills/rebase-adventurer/      # skill 目录（目录名=skill名）
+│   ├── SKILL.md                   # 文风/叙事/交互铁律（加载即读）
 │   └── references/
 │       ├── gamebook.md            # 机制唯一真源（规则/命令/档案字段/账本/世界资产登记）
 │       ├── async-execution.md     # 异步执行模式（触发结算时读）
-│       ├── commands-and-pitfalls.md  # 命令速查+调试坑（含append-tale中文解析坑）
+│       ├── commands-and-pitfalls.md  # 命令速查+调试坑+工具使用铁律
 │       └── maintenance.md         # 本文件（安装/维护）
 ```

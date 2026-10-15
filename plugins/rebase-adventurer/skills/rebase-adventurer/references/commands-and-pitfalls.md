@@ -27,6 +27,12 @@ python3 scripts/append-tale.py <角色名> <回目名> <<'EOF'
 EOF
 ```
 
+## 工具使用铁律
+
+- **write_file 写已存在文件前必须 read_file**：write_file 拒绝覆盖未读取过的文件。写传记前先读完整内容，或用 patch 做定向编辑
+- **git push 被拒时先 pull --rebase**：远端有新提交时 push 会被拒，先 `git pull --rebase` 再 push
+- **Python heredoc 内联易坏**：多行脚本落盘独立 .py 文件再调用，避免字符串转义问题
+
 ## workflow 调试坑（实锤过的）
 
 - **改 workflow 必跑 actionlint**：YAML safe_load 通过 ≠ GitHub schema 通过

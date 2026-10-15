@@ -148,3 +148,5 @@ metadata:
 - **代理环境变量**：`export https_proxy=http://127.0.0.1:7897`；Python字符串末尾反斜杠续行会SyntaxError
 - **世界资产登记**：world/artifacts/*.yaml规范：id/name/kind/grade/element/power/desc/origin/first_seen/unique/holders/hooks
 - **append-tale用法**：`python3 scripts/append-tale.py <角色> <回目名>` + stdin正文
+- **write_file前必须read_file**：写已存在文件前先读完整内容，或用patch做定向编辑
+- **push被拒时先pull --rebase**：远端有新提交时先同步再推
