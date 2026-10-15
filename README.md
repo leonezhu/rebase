@@ -113,7 +113,7 @@ git commit -m "觉醒" && git push origin awaken/<你的GitHub用户名>
 gh pr create --head awaken/<你的GitHub用户名> -t "觉醒入世"
 
 # 2. 斗法
-gh issue create -R leonezhu/rebase -t "斗法：雄大 约战 陆惊鸿" -b "/battle @npc-luhan"
+gh issue create -R leonezhu/rebase -t "斗法：<你的角色> 约战 <某修士>" -b "/battle @<对手>"
 ```
 
 ## 📜 此界现状
