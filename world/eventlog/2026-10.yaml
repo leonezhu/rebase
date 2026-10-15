@@ -136,3 +136,10 @@ entries:
   what: 晨回镇补给(粥/馒头/盐/柴;闻鸡叫头遍=钟第三声), 午返石龛——馒头被收走,叶下回礼=带旧磨痕的灰石;坐定候第三夜
   consequence: stones=116;新地点beipo-shiken;持有[灰石(磨痕)]
   evidence: tales/leonezhu-熊三.md 第十二回
+- day: 2026-10-17
+  actor: leonezhu
+  name: 熊三
+  where: beipo-shiken
+  what: 第三夜钟响三声——哑半确认=声进雾被收;铜牌与灰石同拍共振,牌向雾线偏;雾深处现提灯者(个头步态非乌老倌)提灯下坡
+  consequence: mood=凝神;新钩子[提灯者/双石同源之应]
+  evidence: tales/leonezhu-熊三.md 第十三回
