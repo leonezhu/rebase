@@ -24,3 +24,10 @@ entries:
   what: 夜行自温泉白石滩下山,入浅湖镇打探消息
   consequence: where=qianhuzhen
   evidence: 会话叙事
+- day: 2026-10-15
+  actor: leonezhu
+  name: 雄二
+  where: qingtai-zhong
+  what: 受烤鱼老头之托,夜访青苔巨钟——观察雾散之夜的青光
+  consequence: where=qingtai-zhong;伏笔[青光=旧蜕看火]接通
+  evidence: 会话叙事
