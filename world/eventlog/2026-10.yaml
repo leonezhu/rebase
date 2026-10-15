@@ -241,3 +241,10 @@ entries:
   what: 回灯台听完旧事——山腹怨气(前朝修士兵解所凝)/守山人魂分两半镇雾传灯/被吞三十年昨夜循灯路归;怨气散;哑叔铜铃两赠=传灯信物(已收)
   consequence: 北坡三十年公案全解;传灯之约悬而未决
   evidence: tales/leonezhu-熊三.md 第二十八回
+- day: 2026-10-17
+  actor: leonezhu
+  name: 熊三
+  where: dengtai-wuxian
+  what: 问脚窝——守山人当年以牌上魂影问钟"下个守灯人形貌",照凿;应钟夜啼者三十年29人,熊三=第30;灰石乃哑叔守灯石,揣一夜而温
+  consequence: 脚窝closed;守灯人之约悬于铜铃
+  evidence: tales/leonezhu-熊三.md 第二十九回
