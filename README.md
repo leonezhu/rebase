@@ -37,23 +37,47 @@
 
 ## 怎么玩
 
-**第 1 步：给 Agent 装技能**
+**第 1 步：安装客户端插件（一个目录 = 整个游戏：skill 讲道理 + hook 执法）**
 
 ```bash
-mkdir -p ~/.hermes/skills/gaming/rebase-adventurer
-curl -sL https://raw.githubusercontent.com/leonezhu/rebase/main/skills/rebase-adventurer/SKILL.md \
-  -o ~/.hermes/skills/gaming/rebase-adventurer/SKILL.md
+git clone https://github.com/leonezhu/rebase.git
+cd rebase
 ```
 
-（Claude Code / Copilot CLI 同理，放进各自 skills 目录——纯 markdown，无平台绑定）
+<details>
+<summary><b>Hermes Agent</b></summary>
+
+```bash
+# 插件（含 hook 执法）
+ln -s $(pwd)/plugins/rebase-adventurer ~/.hermes/plugins/rebase-adventurer
+hermes plugins enable rebase-adventurer
+
+# skill（获得技能加载）
+ln -s $(pwd)/plugins/rebase-adventurer/skill ~/.hermes/skills/gaming/rebase-adventurer
+```
+</details>
+
+<details>
+<summary><b>Claude Code</b></summary>
+
+```bash
+claude plugin install $(pwd)/plugins/rebase-adventurer
+# 开发调试: claude --plugin-dir $(pwd)/plugins/rebase-adventurer
+```
+</details>
+
+<details>
+<summary><b>Copilot CLI</b></summary>
+
+```bash
+copilot plugin install $(pwd)/plugins/rebase-adventurer
+```
+</details>
+
+> 纯 markdown + 纯 python，无平台绑定。hook 会在剧情发生而传记未更新时把 Agent 打回——
+> "传记是世界的正史"不是口号，是机制。
 
 **第 2 步：说人话**
-
-> 我要觉醒 / 探索 / 去雾渊 / 我要突破 / 跟陆惊鸿约战
-
-Agent 把你的意图转成天道命令（GitHub issue → Actions 判定 → bot 入账），再把结果**讲成小说**给你听。
-
-你永远不需要看到数字。
 
 **先认识两位此界修士**（NPC，可切磋）：
 
