@@ -1,0 +1,14 @@
+id: npc-test-friend
+name: 试剑生
+kind: npc
+spirit_root: {element: metal, purity: 55, variant: normal}
+realm: lianqi
+stage: cultivating
+where: qianhuzhen
+activity: wujian
+notoriety: 0
+spirit_stones: 30
+spirit: 100
+origin: 浅湖镇武馆的记名弟子, 好试剑
+created_at: '2026-10-15'
+created_by_bot: false
