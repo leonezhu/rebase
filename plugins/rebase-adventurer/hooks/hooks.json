@@ -5,7 +5,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/core/guard.py\" --adapter claude-stop",
+            "command": "python3 \"${CLAUDE_PLUGIN_ROOT}/guard/guard.py\" --adapter claude-stop",
             "timeout": 10
           }
         ]

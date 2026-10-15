@@ -1,0 +1,10 @@
+name: rebase-adventurer
+version: '1.0.0'
+description: '万灵变基录客户端：修仙小说游戏。安装即玩——skill(叙事铁律+机制手册) + hook执法(传记必入传/对话纯度)。支持 Hermes / Claude Code / Copilot CLI。'
+author: leonezhu
+kind: standalone
+provides_hooks:
+  - pre_verify
+provides_tools: []
+manifest_version: 2
+tags: [game, xianxia, interactive-fiction, guard]

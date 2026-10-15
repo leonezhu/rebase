@@ -8,7 +8,7 @@ block 强迫 Agent 先走 scripts/append-tale.py 入传。
 import sys
 from pathlib import Path
 
-_CORE = Path(__file__).resolve().parent / "core"
+_CORE = Path(__file__).resolve().parent / "guard"
 if str(_CORE) not in sys.path:
     sys.path.insert(0, str(_CORE))
 

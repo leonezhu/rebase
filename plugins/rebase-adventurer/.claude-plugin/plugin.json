@@ -1,0 +1,10 @@
+{
+  "name": "rebase-adventurer",
+  "version": "1.0.0",
+  "description": "万灵变基录：修仙小说游戏客户端（skill + hook 执法）",
+  "author": {
+    "name": "leonezhu"
+  },
+  "hooks": "./hooks/hooks.json",
+  "skills": "./skill"
+}
