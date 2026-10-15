@@ -1,25 +1,7 @@
-name: 熊四
-owner: leonezhu
-kind: player
-created_at: '2026-10-15T16:30:00'
-status: awakening
-where: wenxin-cliff
-activity: none
-realm: lianqi
-constitution: 凡骨
-element: 阴
+activity: resting
 aptitude: 下品
-exp: 30
-stones: 0
-gongfa: [引气诀]
-artifacts: [归字玉佩]
-notoriety: 0
-mood:
-  label: 犹豫
-  updated: '2026-10-15'
-open_loops:
-- hook: 斩尘关
-  status: open
+artifacts:
+- 归字玉佩
 chronicle:
 - day: 1
   event: 灵脉觉醒
@@ -27,4 +9,26 @@ chronicle:
   event: 行气-火珠自主运转
 - day: 3
   event: 出穴-过符文长廊-问心崖试炼通过
+constitution: 凡骨
+created_at: '2026-10-15T16:30:00'
+element: 阴
+exp: 30
+gongfa:
+- 引气诀
+kind: player
+mood:
+  label: 犹豫
+  updated: '2026-10-15'
+name: 熊四
+notoriety: 0
+open_loops:
+- hook: 斩尘关
+  status: resolved
+- hook: 玉佩-归字
+  status: open
 origin: 于某处醒来，全然不知前世何事
+owner: leonezhu
+realm: lianqi
+status: awakening
+stones: 0
+where: zhongshan-guan
