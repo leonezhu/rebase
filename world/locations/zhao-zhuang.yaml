@@ -1,0 +1,7 @@
+id: zhao-zhuang
+name: 赵庄
+type: settlement
+where: 青林松林中
+desc: 松林深处的旧庄子，白墙黑瓦。三十年前亦曾接待过南行的修士。赵守拙居此。
+connected: [guandao-nan]
+created_at: '2026-10-21'

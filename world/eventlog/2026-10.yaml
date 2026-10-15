@@ -290,3 +290,10 @@ entries:
   what: 夜宿槐安村长家——村长言三十年前雾后北坡出新土，村民敢住；村规冬至祭山为"祭债"
   consequence: 槐安线暂闭;exp+5(安睡调息)
   evidence: tales/leonezhu-熊三.md 第三十四回
+- day: 2026-10-21
+  actor: leonezhu
+  name: 熊三
+  where: zhao-zhuang
+  what: 离槐安入青林松林;遇赵守拙(三十年前同路人);预言「南行第三日遇松林入赵庄」;指落霞观为下一站;符未失效=债记
+  consequence: 新地点zhao-zhuang;下一目标=落霞观
+  evidence: tales/leonezhu-熊三.md 第三十五回
