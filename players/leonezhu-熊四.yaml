@@ -12,10 +12,10 @@ aptitude: 下品
 exp: 30
 stones: 0
 gongfa: [引气诀]
-artifacts: []
+artifacts: [归字玉佩]
 notoriety: 0
 mood:
-  label: 迷茫
+  label: 犹豫
   updated: '2026-10-15'
 open_loops:
 - hook: 斩尘关

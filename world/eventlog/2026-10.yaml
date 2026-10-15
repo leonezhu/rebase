@@ -409,3 +409,10 @@ entries:
   what: 第四回瀑布-遇老人-想起名字熊四
   consequence: 确认身份熊四斩尘关开启
   evidence: tales/leonezhu-熊四.md 第四回
+- day: 2026-10-15
+  actor: leonezhu
+  name: 熊四
+  where: zhanchen-stone-room
+  what: 第五回入瀑布水幕-遇镜像自我-得归字玉佩
+  consequence: 发现执念黑点嵌入火珠面临斩或带抉择
+  evidence: tales/leonezhu-熊四.md 第五回
