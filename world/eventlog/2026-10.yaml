@@ -353,3 +353,10 @@ entries:
   what: 新轮回觉醒——灵根水·阳，资质中品，境界筑基，出身南塘村
   consequence: 开启全新角色，与前世(leonezhu-熊三)零关联
   evidence: tales/leonezhu-林栖.md 第一回
+- day: 2026-10-15
+  actor: leonezhu
+  name: 林栖
+  where: qingshi-zhen
+  what: 第二回青石镇-打听消息吴三故事土地庙石像钟声决定去钟山
+  consequence: 获得关键线索吴三猎户三十年前土地庙石像与灰石同源钟声来自钟山
+  evidence: tales/leonezhu-林栖.md 第二回
