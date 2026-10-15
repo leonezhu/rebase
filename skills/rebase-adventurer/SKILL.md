@@ -193,6 +193,14 @@ bot 判定评论自带双方素材包（档案字段+chronicle 近 2 场+伏笔�
 - **叙事转译**：灵性=伤势气血；恶名=江湖风评（NPC 神色、客栈闲话）；兵解=一战之后的遗体与遗物
 - **生成 NPC**：让 Agent 写 `players/npc-<名>.yaml`（kind: npc + 灵根/功法/法宝/来历）PR 入库，生死自负
 
+## 空间合理性与世界记忆（2026-10-15 用户定调）
+
+- **角色有原属性**：`where`（所在地点 id）+ `activity`（biguan闭关/wujian悟剑/daokan看榜/traveling行旅/none长眠）——AI 编造经历必须以这些为依据，**不为交互而交互**
+- **交互合理性闸**（battle 自动校验，scripts/co-location.py）：异地不能打（千里之遥战书寄不到）；闭关者不能被打扰；退场角色不接新战
+- **/travel <地点id>**：移动角色（explore.yml travel job），地点表=world/locations/
+- **世界记忆账本**：`world/eventlog/YYYY-MM.yaml` append-only——**所有 AI 生成的事件/交互背后必须登记**（day/actor/where/what/consequence/evidence）。这是世界如何运行的记忆，也是剧情推动的依据
+- **传记校验法**：读传记查事件，回对 eventlog 与角色原属性——对不上 = 不合理，AI 自己想办法合理化（补 /travel 记录、补地点资产、或改叙事），不许凭空发生
+
 ## 已知坑（少走弯路）
 
 - **workflow改后必跑 actionlint**（本地：`/tmp/actionlint` 或 `go install github.com/rhysd/actionlint/cmd/actionlint@latest`）：YAML safe_load 通过≠GitHub schema 通过。已实锤的坑：①bash变量写成 `${{WINNER}}`（双括号=GitHub expression，undefined variable → 骨架 failure run，jobs 为空、run name 显示为文件路径）；②python heredoc 里用了 `_glob` 忘了 import（运行时才炸）；③`grep -oP '[a-zA-Z0-9-]+'` 匹配不到中文角色名。骨架 failure 的特征：`jobs:[]` + log not found + event 与触发器不匹配。
