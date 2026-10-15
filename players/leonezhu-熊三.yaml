@@ -18,6 +18,8 @@ open_loops:
   status: open
 - hook: '「水火同源」——旧蜕断言: 我的水根与火的牌有渊源,水气近牌则颤'
   status: open
+- hook: 烤鱼老头失踪——留炭条字「钟响第三夜。北坡。别带牌」;今晨=钟响第几夜?
+  status: open
 origin: 大变基中醒来，身在挂满风铃的破庙檐下。与前世无涉——这是一场崭新的开始
 owner: leonezhu
 realm: lianqi
@@ -26,7 +28,7 @@ spirit_root:
   element: water
   purity: 90
   variant: pseudo
-spirit_stones: 125
+spirit_stones: 124
 stage: cultivating
 titles:
 - 踏雾者
