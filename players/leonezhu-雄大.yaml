@@ -13,6 +13,7 @@ chronicle:
 - D11 · 二探见血失灵石，三探再得——跌倒过的地方，第二次走就轻车熟路
 - D11 · 烤鱼老头见伤递鱼，动作顿了半拍——「三年前，也有人这样坐在火边」
 - '- D11 · 夜半与黎明前各一坐，红日观想渐稳——「想火有多久」'
+- '- D11 · 兵解。行功渐入佳境的夜里走进观想之火，旧蜕点亮青苔相送。卷终。'
 comprehension: 50
 constitution: ''
 created_at: 2026-10-14T23:46:11+0800
@@ -44,6 +45,8 @@ open_loops:
 origin: 青苔覆盖的巨钟内壁
 owner: leonezhu
 realm: lianqi
+retired_at: '2026-10-15'
+retired_how: bingjie
 spirit: 10
 spirit_recovered_at: '2026-10-14'
 spirit_root:
@@ -52,4 +55,5 @@ spirit_root:
   variant: normal
 spirit_stones: 20
 stage: cultivating
+status: retired
 titles: []
