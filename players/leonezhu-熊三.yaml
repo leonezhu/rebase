@@ -1,4 +1,4 @@
-activity: traveling
+activity: wujian
 artifacts: []
 chronicle: []
 comprehension: 50
@@ -11,7 +11,11 @@ mood:
   updated: '2026-10-15'
 name: 熊三
 notoriety: 0
-open_loops: []
+open_loops:
+- hook: 铜牌——与钟身同文的半块铜牌,泥落而字现,水气近之则颤
+  status: open
+- hook: 钟语「来的,不是火的」——它认得带火来的人;牌从何来,为何在兽口中
+  status: open
 origin: 大变基中醒来，身在挂满风铃的破庙檐下。与前世无涉——这是一场崭新的开始
 owner: leonezhu
 realm: lianqi

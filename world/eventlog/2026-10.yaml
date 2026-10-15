@@ -59,3 +59,10 @@ entries:
   what: 循钟声绕过岔路,抵青苔巨钟谷地
   consequence: where=qingtai-zhong
   evidence: 会话叙事
+- day: 2026-10-15
+  actor: leonezhu
+  name: 熊三
+  where: qingtai-zhong
+  what: 不触钟,先沿钟缘绕行查看——发现钟身刻文与铜牌同文;钟座北面青苔下隐有旧蜕栖痕(两点青光之一明一灭)
+  consequence: 伏笔入账(铜牌认主/钟等火来人);activity=wujian
+  evidence: 会话叙事
