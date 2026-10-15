@@ -29,9 +29,9 @@ jobs:
           python3 - <<'EOF'
           import yaml, json, pathlib, html, datetime
 
-          # ===== 威名对账闸(v0.20 称号收口)：world/lore/titles.yaml 是唯一权威 =====
+          # ===== 威名对账闸(v0.20 称号收口)：world/titles.yaml 是唯一权威 =====
           # 灵籍出现录外称号=伪造（威名只能天道授予）→ 显式红灯，禁静默放行
-          _reg = yaml.safe_load(pathlib.Path('world/lore/titles.yaml').read_text(encoding='utf-8'))
+          _reg = yaml.safe_load(pathlib.Path('world/titles.yaml').read_text(encoding='utf-8'))
           if not isinstance(_reg, list) or not _reg:
               raise SystemExit("威名录 world/lore/titles.yaml 缺失或为空——天道账本不可用")
           VALID_TITLES = {t['name'] for t in _reg}
