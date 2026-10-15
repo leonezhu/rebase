@@ -28,8 +28,8 @@ spirit_root:
   element: water
   purity: 90
   variant: pseudo
-spirit_stones: 122
+spirit_stones: 116
 stage: cultivating
 titles:
 - 踏雾者
-where: qianhuzhen
+where: beipo-shiken

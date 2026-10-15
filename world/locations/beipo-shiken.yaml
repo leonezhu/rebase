@@ -1,0 +1,7 @@
+id: beipo-shiken
+name: 北坡石龛
+type: landmark
+where: 北坡山脚
+desc: 凹进山体的浅龛，避风干燥，可望镇口来路与雾线。雾线常悬三丈，夜半下压复回，似有物拦。
+connected: [qianhuzhen]
+created_at: '2026-10-16'

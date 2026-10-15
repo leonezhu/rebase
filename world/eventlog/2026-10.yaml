@@ -129,3 +129,10 @@ entries:
   what: 夜宿北坡山脚石龛守等第三夜;留馒头试坡上"东西"讲不讲道理;后半夜铜牌无风自颤一次
   consequence: exp=25;地点=北坡山脚
   evidence: tales/leonezhu-熊三.md 第十一回
+- day: 2026-10-16
+  actor: leonezhu
+  name: 熊三
+  where: beipo-shiken
+  what: 晨回镇补给(粥/馒头/盐/柴;闻鸡叫头遍=钟第三声), 午返石龛——馒头被收走,叶下回礼=带旧磨痕的灰石;坐定候第三夜
+  consequence: stones=116;新地点beipo-shiken;持有[灰石(磨痕)]
+  evidence: tales/leonezhu-熊三.md 第十二回
