@@ -31,3 +31,10 @@ entries:
   what: 受烤鱼老头之托,夜访青苔巨钟——观察雾散之夜的青光
   consequence: where=qingtai-zhong;伏笔[青光=旧蜕看火]接通
   evidence: 会话叙事
+- day: 2026-10-15
+  actor: leonezhu
+  name: 雄二
+  where: qingtai-zhong
+  what: 旧蜕出钟壁相认,一言「火」;雄二伸手触钟壁——钟应
+  consequence: 旧蜕认得"火"之命格(跨角色感知伏笔);雄二感灵将启
+  evidence: 会话叙事
