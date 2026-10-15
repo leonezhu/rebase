@@ -1,14 +1,14 @@
-activity: traveling
+activity: none
 artifacts: []
 chronicle: []
 comprehension: 50
 created_at: 2026-10-15T11:30:00|xiong3-reborn
-exp: 15
+exp: 20
 gongfa: []
 kind: player
 mood:
   state: 平静
-  updated: '2026-10-15'
+  updated: '2026-10-16'
 name: 熊三
 notoriety: 0
 open_loops:

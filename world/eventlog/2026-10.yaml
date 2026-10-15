@@ -87,3 +87,10 @@ entries:
   what: 夜返浅湖镇,宿车马店休整——烤鱼老头认出钟谷方向来的灯火
   consequence: where=qianhuzhen;宿一夜
   evidence: 会话叙事
+- day: 2026-10-16
+  actor: leonezhu
+  name: 熊三
+  where: qianhuzhen
+  what: 车马店安睡一夜(无异动),晨起沿河入镇寻烤鱼老头
+  consequence: exp+5(安睡调息);晨间镇集
+  evidence: 会话叙事
