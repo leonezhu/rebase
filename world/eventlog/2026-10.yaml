@@ -1,0 +1,5 @@
+# 世界记忆账本 · eventlog
+# 所有 AI 生成的事件/交互/剧情推动，一条一文件或按月归档——这是世界如何运行的原始记忆。
+# 格式(YAML): day / actor / where / what / consequence(改了哪些因子) / evidence(传记或issue链接)
+# 规则: append-only；Agent 生成内容后必须在此登记；登记缺失=事件未发生(校验传记时以本账为准)
+entries: []

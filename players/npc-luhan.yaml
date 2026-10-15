@@ -1,3 +1,4 @@
+activity: wujian
 artifacts:
 - grade: 上品法器
   name: 无名断剑
@@ -58,3 +59,4 @@ stage: cultivating
 titles:
 - 越级斩
 - 初鸣
+where: qianjianzhong

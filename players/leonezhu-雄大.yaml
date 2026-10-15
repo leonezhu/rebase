@@ -1,3 +1,4 @@
+activity: none
 battle_history:
   lose_streak: 3
   loss_count: 1
@@ -58,3 +59,4 @@ spirit_stones: 20
 stage: cultivating
 status: retired
 titles: []
+where: qingtai-zhong

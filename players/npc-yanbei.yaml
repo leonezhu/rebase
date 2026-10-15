@@ -1,3 +1,4 @@
+activity: daokan
 artifacts:
 - grade: 上品法器
   name: 叠嶂印
@@ -51,3 +52,4 @@ stage: cultivating
 titles:
 - 破雷者
 - 踏雾者
+where: qianhuzhen

@@ -93,6 +93,13 @@ jobs:
           done
           gh issue edit ${{ github.event.issue.number }} -R leonezhu/rebase --add-label "斗法" --add-label "斗法/待战" || true
 
+      - name: 同地与行事校验（2026-10-15 空间合理性）
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          pip install pyyaml --quiet
+          python3 scripts/co-location.py
+
       - name: hash 确定性模拟
         id: sim
         run: |

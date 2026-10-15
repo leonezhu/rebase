@@ -191,3 +191,18 @@ jobs:
             -t "秘境探索入账 · $OWNER (#${{ github.event.issue.number }})" -b "bot 结算，自动合并"
           gh pr edit "$BRANCH" -R leonezhu/rebase --add-label "game/bot" || true
           gh pr merge "$BRANCH" --merge
+
+  travel:
+    if: startsWith(github.event.comment.body, '/travel ')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: 行旅
+        env:
+          GH_TOKEN: ${{ github.token }}
+          DEST: ${{ github.event.comment.body }}
+          TRAVELER: ${{ github.event.comment.user.login }}
+          ISSUE: ${{ github.event.issue.number }}
+        run: |
+          export DEST=$(echo "$DEST" | grep -oP '(?<=/travel )\S+' | head -1)
+          python3 scripts/travel.py
