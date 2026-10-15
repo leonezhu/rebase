@@ -94,3 +94,10 @@ entries:
   what: 车马店安睡一夜(无异动),晨起沿河入镇寻烤鱼老头
   consequence: exp+5(安睡调息);晨间镇集
   evidence: 会话叙事
+- day: 2026-10-15
+  actor: system
+  name: 天道守卫
+  where: repo
+  what: 部署游玩内容自动收录守卫(auto-merge.yml)——PR只碰players/world/tales/npcs/growth自名 且YAML可解析即自动合并;规则文件永不自动
+  consequence: 多人公共世界可自转, owner免审游玩PR;全部workflow -R与owner判定动态化(fork即完整天道)
+  evidence: PR#112验证(owner通道skip按设计), auto-merge待首个外部PR实证
