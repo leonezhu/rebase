@@ -1,4 +1,4 @@
-activity: traveling
+activity: none
 artifacts: []
 chronicle: []
 comprehension: 50
@@ -34,6 +34,8 @@ open_loops:
   status: closed
 - hook: 半块牌=守山人之物,遗命「带上灯台,别交给我(乌),我怕拿不稳」;哑叔非哑=不肯言;雾中有声喊乌小名(非爹,灯灭勿应)
   status: closed
+- hook: 脚窝与足同大之谜——守山人「等你哪天想明白了再讲」;哑叔铜铃两赠(传灯之信,收了)
+  status: open
 origin: 大变基中醒来，身在挂满风铃的破庙檐下。与前世无涉——这是一场崭新的开始
 owner: leonezhu
 realm: lianqi
@@ -46,4 +48,4 @@ spirit_stones: 114
 stage: cultivating
 titles:
 - 踏雾者
-where: beipo-shiken
+where: dengtai-wuxian

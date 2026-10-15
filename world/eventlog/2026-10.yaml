@@ -234,3 +234,10 @@ entries:
   what: 抽身事外——还灯笼留铜铃,"来时拿了多少走时留下多少,我不欠这山什么";下山途中见脚窝与己足同大(路乃三十年前修),拔脚而行不回头
   consequence: mood=强自镇定;持有[灰石](牌/铃/灯皆还山)
   evidence: tales/leonezhu-熊三.md 第二十七回
+- day: 2026-10-17
+  actor: leonezhu
+  name: 熊三
+  where: dengtai-wuxian
+  what: 回灯台听完旧事——山腹怨气(前朝修士兵解所凝)/守山人魂分两半镇雾传灯/被吞三十年昨夜循灯路归;怨气散;哑叔铜铃两赠=传灯信物(已收)
+  consequence: 北坡三十年公案全解;传灯之约悬而未决
+  evidence: tales/leonezhu-熊三.md 第二十八回
