@@ -1,0 +1,103 @@
+name: Auto Merge (游玩内容自动收录)
+# 玩家自由度通道: PR 只碰"游玩路径"(players/ world/ tales/ growth/<自己>/)且 YAML 可解析 → 自动合并
+# 规则/机制文件(.github/ schemas/ scripts/ *.py *.sh 404.html 等) → 永不自动, 等仓库 owner 审
+# 语义: world 资产生死自负(NPC 可被杀/恶名有因果), 规则公正是天道的事, 不是守卫的事
+
+on:
+  pull_request_target:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  auto-merge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 判定是否游玩内容
+        id: gate
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+          OWNER: ${{ github.repository_owner }}
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+        run: |
+          set -e
+          # owner 自己的 PR: 既有游戏内通道(growth/awaken等), 不在此重复处理
+          if [ "$AUTHOR" = "$OWNER" ]; then
+            echo "verdict=skip" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          FILES=$(gh pr view "$PR" -R "$REPO" --json files --jq '.files[].path')
+          COUNT=$(echo "$FILES" | grep -c . || true)
+          if [ "$COUNT" -gt 20 ]; then
+            gh pr comment "$PR" -R "$REPO" -b "🛡️ 改动 ${COUNT} 个文件，超出自动收录上限(20)。请拆分提交，或等守仓人过目。" || true
+            echo "verdict=manual" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          BAD=""
+          while IFS= read -r F; do
+            [ -z "$F" ] && continue
+            case "$F" in
+              players/*|world/*|tales/*|npcs/*) ;;
+              growth/*)
+                # growth 产权: 只许动自己的目录
+                case "$F" in
+                  "growth/$AUTHOR/"*|growth/$AUTHOR/*) ;;
+                  *) BAD="$BAD $F" ;;
+                esac ;;
+              *) BAD="$BAD $F" ;;
+            esac
+          done <<EOF
+          $FILES
+          EOF
+          if [ -n "$BAD" ]; then
+            gh pr comment "$PR" -R "$REPO" -b "🛡️ 以下路径超出游玩范围，需守仓人过目：
+          $BAD
+
+          （游玩范围：players/ world/ tales/ npcs/ growth/你的名字/）" || true
+            echo "verdict=manual" >> "$GITHUB_OUTPUT"; exit 0
+          fi
+          echo "verdict=auto" >> "$GITHUB_OUTPUT"
+
+      - name: YAML 可解析校验
+        if: steps.gate.outputs.verdict == 'auto'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -e
+          gh pr diff "$PR" -R "$REPO" --patch > /tmp/pr.patch
+          git init -q /tmp/checkout && cd /tmp/checkout
+          git remote add origin "https://github.com/$REPO.git"
+          # 用 PR head 校验(含新增yaml)
+          git fetch -q origin "pull/$PR/head" && git checkout -q FETCH_HEAD
+          FAIL=""
+          for F in $(git diff --name-only origin/main...HEAD); do
+            case "$F" in
+              *.yaml|*.yml)
+                python3 - "$F" <<'PYEOF' || FAIL="$FAIL $F"
+          import sys, yaml
+          yaml.safe_load(open(sys.argv[1], encoding="utf-8"))
+          PYEOF
+                ;;
+            esac
+          done
+          if [ -n "$FAIL" ]; then
+            gh pr comment "$PR" -R "$REPO" -b "🛡️ 以下 YAML 无法解析，天道拒收：
+          $FAIL" || true
+            echo "verdict=manual" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: 自动合并
+        if: steps.gate.outputs.verdict == 'auto'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PR: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+          AUTHOR: ${{ github.event.pull_request.user.login }}
+        run: |
+          set -e
+          gh pr merge "$PR" -R "$REPO" --merge --subject "收录 ${AUTHOR} 的游玩内容（自动）" \
+            --body "🛡️ 守卫判定：仅涉游玩路径，YAML 全部可解析——自动收录。生死自负，因果照记。"
