@@ -33,6 +33,10 @@ jobs:
           if [ ! -f "$F" ]; then
             exit 1
           fi
+          EXPLORER_KEY="${F#players/}"
+          EXPLORER_KEY="${EXPLORER_KEY%.yaml}"
+          echo "explorer=$EXPLORER_KEY" >> "$GITHUB_OUTPUT"
+          echo "file=$F" >> "$GITHUB_OUTPUT"
           
       - name: hash 定遭遇 + 结算
         id: enc
