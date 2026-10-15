@@ -29,9 +29,12 @@ BANNED = [
 
 
 def check_tale_updated(changed_paths):
-    """动了角色档案/世界资产却没动传记 → 剧情未入史"""
+    """动了角色档案/世界资产却没动传记 → 剧情未入史
+    (world/eventlog/ 单独出现=账务修正, 不算剧情, 放行)"""
     paths = [str(p).replace("\\", "/") for p in (changed_paths or [])]
-    game = [p for p in paths if any(m in p for m in ("players/", "world/"))]
+    game = [p for p in paths
+            if any(m in p for m in ("players/", "world/"))
+            and "world/eventlog/" not in p]
     tales = [p for p in paths if "tales/" in p]
     if game and not tales:
         return (
