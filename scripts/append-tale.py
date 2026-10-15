@@ -20,10 +20,16 @@ def cnum(x):
     return str(x)
 
 def parse_cn(a):
+    if a.isdigit(): return int(a)
+    CNUM = {'零':0,'一':1,'二':2,'三':3,'四':4,'五':5,'六':6,'七':7,'八':8,'九':9}
     v = 0
     for ch in a:
-        if ch in CNUM: v = v*10 + CNUM[ch]
-        elif ch == '十': v = (v or 1)*10
+        if ch == '零': continue
+        if ch == '十':
+            v = (v or 1) * 10  # 无十位则视作一十
+        else:
+            d = CNUM[ch]
+            v = v + d if v >= 10 else v * 10 + d  # 十位已定后个位是加不是乘
     return v
 
 # 找档案(含retired, 只读档名)
