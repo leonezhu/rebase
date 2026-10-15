@@ -125,6 +125,20 @@
   ],
   "locations": [
     {
+      "id": "pumiao-fengling",
+      "name": "风铃破庙",
+      "kind": "location",
+      "type": "废墟",
+      "desc": "半山腰一座塌了半边的破庙，檐角挂着上百只风铃，材质各异——铜的、陶的、骨的。无风时它们一动不动，起风的夜里满山叮咚，像无数人在低声说话。",
+      "notable": [
+        "熊三醒来的地方",
+        "风铃无风自动时,是山那头有大事发生"
+      ],
+      "danger": "低",
+      "first_seen": "熊三 · 大变基第十一日",
+      "created_by_bot": false
+    },
+    {
       "id": "loc-qianhuzhen",
       "name": "浅湖镇",
       "kind": "location",
@@ -314,10 +328,18 @@
   ],
   "tales": [
     {
+      "id": "leonezhu-熊三",
+      "owner": "leonezhu",
+      "name": "熊三",
+      "entries": 1,
+      "desc": "大变基第十一日，破庙檐下的风铃忽然自己响了一声。",
+      "status": "连载中"
+    },
+    {
       "id": "leonezhu-雄二",
       "owner": "leonezhu",
       "name": "雄二",
-      "entries": 4,
+      "entries": 5,
       "desc": "大变基第十一日，又有人在异世界醒来。这一回，是山坳里的一汪野温泉。",
       "status": "连载中"
     },
