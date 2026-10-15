@@ -34,7 +34,7 @@ spirit_root:
   element: water
   purity: 90
   variant: pseudo
-spirit_stones: 116
+spirit_stones: 114
 stage: cultivating
 titles:
 - 踏雾者
