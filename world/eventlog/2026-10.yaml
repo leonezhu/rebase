@@ -325,3 +325,10 @@ entries:
   what: 离落霞观南行——老头赠茶指引方向;见南山百里外有观有钟;藏经阁废书(水火两本)留疑;归字未解
   consequence: 新目标南山;exp+10;mood=坚定
   evidence: tales/leonezhu-熊三.md 第三十八回
+- day: 2026-10-22
+  actor: leonezhu
+  name: 熊三
+  where: nanshan-road
+  what: 离落霞观南行——老头赠茶指引方向;见南山百里外有观有钟;藏经阁废书(水火两本)留疑;归字未解
+  consequence: 新目标南山;exp+10;mood=坚定
+  evidence: tales/leonezhu-熊三.md 第三十九回

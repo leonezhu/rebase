@@ -3,7 +3,7 @@ artifacts: []
 chronicle: []
 comprehension: 50
 created_at: 2026-10-15T11:30:00|xiong3-reborn
-exp: 90
+exp: 100
 gongfa: []
 kind: player
 mood:
@@ -41,6 +41,8 @@ open_loops:
 - hook: 赵守拙预言「南行第三日遇松林入赵庄」;指明落霞观为下一站;符未失效=债记
   status: open
 - hook: 落霞观遇神秘女子(剥栗/不知来处);得哑叔遗物(归字);殿内无神像惟北坡山水画卷;符/石/铃均在
+  status: open
+- hook: 南山有观有钟;茶指引南行;藏经阁废书(水火两本)留疑;归字未解
   status: open
 - hook: 南山有观有钟;茶指引南行;藏经阁废书(水火两本)留疑;归字未解
   status: open
