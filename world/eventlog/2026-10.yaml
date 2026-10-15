@@ -150,3 +150,10 @@ entries:
   what: 退守石龛观提灯者——人形比例错(臂长肩塌)被灯拽着走;于馒头叶处回礼一枚无舌铜铃刻「归」;临去朝石龛摆手(非威胁)
   consequence: 持有[无舌铜铃·归];灰石温铜牌凉各自收性
   evidence: tales/leonezhu-熊三.md 第十四回
+- day: 2026-10-17
+  actor: leonezhu
+  name: 熊三
+  where: qianhuzhen
+  what: 晨勘石龛=守灯哨位(烟痕/灯槽/正字末组差一笔);晌午问粥摊妇人——哑叔守灯人(不会说话)与守山人先后殁于钟响整夜那年;乌老倌抱物入镇言"替人收着"
+  consequence: 身世线收敛[守山人-哑叔-乌老倌];妇人反问"你见着灯了?"
+  evidence: tales/leonezhu-熊三.md 第十五回/第十六回

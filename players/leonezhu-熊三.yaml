@@ -1,4 +1,4 @@
-activity: traveling
+activity: none
 artifacts: []
 chronicle: []
 comprehension: 50
@@ -20,7 +20,9 @@ open_loops:
   status: open
 - hook: 烤鱼老头失踪——留炭条字「钟响第三夜。北坡。别带牌」;今晨=钟响第几夜?
   status: open
-- hook: 提灯者——雾中人形无脸,守"回礼"规矩,赠无舌铜铃「归」后没入雾线;它认得我藏身处
+- hook: 提灯者=哑叔(守灯人)——石龛是其哨位,正字计数差一笔;乌老倌疑是守山人或守山人之后,抱物入镇"替人收着"
+  status: open
+- hook: 龛壁正字差最后一笔——谁替哑叔刻?/哑叔等灯亮
   status: open
 origin: 大变基中醒来，身在挂满风铃的破庙檐下。与前世无涉——这是一场崭新的开始
 owner: leonezhu
@@ -34,4 +36,4 @@ spirit_stones: 116
 stage: cultivating
 titles:
 - 踏雾者
-where: beipo-shiken
+where: qianhuzhen
