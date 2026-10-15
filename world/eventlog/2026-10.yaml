@@ -213,3 +213,10 @@ entries:
   what: 拆读乌老倌遗信——本名乌,守山人次子;哑叔=学徒兄,非哑是不肯言;半块牌乃守山人入雾前所托;前晚雾中有声呼其小名,他应了一步,被收至灯台
   consequence: 身世全线收拢;牌的归宿=灯台(非乌非我)
   evidence: tales/leonezhu-熊三.md 第二十四回
+- day: 2026-10-17
+  actor: leonezhu
+  name: 熊三
+  where: dengtai-wuxian
+  what: 灯光唤乌老倌醒;牌安烛泪山顶→橘纹爬满显「守山」二字;哑钟完整连敲,烛泪山三十年芯油显灯路;守山人自雾中走出,乌老倌跪,熊三同跪(跪灯不跪人)
+  consequence: exp=50;牌归位;守山人归来
+  evidence: tales/leonezhu-熊三.md 第二十五回
