@@ -16,11 +16,13 @@ from guard import evaluate  # noqa: E402
 
 # 文本纯度检查默认关（工程会话会误伤）；对游戏会话可在 skill 流程里开
 _TEXT_CHECKS = False
+# 决策禁止词检查默认开（防止模型替玩家做决定）
+_DECISION_CHECKS = True
 
 
 def _on_pre_verify(final_response: str = "", changed_paths=None,
                    attempt: int = 0, **_) -> dict | None:
-    v = evaluate(final_response or "", changed_paths or [], attempt, _TEXT_CHECKS)
+    v = evaluate(final_response or "", changed_paths or [], attempt, _TEXT_CHECKS, _DECISION_CHECKS)
     if v.get("verdict") == "block":
         # Claude-Code Stop 形态, Hermes pre_verify 原生接受
         return {"decision": "block", "reason": v["message"]}
