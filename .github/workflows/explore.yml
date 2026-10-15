@@ -6,6 +6,8 @@ name: Explore (秘境探索)
 on:
   issue_comment:
     types: [created]
+  issues:
+    types: [opened]
 
 permissions:
   contents: write
@@ -14,7 +16,7 @@ permissions:
 
 jobs:
   explore:
-    if: startsWith(github.event.comment.body, '/explore')
+    if: (github.event_name == 'issue_comment' && startsWith(github.event.comment.body, '/explore')) || (github.event_name == 'issues' && startsWith(github.event.issue.body, '/explore'))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,9 +27,9 @@ jobs:
         id: beast
         env:
           GH_TOKEN: ${{ github.token }}
-          EXPLORER: ${{ github.event.comment.user.login }}
+          EXPLORER: ${{ (github.event_name == 'issues' && github.event.issue.user.login) || github.event.comment.user.login }}
           ISSUE: ${{ github.event.issue.number }}
-          COMMENT_BODY: ${{ github.event.comment.body }}
+          COMMENT_BODY: ${{ (github.event_name == 'issues' && github.event.issue.body) || github.event.comment.body }}
         run: |
           # 多角色选通(2026-10-15)：/explore [@角色名]，唯一活角色直通，多个则列出让选
           F=$(bash scripts/pick-character.sh "$EXPLORER" "$ISSUE" "$COMMENT_BODY")
@@ -232,8 +234,8 @@ jobs:
       - name: 行旅
         env:
           GH_TOKEN: ${{ github.token }}
-          DEST: ${{ github.event.comment.body }}
-          TRAVELER: ${{ github.event.comment.user.login }}
+          DEST: ${{ (github.event_name == 'issues' && github.event.issue.body) || github.event.comment.body }}
+          TRAVELER: ${{ (github.event_name == 'issues' && github.event.issue.user.login) || github.event.comment.user.login }}
           ISSUE: ${{ github.event.issue.number }}
         run: |
           export DEST=$(echo "$DEST" | grep -oP '(?<=/travel )\S+' | head -1)
