@@ -304,3 +304,10 @@ entries:
   what: 入落霞观——观中遇神秘女子(剥栗/不知来处);得哑叔遗物(归字);殿内无神像惟北坡山水画卷
   consequence: 新地点luoxia-guan;哑叔遗物确认
   evidence: tales/leonezhu-熊三.md 第三十六回
+- day: 2026-10-21
+  actor: leonezhu
+  name: 熊三
+  where: luoxia-guan
+  what: 夜宿落霞观——梦见哑叔现身窗边指心指门;符未失效;沉眠调息
+  consequence: exp+5
+  evidence: tales/leonezhu-熊三.md 第三十七回
