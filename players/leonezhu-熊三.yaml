@@ -1,14 +1,14 @@
-activity: resting
+activity: traveling
 artifacts: []
 chronicle: []
 comprehension: 50
 created_at: 2026-10-15T11:30:00|xiong3-reborn
-exp: 80
+exp: 90
 gongfa: []
 kind: player
 mood:
-  label: 沉眠
-  updated: '2026-10-21'
+  label: 坚定
+  updated: '2026-10-22'
 name: 熊三
 notoriety: 0
 open_loops:
@@ -42,6 +42,8 @@ open_loops:
   status: open
 - hook: 落霞观遇神秘女子(剥栗/不知来处);得哑叔遗物(归字);殿内无神像惟北坡山水画卷;符/石/铃均在
   status: open
+- hook: 南山有观有钟;茶指引南行;藏经阁废书(水火两本)留疑;归字未解
+  status: open
 origin: 大变基中醒来，身在挂满风铃的破庙檐下。与前世无涉——这是一场崭新的开始
 owner: leonezhu
 realm: lianqi
@@ -54,4 +56,4 @@ spirit_stones: 114
 stage: cultivating
 titles:
 - 踏雾者
-where: luoxia-guan
+where: nanshan-road
