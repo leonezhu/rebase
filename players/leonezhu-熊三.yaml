@@ -1,4 +1,4 @@
-activity: none
+activity: traveling
 artifacts: []
 chronicle: []
 comprehension: 50
@@ -28,7 +28,7 @@ spirit_root:
   element: water
   purity: 90
   variant: pseudo
-spirit_stones: 124
+spirit_stones: 122
 stage: cultivating
 titles:
 - 踏雾者

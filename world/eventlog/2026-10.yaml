@@ -115,3 +115,10 @@ entries:
   what: 晨起发现烤鱼老头失踪(收摊急/炭未掩),摊下拾炭条字「钟响第三夜。北坡。别带牌」
   consequence: stones=124;新钩子[北坡之约/别带牌]
   evidence: tales/leonezhu-熊三.md 第九回
+- day: 2026-10-16
+  actor: leonezhu
+  name: 熊三
+  where: qianhuzhen
+  what: 打听得烤鱼老头来历——姓乌,三十年前自北山下来,熟北坡路("那条路我熟");午后动身赴北坡
+  consequence: stones=122;activity=traveling
+  evidence: tales/leonezhu-熊三.md 第十回
