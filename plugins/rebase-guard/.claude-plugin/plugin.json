@@ -1,0 +1,9 @@
+{
+  "name": "rebase-guard",
+  "version": "0.1.0",
+  "description": "万灵变基录执法插件：Stop hook 强制剧情入传（传记是世界的正史）",
+  "author": {
+    "name": "leonezhu"
+  },
+  "hooks": "./hooks/hooks.json"
+}
