@@ -283,3 +283,10 @@ entries:
   what: 还弓给槐安老猎人(三十年伏骸执弓);妇人收弓泪;猎人口述三十年前北坡史(记忆灌顶);符未失效
   consequence: 槐安线闭;exp+10;获三十年北坡旧事片段
   evidence: tales/leonezhu-熊三.md 第三十三回
+- day: 2026-10-21
+  actor: leonezhu
+  name: 熊三
+  where: huai-an
+  what: 夜宿槐安村长家——村长言三十年前雾后北坡出新土，村民敢住；村规冬至祭山为"祭债"
+  consequence: 槐安线暂闭;exp+5(安睡调息)
+  evidence: tales/leonezhu-熊三.md 第三十四回
