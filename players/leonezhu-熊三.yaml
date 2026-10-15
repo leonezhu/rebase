@@ -36,18 +36,12 @@ open_loops:
   status: closed
 - hook: 铜铃收下=记名守灯人(不守夜,路过看灯);「你走你的路,灯我守着」哑叔语
   status: open
-- hook: 槐安村老猎人之妻已收弓;熊三得记忆灌顶(三十年北坡史);符未失效(可能)
-  status: open
-- hook: 赵守拙预言「南行第三日遇松林入赵庄」;指明落霞观为下一站;符未失效=债记
-  status: open
 - hook: 落霞观遇神秘女子(剥栗/不知来处);得哑叔遗物(归字);殿内无神像惟北坡山水画卷;符/石/铃均在
-  status: open
+  status: closed
 - hook: 南山有观有钟;茶指引南行;藏经阁废书(水火两本)留疑;归字未解
-  status: open
-- hook: 南山有观有钟;茶指引南行;藏经阁废书(水火两本)留疑;归字未解
-  status: open
+  status: closed
 - hook: 钟山观灰衣道士(哑叔师弟)接灯;约定每年冬至点灯;铜钱为钥匙;历练线正式开启
-  status: open
+  status: closed
 origin: 大变基中醒来，身在挂满风铃的破庙檐下。与前世无涉——这是一场崭新的开始
 owner: leonezhu
 realm: lianqi
