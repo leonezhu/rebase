@@ -1,0 +1,14 @@
+id: art-zhunhun-cloth
+name: 镇魂符布
+kind: artifact
+grade: 下品法器
+element: wood
+power: 符布上绘数百遍镇魂符，可撕一张贴额护身，保命硬
+desc: 哑叔当年画了数百遍的镇魂符，集于一卷布上
+origin: 哑叔向守山人学得画符后，怕忘而数度描红；守山人原用于镇自己心神的残片
+first_seen: 熊三北坡第三夜（2026-10-17）
+unique: false
+holders:
+  - who: leonezhu-熊三
+    since: '2026-10-17'
+created_by_bot: true

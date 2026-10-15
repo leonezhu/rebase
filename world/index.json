@@ -104,6 +104,25 @@
       "created_by_bot": false
     },
     {
+      "id": "art-shoudeng-shi",
+      "name": "守灯石",
+      "kind": "artifact",
+      "grade": "下品法器",
+      "element": "earth",
+      "power": "夜路不迷向，邪祟避三尺；只会守不会攻",
+      "desc": "哑叔日夜握持的守灯石，内养其半生心神",
+      "origin": "北坡石龛拾得，为哑叔三十年守灯时随身之物",
+      "first_seen": "熊三北坡第三夜（2026-10-17）",
+      "unique": false,
+      "holders": [
+        {
+          "who": "leonezhu-熊三",
+          "since": "2026-10-17"
+        }
+      ],
+      "created_by_bot": true
+    },
+    {
       "id": "art-wuming-duanjian",
       "name": "无名断剑",
       "kind": "artifact",
@@ -121,6 +140,48 @@
         }
       ],
       "created_by_bot": false
+    },
+    {
+      "id": "art-zhongling-bell",
+      "name": "钟灵铃",
+      "kind": "artifact",
+      "grade": "中品法器",
+      "element": "water",
+      "power": "铃舌已损，摇不发声——但贴灯芯可唤火，雾中近心者闻之",
+      "desc": "哑叔以铜炼的传灯信物，无舌无音，遇灯则鸣",
+      "origin": "哑叔三十年前炼制，铃身刻“归”字；每遇可信之人则赠",
+      "first_seen": "熊三北坡第三夜（2026-10-17）",
+      "unique": true,
+      "holders": [
+        {
+          "who": "leonezhu-熊三",
+          "since": "2026-10-17"
+        }
+      ],
+      "hooks": [
+        "贴灯芯可唤火",
+        "雾中近心者闻之"
+      ],
+      "created_by_bot": true
+    },
+    {
+      "id": "art-zhunhun-cloth",
+      "name": "镇魂符布",
+      "kind": "artifact",
+      "grade": "下品法器",
+      "element": "wood",
+      "power": "符布上绘数百遍镇魂符，可撕一张贴额护身，保命硬",
+      "desc": "哑叔当年画了数百遍的镇魂符，集于一卷布上",
+      "origin": "哑叔向守山人学得画符后，怕忘而数度描红；守山人原用于镇自己心神的残片",
+      "first_seen": "熊三北坡第三夜（2026-10-17）",
+      "unique": false,
+      "holders": [
+        {
+          "who": "leonezhu-熊三",
+          "since": "2026-10-17"
+        }
+      ],
+      "created_by_bot": true
     }
   ],
   "locations": [

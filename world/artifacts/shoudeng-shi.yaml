@@ -1,0 +1,14 @@
+id: art-shoudeng-shi
+name: 守灯石
+kind: artifact
+grade: 下品法器
+element: earth
+power: 夜路不迷向，邪祟避三尺；只会守不会攻
+desc: 哑叔日夜握持的守灯石，内养其半生心神
+origin: 北坡石龛拾得，为哑叔三十年守灯时随身之物
+first_seen: 熊三北坡第三夜（2026-10-17）
+unique: false
+holders:
+  - who: leonezhu-熊三
+    since: '2026-10-17'
+created_by_bot: true

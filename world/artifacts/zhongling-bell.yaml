@@ -1,0 +1,17 @@
+id: art-zhongling-bell
+name: 钟灵铃
+kind: artifact
+grade: 中品法器
+element: water
+power: 铃舌已损，摇不发声——但贴灯芯可唤火，雾中近心者闻之
+desc: 哑叔以铜炼的传灯信物，无舌无音，遇灯则鸣
+origin: 哑叔三十年前炼制，铃身刻“归”字；每遇可信之人则赠
+first_seen: 熊三北坡第三夜（2026-10-17）
+unique: true
+holders:
+  - who: leonezhu-熊三
+    since: '2026-10-17'
+hooks:
+  - 贴灯芯可唤火
+  - 雾中近心者闻之
+created_by_bot: true
