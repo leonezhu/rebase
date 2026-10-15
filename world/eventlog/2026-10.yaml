@@ -17,3 +17,10 @@ entries:
   what: 雾中入山腹前辈洞府,承接残存道韵(传功不问来者)——功力大涨
   consequence: exp=40;伏笔[雄大是谁]再触
   evidence: issue#107
+- day: 2026-10-15
+  actor: leonezhu
+  name: 雄二
+  where: qianhuzhen
+  what: 夜行自温泉白石滩下山,入浅湖镇打探消息
+  consequence: where=qianhuzhen
+  evidence: 会话叙事
