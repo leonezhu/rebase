@@ -172,6 +172,13 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add docs/catalog.html || true
           git diff --cached --quiet || git commit -m "catalog: 图鉴静态页重铸(docs/catalog.html,不部署)"
-          # 并发保险：checkout 后若 main 又前进，先变基再推，避免 non-FF 拒绝
-          git pull --rebase origin main || true
-          git push origin main
+          # 并发保险：push 与人写 push 竞速（我们 push 频繁）——失败退避重试, 至多 3 次
+          for i in 1 2 3; do
+            git pull --rebase origin main || git rebase --abort || true
+            if git push origin main; then
+              echo "push OK (第 $i 次)"; break
+            fi
+            echo "push 被拒(第 $i 次), 5s 后重试…"
+            sleep 5
+            [ "$i" = 3 ] && echo "::warning::catalog 页 3 次推送均被拒, 下次触发会重铸" && exit 1
+          done
