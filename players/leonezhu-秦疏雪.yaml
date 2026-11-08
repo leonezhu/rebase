@@ -11,14 +11,21 @@ level: 凡人
 exp: 0
 notoriety: 0
 gongfa: []
-artifacts: []
+artifacts:
+- 无名残玉
 mood:
   label: 茫然
   updated: '2026-11-08'
 chronicle:
 - day: 1
   event: 雾泽渡口醒来
+- day: 1
+  event: 石桩暗腔取残玉-气息与己同源
 open_loops:
-- hook: 渡口雾中的渡船与摆渡人
+- hook: 雾中渡船与摆渡人-退走原因不明
+  status: open
+- hook: 残玉与丹田细丝同源-一炉所出
+  status: open
+- hook: 石桩旧字无人认得
   status: open
 origin: 于雾泽渡口醒来，全然不知前世何事
