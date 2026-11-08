@@ -5,8 +5,8 @@ created_at: '2026-11-08T13:39:52'
 element: 阴
 aptitude: 上品
 constitution: 凡骨
-where: 雾泽渡口
-activity: awakening
+where: 雾泽渡口周边
+activity: exploring
 level: 凡人
 exp: 0
 notoriety: 0
@@ -21,6 +21,8 @@ chronicle:
   event: 雾泽渡口醒来
 - day: 1
   event: 石桩暗腔取残玉-气息与己同源
+- day: 1
+  event: 收玉查探周边-寻身份来历
 open_loops:
 - hook: 雾中渡船与摆渡人-退走原因不明
   status: open
