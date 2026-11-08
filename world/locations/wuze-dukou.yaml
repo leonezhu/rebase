@@ -1,0 +1,12 @@
+id: wuze-dukou
+name: 雾泽渡口
+kind: location
+type: 渡口
+element: 阴
+desc: 北地水泽尽头的旧渡口，终年浓雾不散。水面平静得不像活水，雾里偶尔传来橹声，却看不清船从何方来。渡口有一根拴船的石桩，桩上刻着无人认得的旧字。
+origin: 秦疏雪觉醒之地
+first_seen: 秦疏雪线-第一章
+unique: false
+hooks:
+  - 雾中的渡船与摆渡人
+  - 石桩上的旧字
